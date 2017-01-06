@@ -1,0 +1,10 @@
+<html>
+<body>
+<p>来自IP地址{{ ip }}的用户(可能是您)在{{ system }}上创建了帐户{{ username }}，并提交了您的电子邮箱地址</p>
+<p>请确认这个帐号是属于您的，并同时激活在{{ system }}上的电子邮件功能。请在浏览器中打开以下链接：</p>
+<p>{{ confirmurl }}</p><br/>
+<p>如果您未曾注册帐户，请打开下面的链接去取消电子邮件确认：</p>
+<p>{{ cancelurl }}</p>
+<p>确认码将在{{ deadline|time2time }}过期</p>
+</body>
+</html>

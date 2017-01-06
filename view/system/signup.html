@@ -1,0 +1,94 @@
+{% extends '../_base.html' %}
+
+{% block headscript %}
+<script src="/static/js/sha1.min.js"></script>
+<script type="text/javascript">
+
+</script>
+{% endblock %}
+
+
+{% block main %}
+<div id="signup_win" style="display:none" >
+	<div class="easyui-panel" data-options="fit:true">		
+       <form id="ff" method="post" class="easyui-form" style="padding:40px 40px;" data-options="" >
+            <div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="username" name="username" style="width:100%" data-options="label:'用户名:',required:true, validType:'length[3,50]',prompt:'3-20字符，必须是小写字母、数字、-连字线或_下划线字符'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="cnname" name="cnname" style="width:100%" data-options="label:'中文名:',required:true, validType:'length[2,50]',prompt:'2-20字符'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-passwordbox" id="password" name="password" style="width:100%" data-options="label:'密码:',required:true, validType:'length[6,20]',prompt:'6-20位，允许小写字母、大写字母和数字'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-passwordbox" id="verifypassword" name="verifypassword" style="width:100%" data-options="label:'确认密码:',required:true,validType:'length[6,20]', prompt:'6-20位，允许小写字母、大写字母和数字'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="email" name="email" style="width:100%" data-options="label:'邮箱:',required:true, validType:'email', prompt:'必须填写公司邮箱。有效的邮箱将用于帐户验证、邮件通知和重置密码等功能'">
+			</div>
+		</form>
+		<div class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:120px">注册</a>
+		</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footerscript %}{% endblock %}
+
+{% block readyscript %}
+<script type="text/javascript">
+$('#signup_win').show();
+$('#signup_win').window({
+	title: "新用户注册",
+	width:600,
+	height:400,
+	modal:false,
+	minimizable:false,
+	maximizable:false,
+	closable:false,
+	collapsible:false,
+	draggable: false,
+	resizable: false
+});
+function submitForm(){
+$('#ff').form('submit',{
+    onSubmit: function(){
+    	var data = {
+			name: $("#cnname").textbox('getValue'),
+			username: $("#username").textbox('getValue'),
+			password: $("#password").textbox('getValue'),
+			verifypassword: $("#verifypassword").textbox('getValue'),
+			email: $("#email").textbox('getValue')
+		};
+		var properties = {name:'中文名',username:'用户名',password:'密码',verifypassword:'确认密码',email:'邮箱'};
+		var vr = validateJsonObj('signup', data, properties);
+		if( vr === true ){
+			if( data.password !== data.verifypassword ){
+				showErrorInfo( '密码无效', "前后两次输入的密码不一致！" );
+				return false;
+			}
+			//salt password
+			delete(data['verifypassword']);
+			data.password = CryptoJS.SHA1( data.password + "{{__salt__}}" + data.username ).toString();
+			postJSON( '/api/signup', data, function(err, result){
+					if( !err ){
+						showProgressInfo( '提示','注册用户成功。2秒后自动跳转到登录界面。', 2000);
+						jumpToURL( '/login', 2000);					
+					}else{
+						showErrorInfo( "注册失败", err.message );
+					}
+			});
+		}else{
+			showErrorInfo( '填写错误', vr );
+		}
+		return false;
+    }
+});
+}
+
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,17 @@
+{% extends '../_base.html' %}
+
+{% block title %} {{ _('Home')}} {% endblock %}
+
+{% block main %}
+<div class="dv-container x-content">
+	<div class="dv-container x-narrow">
+		<h2 class="x-title">{{ _('Confirm email successfully.') }} 3秒后自动跳转至登录界面。</h2>
+	</div>
+</div>	
+{% endblock %}
+
+{% block readyscript %}
+<script type="text/javascript">
+jumpToURL( '/login', 3000);
+</script>
+{% endblock %}

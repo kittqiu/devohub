@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>{% block title %} 研发项目管理系统 {% endblock %}</title>
+	<meta name="viewport" content="width=device-width"/>
+	<meta name="keywords" content="devohub project manage"/>
+	{% block headmeta %} <!-- meta here --> {% endblock %}
+	<!-- BEGIN CSS COMPRESS -->
+	<!-- ENDCSS COMPRESS -->
+	<link rel="stylesheet" type="text/css" href="/static/css/uikit.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/easyui/{{ __theme__ }}/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/easyui/icon.css">	
+	{% block headcss %}<!-- css -->{% endblock %}
+	{% if __production__ %}
+	<script src="/static/js/all.js"></script>
+	{% else %}
+	<!-- BEGIN JAVASCRIPT COMPRESS -->
+	<script src="/static/js/jquery.js"></script>
+	<script src="/static/js/jquery.easyui.min.js"></script>
+	<script src="/static/js/jjv.js"></script>
+	<script src="/static/js/form_schema.js"></script>
+	<script src="/static/js/vendor.js"></script>
+	<!-- END JAVASCRIPT COMPRESS -->
+	{% endif %}
+	{% block headscript %}<!-- head  -->{% endblock %}
+</head>
+<body>
+	<div id="bodylayout" class="easyui-layout" data-options="fit:true,border:false">
+        <div id="northregion" data-options="region:'north',border:false">
+        	{% block header %}
+			<div id="header">		
+				<ul id="top" class="dv-navbar-nav uk-navbar-nav">
+					<li><a href="/">项目管理系统</a></li>
+			        <li><a href="/project/">项目</a></li>
+			        <li><a href="/team/">团队</a></li>   
+			        {% if __user__.username == 'Admin' %}
+			        <li><a href="/manage/">manage</a></li>	        
+			        {% endif %}
+		    	</ul>    	   					
+				<ul class="dv-navbar-nav uk-navbar-nav" style="float:right;">
+					{% if __user__ %}
+					<li class="" data-uk-dropdown="{pos:'left-bottom'}" style="padding-top:10px;margin-right:20px;">
+		                    {{ __request__.user.name }}<i class="uk-icon-caret-down"></i>
+		                    <div class="uk-dropdown uk-dropdown-navbar" style="top: 30px; left: -170px;">
+		                        <ul class="uk-nav uk-nav-navbar uk-subnav-pill">
+		                        	<li><a href="/user/changepassword">{{ _('change password')}}</a></li>
+		                        	<li><a href="/user/changeinfo">修改个人信息</a></li>
+		                            <li class="uk-nav-divider"></li>
+		                            <li class="uk-active"><a href="/auth/signout?referer={{__request__.url}}">{{ _('logout')}}</a></li>
+		                        </ul>
+		                    </div>
+		            </li>
+		            {% else %}
+					<li><a href="/login" class="">{{ _('log in') }}</a></li>
+					<li><a href="/signup" class="">{{ _('sign up') }}</a></li>
+					{% endif %}
+				</ul>		
+			</div>
+			{% endblock %}
+        </div>
+        <div id="southregion" data-options="region:'south',border:false">
+        	<div id="footer">
+				<div class="uk-width-medium-1-2 uk-container-center uk-text-center">
+					<a href="" id="devohub-loves-you">devohub-loves-you</a>
+				</div>
+			</div>
+        </div>
+        <div id="centerregion" data-options="region:'center',border:false">
+        	<div id="main">
+				{% block main %}		
+				{% endblock %}
+			</div>
+        </div>
+    </div>
+	
+	
+	
+	{% block footerscript %}
+	<script type="text/javascript">
+
+	var helptxt = null;
+	function showHelp(){
+		if( helptxt !== null ){//load help only once
+			modal = UIkit.modal("#dialog-help");
+			modal.show();
+			return;
+		}
+		var data = { path: '{{ __request__.path }}' };
+		getJSON( '/api/help', data, function(err, result ){
+			if(err){
+				fatal(err);
+			}else{
+				helptxt = result.help;
+				if( helptxt === ''){
+					helptxt = '未找到该页的帮助文档.';
+				}
+				$('#helptext').html(marked(helptxt));
+				var modal = UIkit.modal("#dialog-help");
+				modal.show();
+			}
+		});
+	}
+
+	$(function(){
+		var paths = location.pathname.split('/'),
+			subsys = '/' + paths[1] + '/';
+		$("a[href='" + subsys + "']").parent().addClass('uk-active');
+	});
+	</script>
+	{% endblock %}
+	{% block readyscript %} {% endblock %}
+</body>
+</html>
