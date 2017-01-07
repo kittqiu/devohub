@@ -42,7 +42,7 @@ function generateDDL(email, password) {
 
     id = db.next_id();
     lid = db.next_id();
-    console.log(crypto.createHash('sha1').update(password+config.security.salt).digest('hex'));
+    console.log(crypto.createHash('sha1').update(password+config.security.salt+'Admin').digest('hex'));
     //passwd = crypto.createHash('sha1').update(lid + ':' + crypto.createHash('sha1').update(email + ':' + password).digest('hex')).digest('hex');
     passwd = crypto.createHash('sha1').update(email + ':' + crypto.createHash('sha1').update(password+config.security.salt).digest('hex')).digest('hex');
 

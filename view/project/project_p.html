@@ -1,0 +1,39 @@
+{% extends '../_inline_base.html' %}
+
+
+{% block inline_header %}
+
+<div class="easyui-panel" style="padding:5px;height:40px">
+	<div class="uk-width-1-1 uk-block uk-flex" style="padding:0px 5px;" >
+		<div class="uk-flex-item-auto">
+			<span>过滤器：</span>
+			<select id="project-filter" class="easyui-combobox" name="project-filter" style="width:80px;" data-options="">
+				<option value="aa">我参与的</option>
+				<option>所有的</option>
+			</select>
+			<input type="checkbox" style="margin-left:20px;"><span>显示历史项目</span>
+		</div>
+		<div class="uk-flex-item-none">
+			<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'">新建</a>
+		</div>
+	</div>
+	
+	
+</div>
+{% endblock %}
+
+{% block inline_main %}
+<table id="project-dg" class="easyui-datagrid" title="Row Border in DataGrid" style="width:100%;height:250px"
+		data-options="singleSelect:true,fitColumns:true,url:'datagrid_data1.json',method:'get'">
+	<thead>
+		<tr>
+			<th data-options="field:'itemid',width:80">Item ID</th>
+			<th data-options="field:'productid',width:100">Product</th>
+			<th data-options="field:'listprice',width:80,align:'right'">List Price</th>
+			<th data-options="field:'unitcost',width:80,align:'right'">Unit Cost</th>
+			<th data-options="field:'attr1',width:250">Attribute</th>
+			<th data-options="field:'status',width:60,align:'center'">Status</th>
+		</tr>
+	</thead>
+</table>
+{ endblock }
