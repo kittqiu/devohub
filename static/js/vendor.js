@@ -19,6 +19,7 @@ function showInfo(title, msg){
 	$.messager.show({
 		title:t,
 		msg:m,
+		timeout: 2000,
 		showType:'slide',
 		style:{
 			right:'',

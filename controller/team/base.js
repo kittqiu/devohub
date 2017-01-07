@@ -190,7 +190,7 @@ function* $_testPerm(context,perm_name){
 	if( yield $_havePerm(context,perm_name) ){
 		return true;
 	}else{
-		throw api.authFailed(perm_name, '您无权限访问!');
+		throw api.authFailed(perm_name, '您无权限执行该操作!请联系管理员。');
 	}
 }
 

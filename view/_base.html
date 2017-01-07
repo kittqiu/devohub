@@ -27,52 +27,52 @@
 </head>
 <body>
 	<div id="bodylayout" class="easyui-layout" data-options="fit:true,border:false">
-        <div id="northregion" data-options="region:'north',border:false">
-        	{% block header %}
+		<div id="northregion" data-options="region:'north',border:false">
+			{% block header %}
 			<div id="header">		
 				<ul id="top" class="dv-navbar-nav uk-navbar-nav">
 					<li><a href="/">项目管理系统</a></li>
-			        <li><a href="/project/">项目</a></li>
-			        <li><a href="/team/">团队</a></li>   
-			        {% if __user__.username == 'Admin' %}
-			        <li><a href="/manage/">manage</a></li>	        
-			        {% endif %}
-		    	</ul>    	   					
+					<li><a href="/project/">项目</a></li>
+					<li><a href="/team/">团队</a></li>   
+					{% if __user__.username == 'Admin' %}
+					<li><a href="/manage/">manage</a></li>	        
+					{% endif %}
+				</ul>    	   					
 				<ul class="dv-navbar-nav uk-navbar-nav" style="float:right;">
 					{% if __user__ %}
 					<li class="" data-uk-dropdown="{pos:'left-bottom'}" style="padding-top:10px;margin-right:20px;">
-		                    {{ __request__.user.name }}<i class="uk-icon-caret-down"></i>
-		                    <div class="uk-dropdown uk-dropdown-navbar" style="top: 30px; left: -170px;">
-		                        <ul class="uk-nav uk-nav-navbar uk-subnav-pill">
-		                        	<li><a href="/user/changepassword">{{ _('change password')}}</a></li>
-		                        	<li><a href="/user/changeinfo">修改个人信息</a></li>
-		                            <li class="uk-nav-divider"></li>
-		                            <li class="uk-active"><a href="/auth/signout?referer={{__request__.url}}">{{ _('logout')}}</a></li>
-		                        </ul>
-		                    </div>
-		            </li>
-		            {% else %}
+							{{ __request__.user.name }}<i class="uk-icon-caret-down"></i>
+							<div class="uk-dropdown uk-dropdown-navbar" style="top: 30px; left: -170px;">
+								<ul class="uk-nav uk-nav-navbar uk-subnav-pill">
+									<li><a href="/user/changepassword">{{ _('change password')}}</a></li>
+									<li><a href="/user/changeinfo">修改个人信息</a></li>
+									<li class="uk-nav-divider"></li>
+									<li class="uk-active"><a href="/auth/signout?referer={{__request__.url}}">{{ _('logout')}}</a></li>
+								</ul>
+							</div>
+					</li>
+					{% else %}
 					<li><a href="/login" class="">{{ _('log in') }}</a></li>
 					<li><a href="/signup" class="">{{ _('sign up') }}</a></li>
 					{% endif %}
 				</ul>		
 			</div>
 			{% endblock %}
-        </div>
-        <div id="southregion" data-options="region:'south',border:false">
-        	<div id="footer">
+		</div>
+		<div id="southregion" data-options="region:'south',border:false">
+			<div id="footer">
 				<div class="uk-width-medium-1-2 uk-container-center uk-text-center">
 					<a href="" id="devohub-loves-you">devohub-loves-you</a>
 				</div>
 			</div>
-        </div>
-        <div id="centerregion" data-options="region:'center',border:false">
-        	<div id="main">
+		</div>
+		<div id="centerregion" data-options="region:'center',border:false">
+			<div id="main">
 				{% block main %}		
 				{% endblock %}
 			</div>
-        </div>
-    </div>
+		</div>
+	</div>
 	
 	
 	{% block footerscript %}

@@ -12,7 +12,7 @@ var
 	modelUser = db.user;
 
 function* $_render( context, model, view ){
-    context.render( 'team/structure/' + view, yield home.$getModel.apply(context, [model]) );
+    context.render( 'team/' + view, yield home.$getModel.apply(context, [model]) );
 }
 
 /**************
@@ -38,14 +38,14 @@ POST METHOD:
 *************/
 
 module.exports = {
-	'GET /team/structure': function* (){
-		var canEdit = false;
-		if( yield base.$havePerm(this, base.PERM_EDIT_STRUCTURE)){
-			canEdit = true;
-		}
-		yield $_render( this, {__mode__:'ro', __perm_Edit__:canEdit}, 'build.html');
+	'GET /team/structure': function* (){		
+		yield $_render( this, {}, 'structure.html');
 		base.setHistoryUrl(this);
 	},
+	'GET /team/structure/department/add': function* (){		
+		yield $_render( this, {}, 'department_add.html');
+	},
+
 	'GET /team/structure/build': function* (){
 		yield base.$testPerm(this, base.PERM_EDIT_STRUCTURE);
 		yield $_render( this, {__mode__:'rw'}, 'build.html');

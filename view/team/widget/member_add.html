@@ -1,0 +1,65 @@
+<div id="win_add_member" style="display:none">
+	<div class="easyui-panel" data-options="fit:true" style="padding:20px 30px">		
+		<div id="wam_user_list" ></div>
+		<div class="uk-text-center" style="margin-top:20px">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wam_submit()" style="width:120px">增加</a>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+var g_memberDepId;
+function addMember(department){
+	getJSON( '/api/team/department/freeusers', function(err, fusers){
+		if(err){
+			fatal(err);
+		}else{
+			$('#wam_user_list').datalist('loadData', fusers);
+			if( fusers.length === 0 ){
+				showInfo('所有用户都已分配完毕，没有可供选择的用户！');
+				$('#win_add_member').window( 'close');
+			}
+		}
+	});
+	g_memberDepId = department.id;
+	$('#win_add_member').window({
+		title: '为 "' + department.name +'" 添加新成员',
+		width:400,
+		height:280,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});	
+	$('#wam_user_list').datalist({
+		title: '请选择用户',
+		width:320,
+		height:150,
+		checkbox: true,
+		lines: true,
+		singleSelect:false,
+		valueField: 'id',
+		textField: 'name'
+	});	
+	
+}
+
+function wam_submit(){
+	var nodes = $('#wam_user_list').datalist('getSelections');
+	var data = [];
+	for( var i = 0; i < nodes.length; i++){
+		data.push( {id:nodes[i].id, department:g_memberDepId} );
+	}
+	
+	postJSON( '/api/team/member/updateusers', data, function(err, result){
+			if( !err ){
+				showInfo( '添加成员成功。');
+				$('#win_add_member').window( 'close');
+				onReload();			
+			}else{
+				showErrorInfo( "增加成员失败", err.message );
+			}
+	});
+}
+</script>

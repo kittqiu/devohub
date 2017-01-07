@@ -1,0 +1,57 @@
+<div id="win_add_department" style="display:none">
+	<div class="easyui-panel" data-options="fit:true">		
+		<form id="ff_win_add_dep" method="post" class="easyui-form" style="padding:40px 40px;" data-options="" >
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wad_dep_name" name="wad_dep_name" style="width:100%" data-options="label:'名称:',required:true, validType:'length[3,50]',prompt:'3-50字符'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wad_parent_name" name="wad_parent_name" style="width:100%" data-options="label:'部门隶属于:',readonly:true,disabled:true">
+			</div>
+		</form>
+		<div class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wad_submitForm()" style="width:120px">创建</a>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+function addDepartment(parent){
+	//$('#win_add_department')
+	$('#win_add_department').window({
+		title: "创建新部门",
+		width:400,
+		height:260,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});	
+	$('#wad_parent_name').textbox('setValue', parent.id);
+	$('#wad_parent_name').textbox('setText', parent.name);
+	$('#win_add_department').window( 'open');
+}
+
+function wad_submitForm(){
+	var data = {
+					name: $("#wad_dep_name").textbox('getValue'),
+					pid: $("#wad_parent_name").textbox('getValue')
+				};
+	var properties = {name:'部门名'};
+	var vr = validateJsonObj('createDepartment', data, properties);
+	if( vr === true ){
+		/*postJSON( '/api/manage/user/0014836953272695882c21cd1b54b429d40575c12b2d3a4000/roles', ['001483698138011b22358965c814fff98d4c36cb70f8e92000','001483698138038629dbe6f14b247da970d331df516a7f4000'], function(){} );*/
+		postJSON( '/api/team/department', data, function(err, result){
+				if( !err ){
+					showInfo( '创建新部门成功。');
+					$('#win_add_department').window( 'close');
+					onReload();			
+				}else{
+					showErrorInfo( "创建新部门失败", err.message );
+				}
+		});
+	}else{
+		showErrorInfo( '填写错误', vr );
+	}
+}
+</script>

@@ -1,0 +1,115 @@
+{% extends '../_inline_base.html' %}
+
+
+{% block inline_header %}
+
+<div class="easyui-panel" style="padding:5px;height:40px">
+	<div class="uk-width-1-1 uk-block uk-flex" style="padding:0px 5px;" >
+		<div class="uk-flex-item-auto">
+			<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="addRootDepartment()">新增顶级部门</a>
+			<a href="#" id="btn_add_sub_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addDepartment(g_depMap[g_selectedNodeId])">新增下级部门</a>
+			<a href="#" id="btn_add_member" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addMember(g_depMap[g_selectedNodeId])">新增成员</a>
+		</div>
+		<div class="uk-flex-item-none">
+			<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'">新建</a>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block inline_main %}
+<ul id="structure_tree"></ul>
+
+{% include './widget/department_add.html' %}
+{% include './widget/member_add.html' %}
+{% endblock %}
+
+{% block readyscript %}
+<script type="text/javascript">
+/***** Tree UI *****/
+var g_departments, g_users, g_treedata;
+var g_depMap={}, g_userMap={}, g_selectedNodeId='root';
+
+function isDepartment(id){
+	return g_depMap[id] !== undefined;
+}
+
+/*构建树结构*/
+function buildTreeData(){
+	var data = [], i, depNodeMap={};
+	//构建部门的树型结构
+	for( i = 0; i < g_departments.length; i++ ){
+		var dep = g_departments[i];
+		g_depMap[dep.id] = dep;
+		var n = {id:dep.id, text:dep.name, children:[]};
+		if( dep.parent == 'root'){			
+			data.push(n);
+			depNodeMap[dep.id] = n;
+		}else{
+			var parent = depNodeMap[dep.parent];
+			if( parent.children === undefined ){
+				parent.children = [];
+			}
+			parent.children.push( n );
+		}
+	}
+	//将成员加到部门中
+	for( i = 0; i < g_users.length; i++ ){
+		var u = g_users[i];
+		g_userMap[u.id] = u;
+		var n = {id:u.id, text:u.name, iconCls:'icon-man'};
+		var dep = depNodeMap[u.department];
+		dep.children.unshift( n );
+	}
+	return data;
+}
+function loadUsers(){
+	getJSON( '/api/team/department/users', function(err, result) {
+		if( !err ){
+			g_users = result;
+			g_treedata = buildTreeData();
+			$('#structure_tree').tree({
+				data:g_treedata,
+				onSelect:function(node){
+					g_selectedNodeId = node.id;
+					if( isDepartment(node.id)){
+						$('#btn_add_sub_dep').linkbutton('enable');
+						$('#btn_add_member').linkbutton('enable');
+					}else{
+						$('#btn_add_sub_dep').linkbutton('disable');
+						$('#btn_add_member').linkbutton('disable');
+					}
+				}
+			});
+			//自动选中上一次结果
+			if( g_selectedNodeId !== 'root' ){
+				var node = $('#structure_tree').tree('find', g_selectedNodeId);
+				$('#structure_tree').tree('select', node.target);
+			}
+		}
+	})	
+}
+
+function loadDeparments(){
+	getJSON( '/api/team/department/list', function(err, result) {
+		if( !err ){
+			loadUsers();
+			g_departments = result;
+		}			
+	})	
+}
+
+function onInit(){
+	loadDeparments();
+}
+$(onInit);
+
+/*********Action***************/
+function onReload(){
+	onInit();
+}
+function addRootDepartment(){
+	addDepartment({id:'root', name:'无'});
+}
+</script>
+{% endblock %}

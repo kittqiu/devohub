@@ -1,5 +1,6 @@
 <html>
 <body>
+	{% block inline_body %}
 	<div id="inline_bodylayout" class="easyui-layout" data-options="fit:true,border:false">
 		<div id="inline_northregion" data-options="region:'north',border:false">
 			{% block inline_header %}
@@ -10,5 +11,8 @@
 			{% endblock %}
 		</div>
 	</div>
+	{% block readyscript %}
+	{% endblock %}
+	{% endblock %}
 </body>
 </html>

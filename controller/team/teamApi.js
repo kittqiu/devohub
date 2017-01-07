@@ -29,7 +29,7 @@ POST METHOD:
 
 module.exports = {
 	'GET /team': function*(){
-		this.redirect('/team/structure');
+		yield $_render( this, {}, 'team.html');
 	},
 
 	'GET /team/evaluation': function* (){
