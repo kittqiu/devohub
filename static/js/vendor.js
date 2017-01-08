@@ -89,7 +89,7 @@ function postJSON(url, data, callback){
 }
 
 function jumpToURL(url, timeout){
-	if(!timeout){
+	if(timeout === undefined){
 		timeout = 5000;
 	}
 	setTimeout( function(){		

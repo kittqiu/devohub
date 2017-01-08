@@ -36,8 +36,9 @@ POST METHOD:
 *************/
 
 module.exports = {
-	'GET /team/structure': function* (){		
-		yield $_render( this, {}, 'structure.html');
+	'GET /team/structure': function* (){
+		var canEdit = yield base.$havePerm(this, base.PERM_EDIT_STRUCTURE);
+		yield $_render( this, {__perm_Edit__:canEdit}, 'structure.html');
 		base.setHistoryUrl(this);
 	},
 

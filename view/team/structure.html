@@ -6,7 +6,7 @@
 <div class="easyui-panel" style="padding:5px;height:40px">
 	<div class="uk-width-1-1 uk-block uk-flex" style="padding:0px 5px;" >
 		<div class="uk-flex-item-auto">
-			<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="addRootDepartment()">新增顶级部门</a>
+			<a href="#" id="btn_add_root_dep" class="easyui-linkbutton" data-options="disabled:{{ !__perm_Edit__ }},plain:true,iconCls:'icon-add'" onclick="addRootDepartment()">新增顶级部门</a>
 			<a href="#" id="btn_add_sub_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addDepartment(g_depMap[g_selectedNodeId])">新增下级部门</a>
 			<a href="#" id="btn_add_member" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addMember(g_depMap[g_selectedNodeId])">新增成员</a>
 			<a href="#" id="btn_move_up" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="moveDepartment('up')">上移</a>
@@ -33,6 +33,7 @@
 /***** Tree UI *****/
 var g_departments, g_users, g_treedata;
 var g_depMap={}, g_userMap={}, g_selectedNodeId='root';
+var canEdit = {{ __perm_Edit__ }};
 
 function isDepartment(id){
 	return g_depMap[id] !== undefined;
@@ -44,6 +45,9 @@ function resetButtonState(){
 	$('#btn_edit_dep').linkbutton('disable');
 	$('#btn_delete').linkbutton('disable');
 	$('#btn_set_top_dep').linkbutton('disable');
+	if( !canEdit ){
+		$('#btn_add_root_dep').linkbutton('disable');
+	}
 }
 
 function _buildDep(data, dep, depNodeMap){
@@ -112,9 +116,12 @@ function loadUsers(){
 			g_treedata = buildTreeData();
 			$('#structure_tree').tree({
 				data:g_treedata,
-				dnd: true,
+				dnd: canEdit,
 				onSelect:function(node){
 					g_selectedNodeId = node.id;
+					if( !canEdit ){
+						return;
+					}
 					if( isDepartment(node.id)){
 						$('#btn_add_sub_dep').linkbutton('enable');
 						$('#btn_add_member').linkbutton('enable');
