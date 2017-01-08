@@ -18,8 +18,6 @@ function* $_render( context, model, view ){
 /**************
 GET METHOD:
 /team/structure/
-/team/structure/build
-/team/structure/department/creation?parent=xx
 /team/structure/department/:id/edit
 
 /api/team/department/list
@@ -41,31 +39,6 @@ module.exports = {
 	'GET /team/structure': function* (){		
 		yield $_render( this, {}, 'structure.html');
 		base.setHistoryUrl(this);
-	},
-	'GET /team/structure/department/add': function* (){		
-		yield $_render( this, {}, 'department_add.html');
-	},
-
-	'GET /team/structure/build': function* (){
-		yield base.$testPerm(this, base.PERM_EDIT_STRUCTURE);
-		yield $_render( this, {__mode__:'rw'}, 'build.html');
-		base.setHistoryUrl(this);
-	},
-
-	'GET /team/structure/department/creation': function* (){
-		var query = this.request.query,
-			parent = query.parent || 'root', 
-			before = query.before || '',
-			form = {
-				name: this.translate('Create department'),
-				submit: this.translate('Save'),
-				action: '/api/team/department?parent=' + parent + ( before ? '&before='+before : '' )
-			},
-			model = {
-				__form: form, 
-				parent: yield base.$getDepartment(parent)
-			};
-		yield $_render( this, model, 'department_form.html');
 	},
 
 	'GET /team/structure/department/:id/edit': function* (id){

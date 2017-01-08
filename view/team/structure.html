@@ -9,9 +9,12 @@
 			<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="addRootDepartment()">新增顶级部门</a>
 			<a href="#" id="btn_add_sub_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addDepartment(g_depMap[g_selectedNodeId])">新增下级部门</a>
 			<a href="#" id="btn_add_member" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addMember(g_depMap[g_selectedNodeId])">新增成员</a>
+			<a href="#" id="btn_move_up" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="moveDepartment('up')">上移</a>
 		</div>
 		<div class="uk-flex-item-none">
-			<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'">新建</a>
+			<a href="#" id="btn_edit_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="editDepartment(g_depMap[g_selectedNodeId])">修改部门</a>
+			<a href="#" id="btn_set_top_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="setRootDepartment(g_selectedNodeId)">置顶部门</a>
+			<a href="#" id="btn_delete" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-remove'" onclick="onDeleteNode()">删除</a>
 		</div>
 	</div>
 </div>
@@ -21,6 +24,7 @@
 <ul id="structure_tree"></ul>
 
 {% include './widget/department_add.html' %}
+{% include './widget/department_edit.html' %}
 {% include './widget/member_add.html' %}
 {% endblock %}
 
@@ -33,25 +37,63 @@ var g_depMap={}, g_userMap={}, g_selectedNodeId='root';
 function isDepartment(id){
 	return g_depMap[id] !== undefined;
 }
+function resetButtonState(){
+	$('#btn_add_sub_dep').linkbutton('disable');
+	$('#btn_add_member').linkbutton('disable');
+	$('#btn_move_up').linkbutton('disable');
+	$('#btn_edit_dep').linkbutton('disable');
+	$('#btn_delete').linkbutton('disable');
+	$('#btn_set_top_dep').linkbutton('disable');
+}
+
+function _buildDep(data, dep, depNodeMap){
+	var j;
+	var n = {id:dep.id, text:dep.name, children:[]};
+	depNodeMap[dep.id] = n;
+	if( dep.parent == 'root'){
+		for( j = 0; j < data.length; j++ ){
+			var d = g_depMap[data[j].id];
+			if( dep.order < d.order){
+				data.splice(j,0,n);
+				break;
+			}
+		}			
+		if( j == data.length)data.push(n);
+	}else{
+		if( !depNodeMap.hasOwnProperty(dep.parent) ){
+			_buildDep( data, g_depMap[dep.parent],depNodeMap);
+		}
+		var parent = depNodeMap[dep.parent];
+		if( parent.children === undefined ){
+			parent.children = [];
+		}
+		for( j = 0; j < parent.children.length; j++ ){
+			var d = g_depMap[parent.children[j].id];
+			if( dep.order < d.order){
+				parent.children.splice(j,0,n);
+				break;
+			}
+		}			
+		if( j == parent.children.length)parent.children.push(n);
+	}
+}
 
 /*构建树结构*/
 function buildTreeData(){
-	var data = [], i, depNodeMap={};
-	//构建部门的树型结构
+	var data = [], i, j,depNodeMap={};
+
 	for( i = 0; i < g_departments.length; i++ ){
 		var dep = g_departments[i];
 		g_depMap[dep.id] = dep;
-		var n = {id:dep.id, text:dep.name, children:[]};
-		if( dep.parent == 'root'){			
-			data.push(n);
-			depNodeMap[dep.id] = n;
-		}else{
-			var parent = depNodeMap[dep.parent];
-			if( parent.children === undefined ){
-				parent.children = [];
-			}
-			parent.children.push( n );
+	}
+
+	//构建部门的树型结构
+	for( i = 0; i < g_departments.length; i++ ){
+		var dep = g_departments[i];
+		if(depNodeMap.hasOwnProperty(dep.id)){
+			continue;
 		}
+		_buildDep( data, dep, depNodeMap);
 	}
 	//将成员加到部门中
 	for( i = 0; i < g_users.length; i++ ){
@@ -70,21 +112,74 @@ function loadUsers(){
 			g_treedata = buildTreeData();
 			$('#structure_tree').tree({
 				data:g_treedata,
+				dnd: true,
 				onSelect:function(node){
 					g_selectedNodeId = node.id;
 					if( isDepartment(node.id)){
 						$('#btn_add_sub_dep').linkbutton('enable');
 						$('#btn_add_member').linkbutton('enable');
+						$('#btn_edit_dep').linkbutton('enable');
+						var order = g_depMap[g_selectedNodeId].order;
+						if( order==1){
+							$('#btn_move_up').linkbutton('disable');
+						}else{
+							$('#btn_move_up').linkbutton('enable');
+						}
+						if( g_depMap[g_selectedNodeId].parent=='root'){
+							$('#btn_set_top_dep').linkbutton('disable');
+						}else{
+							$('#btn_set_top_dep').linkbutton('enable');
+						}
 					}else{
 						$('#btn_add_sub_dep').linkbutton('disable');
 						$('#btn_add_member').linkbutton('disable');
+						$('#btn_move_up').linkbutton('disable');
+						$('#btn_edit_dep').linkbutton('disable');
+						$('#btn_set_top_dep').linkbutton('disable');
+					}
+					if($('#structure_tree').tree('isLeaf', node.target)){
+						$('#btn_delete').linkbutton('enable');
+					}else{
+						$('#btn_delete').linkbutton('disable');
+					}
+				},
+				onDragEnter:function(target,source){
+					//禁用拖到成员类型的结点
+					var node = $('#structure_tree').tree('getNode',target);
+					return isDepartment(node.id);
+				},
+				onDrop: function(target,source,point){
+					var target_node = $('#structure_tree').tree('getNode',target);
+					if( isDepartment(source.id) ){
+						postJSON( '/api/team/department/'+source.id, {name: source.text, pid: target_node.id},function(err, result){
+							if( !err ){
+								onReload();
+								showInfo( '修改部门成功。');
+							}else{
+								showErrorInfo( "修改部门失败", err.message );
+							}
+						});
+					}else{
+						postJSON( '/api/team/member/u/'+source.id, {department: target_node.id},function(err, result){
+							if( !err ){
+								onReload();
+								showInfo( '指定成员新部门成功。');
+							}else{
+								showErrorInfo( "指定成员新部门失败", err.message );
+							}
+						});
 					}
 				}
 			});
 			//自动选中上一次结果
 			if( g_selectedNodeId !== 'root' ){
 				var node = $('#structure_tree').tree('find', g_selectedNodeId);
-				$('#structure_tree').tree('select', node.target);
+				if( node ){
+					$('#structure_tree').tree('select', node.target);
+				}else{
+					g_selectedNodeId = 'root';
+					resetButtonState();
+				}
 			}
 		}
 	})	
@@ -110,6 +205,53 @@ function onReload(){
 }
 function addRootDepartment(){
 	addDepartment({id:'root', name:'无'});
+}
+function onDeleteNode(){
+	$.messager.confirm('注意', '真的要删除该结点吗?', function(r){
+		if (r){
+			if( isDepartment(g_selectedNodeId)){
+				postJSON( '/api/team/department/'+g_depMap[g_selectedNodeId].id+'/delete', function(err, result){
+					if( !err ){
+						showInfo( '删除部门成功。');
+						onReload();
+					}else{
+						showErrorInfo( "删除部门失败", err.message );
+					}
+				});
+			}else{
+				postJSON( '/api/team/member/u/'+g_selectedNodeId, {department:''}, function(err, result){
+					if( !err ){
+						showInfo( '删除成员成功。');
+						onReload();
+					}else{
+						showErrorInfo( "删除成员失败", err.message );
+					}
+				});
+			}
+		}
+	});	
+}
+/*向上或向下移动节点*/
+function moveDepartment(action){
+	postJSON( '/api/team/department/'+g_depMap[g_selectedNodeId].id+'/order', {action:action}, function(err, result){
+		if( !err ){
+			showInfo( '移动成功。');
+			onReload();
+		}else{
+			showErrorInfo( "移动失败", err.message );
+		}
+	});
+}
+/*置项部门*/
+function setRootDepartment(id){
+	postJSON( '/api/team/department/'+id, {name: g_depMap[id].name, pid: 'root'},function(err, result){
+		if( !err ){
+			onReload();
+			showInfo( '修改部门成功。');
+		}else{
+			showErrorInfo( "修改部门失败", err.message );
+		}
+	});
 }
 </script>
 {% endblock %}

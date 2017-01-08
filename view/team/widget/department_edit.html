@@ -1,0 +1,59 @@
+<div id="win_edit_department" style="display:none">
+	<div class="easyui-panel" data-options="fit:true">		
+		<form id="ff_win_edit_dep" method="post" class="easyui-form" style="padding:40px 40px;" data-options="" >
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wed_dep_name" name="wed_dep_name" style="width:100%" data-options="label:'名称:',required:true, validType:'length[3,50]',prompt:'3-50字符'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wed_parent_name" name="wed_parent_name" style="width:100%" data-options="label:'部门隶属于:',readonly:true,disabled:true">
+			</div>
+		</form>
+		<div class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wed_submitForm()" style="width:120px">保存</a>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+var wed_department;
+function editDepartment(dep){
+	wed_department = dep;
+	var parent = dep.parent != 'root'? g_depMap[dep.parent]: {id:'root',name:'无'};
+	$('#win_edit_department').window({
+		title: "修改部门",
+		width:400,
+		height:260,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	$('#wed_dep_name').textbox('setValue',dep.name);
+	$('#wed_parent_name').textbox('setValue', parent.id);
+	$('#wed_parent_name').textbox('setText', parent.name);
+	$('#win_edit_department').window( 'open');
+}
+
+function wed_submitForm(){
+	var data = {
+					name: $("#wed_dep_name").textbox('getValue'),
+					pid: $("#wed_parent_name").textbox('getValue')
+				};
+	var properties = {name:'部门名'};
+	var vr = validateJsonObj('createDepartment', data, properties);
+	if( vr === true ){
+		postJSON( '/api/team/department/'+wed_department.id, data, function(err, result){
+				if( !err ){
+					showInfo( '修改部门成功。');
+					$('#win_edit_department').window( 'close');
+					onReload();			
+				}else{
+					showErrorInfo( "修改部门失败", err.message );
+				}
+		});
+	}else{
+		showErrorInfo( '填写错误', vr );
+	}
+}
+</script>
