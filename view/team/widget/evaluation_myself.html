@@ -1,0 +1,78 @@
+<div id="win_evaluation_myself" style="display:none">	
+		<form id="ff_win_edit_evaluation" method="post" class="easyui-form" style="padding:20px 20px;" data-options="fit:true" >
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wem_corework" name="wem_corework" style="width:90%" data-options="label:'核心工作项：',labelWidth:150,required:true, prompt:'填写最重要的一项工作'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wem_output" name="wem_output" style="width:90%;height:60px" data-options="label:'成果小结（重点）：',labelWidth:150,multiline:true,prompt:'用1-2句话量化地描述你的成果，例如：共完成整体计划50%，共分解为15个任务，提交XXX文档'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wem_process" name="wem_process" style="width:90%;height:60px" data-options="label:'过程小结：',labelWidth:150,multiline:true,prompt:'简要量化描述过程是否有序，包含是否有制订计划，分解为多少个任务，xxx%的任务按时完成'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wem_goodjob" name="wem_goodjob" style="width:90%;height:60px" data-options="label:'为自己点赞的地方(重点)：',labelWidth:150,multiline:true,prompt:'填写在整个过程中1-2个突出的并值得表扬的行为。如果放空，表示没有'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wem_badjob" name="wem_badjob" style="width:90%;height:60px" data-options="label:'令自己遗憾的地方：',labelWidth:150,multiline:true,prompt:'填写做得不足的方面。如果放空，表示没有'">
+			</div>
+			<div>
+				<input class="easyui-textbox" id="wem_other" name="wem_other" style="width:90%;height:60px" data-options="label:'其他需要说明：',labelWidth:150,multiline:true,prompt:'选填，如果有其他项相对重要的工作'">
+			</div>
+		</form>
+		<div id="wem_footer" class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wem_submit()" style="width:120px">提交</a>
+		</div>
+</div>
+<script type="text/javascript">
+var wemy_Id = '#win_evaluation_myself';
+var wemy_data;
+function openWin_EditMyEvaluation(data){
+	$(wemy_Id).window({
+		title: "修改月工作评价",
+		width:800,
+		height:550,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	wemy_data = data;
+	var o = data.evaluation;
+
+	$('#wem_corework').textbox('setValue', !!o.corework?o.corework:'' );
+	$('#wem_output').textbox('setValue', !!o.output?o.output:'' );
+	$('#wem_process').textbox('setValue', !!o.process?o.process:'' );
+	$('#wem_goodjob').textbox('setValue', !!o.goodjob?o.goodjob:'' );
+	$('#wem_badjob').textbox('setValue', !!o.badjob?o.badjob:'' );
+	$('#wem_other').textbox('setValue', !!o.other?o.other:'' );
+}
+
+function wem_submit(){
+	var url = "/api/team/evaluation/add";
+	var data = {
+			type:'byuser',
+			date: g_date,
+			corework: $("#wem_corework").textbox('getValue'),
+			output: $("#wem_output").textbox('getValue'),
+			process: $("#wem_process").textbox('getValue'), 
+			goodjob: $("#wem_goodjob").textbox('getValue'),
+			badjob: $("#wem_badjob").textbox('getValue'),
+			other: $("#wem_other").textbox('getValue')
+		};
+	if( !!wemy_data.id ){
+		url = '/api/team/evaluation/' + wemy_data.id + '/edit';
+	}
+	
+	postJSON( url, data, function(err, result){
+			if( !err ){
+				showInfo( '修改月工作评价成功。');
+				$(wemy_Id).window( 'close');
+				ev_onReload();
+			}else{
+				showErrorInfo( "修改月工作评价失败", err.message );
+			}
+	});
+}
+</script>

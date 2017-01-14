@@ -100,3 +100,31 @@ function jumpToURL(url, timeout){
 		}
 	}, timeout );		
 }
+
+function formatDate(second, withTime ){
+	var date = new Date(second);
+	if( withTime ){
+		var dd = date.getDate(),
+			mm = date.getMonth()+1,
+			hour = date.getHours(),
+			minute = date.getMinutes(),
+			second = date.getSeconds();
+		return date.getFullYear() + '-' + (mm>9?mm:'0'+mm) + '-' +  (dd>9?dd:'0'+dd)
+			+ ' ' + (hour>9?hour:'0'+hour) + ':' + (minute>9?minute:'0'+minute) + ':' + (second>9?second:'0'+second);
+	}
+	else{
+		var dd = date.getDate(),
+			mm = date.getMonth()+1;
+		return date.getFullYear() + '-' + (mm>9?mm:'0'+mm) + '-' + (dd>9?dd:'0'+dd);	
+	}
+		
+}
+
+function formatNow(){
+	return formatDate( Date.now());
+}
+
+function formatDateToMonth(date){
+	var mm = date.getMonth()+1;
+	return date.getFullYear() + '-' + (mm>9?mm:'0'+mm);	
+}

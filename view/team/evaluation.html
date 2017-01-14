@@ -1,0 +1,183 @@
+<html>
+<body>
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'west',split:true,href:'/team/structure/tree'" title="成员列表" style="width:200px;"></div>
+		<div data-options="region:'center',title:'月成果评价'" style="padding:5px">
+			<h2 class="uk-text-center" style="margin-bottom:0px"><span id="user_name"></span>的月工作评价</h2>
+			<div class="easyui-panel panel-body panel-body-noheader panel-body-nobottom" style="padding:5px;height:40px;margin-bottom:10px;">
+				<input id="eva_datebox"  label="选择月份:" labelPosition="left" style="width:180px;"></input>
+				<a href="#" id="btn_view_month_work" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="showMemberMonthWork(g_user,g_date)">查看月工作</a>
+				<a href="#" id="btn_edit_my_eva" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="openWin_EditMyEvaluation(g_eval_my)">修改个人自评</a>
+				<a href="#" id="btn_edit_manager_eva" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="openWin_EditEvaluationByManager(g_eval_my)">修改负责人评价</a>
+			</div>
+				<div id="evaluation_myself" class="easyui-panel" title="个人自评" style="height:370px;padding:10px;margin-bottom:10px;">						
+						<div style="margin-bottom:10px">
+							<input class="easyui-textbox" id="emy_corework" name="emy_corework" style="width:90%" data-options="label:'核心工作项：',labelWidth:150,readonly:true">
+						</div>
+						<div style="margin-bottom:10px">
+							<input class="easyui-textbox" id="emy_output" name="emy_output" style="width:90%;height:60px" data-options="label:'成果小结（重点）：',labelWidth:150,multiline:true,readonly:true">
+						</div>
+						<div style="margin-bottom:10px">
+							<input class="easyui-textbox" id="emy_process" name="emy_process" style="width:90%;height:60px" data-options="label:'过程小结：',labelWidth:150,multiline:true,readonly:true">
+						</div>
+						<div style="margin-bottom:10px">
+							<input class="easyui-textbox" id="emy_goodjob" name="emy_goodjob" style="width:90%;height:40px" data-options="label:'为自己点赞的地方(重点)：',labelWidth:150,multiline:true,readonly:true">
+						</div>
+						<div style="margin-bottom:10px">
+							<input class="easyui-textbox" id="emy_badjob" name="emy_badjob" style="width:90%;height:40px" data-options="label:'令自己遗憾的地方：',labelWidth:150,multiline:true,readonly:true">
+						</div>
+						<div>
+							<input class="easyui-textbox" id="emy_other" name="emy_other" style="width:90%;height:40px" data-options="label:'其他需要说明：',labelWidth:150,multiline:true,readonly:true">
+						</div>
+				</div>
+				<div id="evaluation_manager" class="easyui-panel" title="工作负责人评价" style="height:250px;padding:10px;">		
+					<div style="margin-bottom:10px">
+						<input class="easyui-textbox" id="emng_outputeval" name="emng_outputeval" style="width:90%;height:60px" data-options="label:'成果评价（重点）：',labelWidth:150,multiline:true,readonly:true">
+					</div>
+					<div style="margin-bottom:10px">
+						<input class="easyui-textbox" id="emng_goodjobeval" name="emng_goodjobeval" style="width:90%;height:40px" data-options="label:'为他点赞的地方(重点)：',labelWidth:150,multiline:true,readonly:true">
+					</div>
+					<div style="margin-bottom:10px">
+						<input class="easyui-textbox" id="emng_badjobeval" name="emng_badjobeval" style="width:90%;height:40px" data-options="label:'令人遗憾的地方：',labelWidth:150,multiline:true,readonly:true">
+					</div>
+					<div>
+						<input class="easyui-textbox" id="emng_kpi" name="emng_kpi" style="width:90%" data-options="label:'考评分：',labelWidth:150,readonly:true">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% include './widget/member_month_work.html' %}
+	{% include './widget/evaluation_myself.html' %}
+	{% include './widget/evaluation_manager.html' %}
+	<script type="text/javascript">
+	var g_date = new Date(), g_user, g_manager={}, g_eval_my, g_isInited = false;
+
+	/*树型选择新用户时的回调函数*/
+	function onStructureTreeSelectUser(user,node){
+		$('#user_name').text(user.name);
+		g_user = user;
+		ev_loadData( g_user.id, g_date.getFullYear(), g_date.getMonth());
+
+		if( user.id == ENV.user.id ){
+			$('#btn_edit_my_eva').linkbutton('enable');	
+		}else{
+			$('#btn_edit_my_eva').linkbutton('disable');
+		}
+		$('#btn_edit_manager_eva').linkbutton('disable');
+
+		if( !g_isInited ){
+			g_isInited = true;
+			$('#eva_datebox').datetimespinner('enable');
+			$('#btn_view_month_work').linkbutton('enable');
+		}
+	}
+
+	function formatter_DateMonth(date){
+		if (!date){return '';}
+		var y = date.getFullYear();
+		var m = date.getMonth() + 1;
+		return y + '-' + (m<10?('0'+m):m);
+	}
+	function parser_DateMonth(s){
+		if (!s) return new Date();
+		var ss = (s.split('-'));
+		var y = parseInt(ss[0],10);
+		var m = parseInt(ss[1],10);
+		var d = parseInt(ss[2],10);
+		if (!isNaN(y) && !isNaN(m) && !isNaN(d)){
+			return new Date(y,m-1,d);
+		}else if(!isNaN(y) && !isNaN(m)){
+			return new Date(y,m-1);
+		} else {
+			return new Date();
+		}
+	}
+
+	function ev_loadManager(uid){
+		getJSON( '/api/team/member/'+uid, function(err, data ){
+				if(!err){
+					g_manager = data;
+					$('#evaluation_manager').panel('setTitle', '工作负责人评价('+data.name+')');
+				}
+			}
+		);
+	}
+
+	function ev_loadData(uid, y, m){
+		var year = y || g_date.getFullYear(),
+			month =  m === undefined ? g_date.getMonth():m,
+			user_id = uid;
+		getJSON( '/api/team/evaluation', {user:user_id, year: year, month: month}, function(err, data ){
+				if(!err){
+					if( !!data.evaluation ){
+						data.evaluation = JSON.parse(data.evaluation);
+					}else{
+						data.evaluation = {};
+					}
+					g_eval_my = data;
+					var o = data.evaluation;					
+					$('#emy_corework').textbox('setText', !!o.corework?o.corework:'未填写' );
+					$('#emy_output').textbox('setText', !!o.output?o.output:'未填写' );
+					$('#emy_process').textbox('setText', !!o.process?o.process:'未填写' );
+					$('#emy_goodjob').textbox('setText', !!o.goodjob?o.goodjob:'未填写' );
+					$('#emy_badjob').textbox('setText', !!o.badjob?o.badjob:'未填写' );
+					$('#emy_other').textbox('setText', !!o.other?o.other:'未填写' );
+					$('#emng_outputeval').textbox('setText', !!o.outputeval?o.outputeval:'未填写' );
+					$('#emng_goodjobeval').textbox('setText', !!o.goodjobeval?o.goodjobeval:'未填写' );
+					$('#emng_badjobeval').textbox('setText', !!o.badjobeval?o.badjobeval:'未填写' );
+					$('#emng_kpi').textbox('setText', !!o.kpi?o.kpi:'未填写' );
+
+					if( !!data.manager_id ){
+						ev_loadManager( data.manager_id );
+						$('#btn_edit_my_eva').linkbutton('disable');//负责人已填写，自评就不能修改了
+						if( ENV.user.id === data.manager_id){//如果是负责人自已，则可以修改
+							$('#btn_edit_manager_eva').linkbutton('enable');
+						}
+					}else{
+						$('#evaluation_manager').panel('setTitle', '工作负责人评价');
+						if( !!data.id ){//个人已填写，但无负责人，则可填写
+							$('#btn_edit_manager_eva').linkbutton('enable');
+						}		
+					}
+				}
+			}
+		);
+	}
+
+	function evaluation_onInit(){
+		$('#eva_datebox').datetimespinner({
+			formatter:formatter_DateMonth,
+			parser:parser_DateMonth,
+			selections:[[5,7],[0,4]],
+			disabled:true,
+			onSpinUp:nextMonth,
+			onSpinDown:prevMonth,
+			editable:false
+		});
+		
+	}
+	$(evaluation_onInit);
+
+	function ev_onReload(){
+		ev_loadData( g_user.id, g_date.getFullYear(), g_date.getMonth());
+	}
+
+	/****Action***/
+	function prevMonth(){
+		var datestr = $('#eva_datebox').datetimespinner('getValue' );
+		var d = parser_DateMonth(datestr);
+		g_date = d;		
+		$('#eva_datebox').datetimespinner('setValue', formatDate(g_date.getTime()) );
+		ev_loadData( g_user.id, d.getFullYear(), d.getMonth());
+	}
+	function nextMonth(){
+		var datestr = $('#eva_datebox').datetimespinner('getValue' );
+		var d = parser_DateMonth(datestr);
+		g_date = d;
+		$('#eva_datebox').datetimespinner('setValue', formatDate(g_date.getTime()) );
+		ev_loadData( g_user.id, d.getFullYear(), d.getMonth());
+	}
+	</script>
+</body>
+</html>

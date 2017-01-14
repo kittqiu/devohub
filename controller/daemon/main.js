@@ -2,7 +2,8 @@
 
 var 
 	co = require('co'), 
-	schedule = require('node-schedule');
+	schedule = require('node-schedule'),
+	log = require(__base+'lib/logger');
 
 var tasks_at_8 = [
 	//'./job/task_team'

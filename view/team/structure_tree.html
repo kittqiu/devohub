@@ -1,0 +1,116 @@
+<html>
+<body>
+	<ul id="_structure_tree_"></ul>
+	<script type="text/javascript">
+	var ENV = {
+		user: {
+			id: "{{__request__.user.id}}"
+		}
+	};
+	/***** Tree UI *****/
+	var g_departments, g_users, g_treedata;
+	var g_depMap={}, g_userMap={}, g_selectedNodeId='root';
+
+	function isDepartment(id){
+		return g_depMap[id] !== undefined;
+	}
+
+	function _buildDep(data, dep, depNodeMap){
+		var j;
+		var n = {id:dep.id, text:dep.name, children:[]};
+		depNodeMap[dep.id] = n;
+		if( dep.parent == 'root'){
+			for( j = 0; j < data.length; j++ ){
+				var d = g_depMap[data[j].id];
+				if( dep.order < d.order){
+					data.splice(j,0,n);
+					break;
+				}
+			}			
+			if( j == data.length)data.push(n);
+		}else{
+			if( !depNodeMap.hasOwnProperty(dep.parent) ){
+				_buildDep( data, g_depMap[dep.parent],depNodeMap);
+			}
+			var parent = depNodeMap[dep.parent];
+			if( parent.children === undefined ){
+				parent.children = [];
+			}
+			for( j = 0; j < parent.children.length; j++ ){
+				var d = g_depMap[parent.children[j].id];
+				if( dep.order < d.order){
+					parent.children.splice(j,0,n);
+					break;
+				}
+			}			
+			if( j == parent.children.length)parent.children.push(n);
+		}
+	}
+
+	/*构建树结构*/
+	function buildTreeData(){
+		var data = [], i, j,depNodeMap={};
+
+		for( i = 0; i < g_departments.length; i++ ){
+			var dep = g_departments[i];
+			g_depMap[dep.id] = dep;
+		}
+
+		//构建部门的树型结构
+		for( i = 0; i < g_departments.length; i++ ){
+			var dep = g_departments[i];
+			if(depNodeMap.hasOwnProperty(dep.id)){
+				continue;
+			}
+			_buildDep( data, dep, depNodeMap);
+		}
+		//将成员加到部门中
+		for( i = 0; i < g_users.length; i++ ){
+			var u = g_users[i];
+			g_userMap[u.id] = u;
+			var n = {id:u.id, text:u.name, iconCls:'icon-man'};
+			var dep = depNodeMap[u.department];
+			dep.children.unshift( n );
+		}
+		return data;
+	}
+	function loadUsers(){
+		getJSON( '/api/team/department/users', function(err, result) {
+			if( !err ){
+				g_users = result;
+				g_treedata = buildTreeData();
+				$('#_structure_tree_').tree({
+					data:g_treedata,
+					onSelect:function(node){
+						g_selectedNodeId = node.id;
+						if( !isDepartment(node.id)){//只响应用户选择
+							if( onStructureTreeSelectUser !== undefined && $.isFunction(onStructureTreeSelectUser)){
+							onStructureTreeSelectUser( g_userMap[node.id], node );
+							}
+						}				
+					}
+				});
+
+				//默认选择用户自己
+				var node = $('#_structure_tree_').tree('find', ENV.user.id);
+				$('#_structure_tree_').tree('select', node.target);
+			}
+		})	
+	}
+
+	function loadDeparments(){
+		getJSON( '/api/team/department/list', function(err, result) {
+			if( !err ){
+				loadUsers();
+				g_departments = result;
+			}			
+		})	
+	}
+
+	function onInit(){
+		loadDeparments();
+	}
+	$(onInit);
+	</script>
+</body>
+</html>

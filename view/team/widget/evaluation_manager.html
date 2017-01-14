@@ -1,0 +1,64 @@
+<div id="win_evaluation_manager" style="display:none">	
+		<form id="ff_win_edit_evaluation_manager" method="post" class="easyui-form" style="padding:20px 20px;" data-options="fit:true" >
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wemn_outputeval" name="wemn_outputeval" style="width:90%;height:60px" data-options="label:'成果评价（重点）：',labelWidth:150,required:true,multiline:true, prompt:'用1-2句话对关键项工作进行总体评判，应有结果量化级别，例如：差，一般，很好，特别好。'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wemn_goodjobeval" name="wemn_goodjobeval" style="width:90%;height:60px" data-options="label:'为他点赞的地方(重点)：',labelWidth:150,multiline:true,prompt:'填写你所看到的1-2个做得突出且值得表扬的行为。如果为空，表示没有'">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wemn_badjobeval" name="wemn_badjobeval" style="width:90%;height:60px" data-options="label:'令人遗憾的地方：',labelWidth:150,multiline:true,prompt:'填写做得不足的方面。如果为空，表示没有'">
+			</div>
+			<div>
+				<input class="easyui-textbox" id="wemn_kpi" name="wemn_kpi" style="width:90%;" data-options="label:'考评分：',required:true,labelWidth:150,prompt:'选填考核数字0.5-1.2之间，单位间隔为0.1'">
+			</div>
+		</form>
+		<div id="wemn_footer" class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wemn_submit()" style="width:120px">提交</a>
+		</div>
+</div>
+<script type="text/javascript">
+var wemn_Id = '#win_evaluation_manager';
+var wemn_data;
+function openWin_EditEvaluationByManager(data){
+	$(wemn_Id).window({
+		title: "评价成员的月工作",
+		width:680,
+		height:400,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	wemn_data = data;
+	var o = data.evaluation;
+
+	$('#wemn_outputeval').textbox('setValue', !!o.outputeval?o.outputeval:'' );
+	$('#wemn_goodjobeval').textbox('setValue', !!o.goodjobeval?o.goodjobeval:'' );
+	$('#wemn_badjobeval').textbox('setValue', !!o.badjobeval?o.badjobeval:'' );
+	$('#wemn_kpi').textbox('setValue', !!o.kpi?o.kpi:'' );
+}
+
+function wemn_submit(){
+	var url = '/api/team/evaluation/' + wemn_data.id + '/edit';
+	var data = {
+			type:'bymanager',
+			outputeval: $("#wemn_outputeval").textbox('getValue'),
+			goodjobeval: $("#wemn_goodjobeval").textbox('getValue'),
+			badjobeval: $("#wemn_badjobeval").textbox('getValue'), 
+			kpi: $("#wemn_kpi").textbox('getValue')
+		};
+	
+	postJSON( url, data, function(err, result){
+			if( !err ){
+				showInfo( '修改月工作评价成功。');
+				$(wemn_Id).window( 'close');
+				ev_onReload();
+			}else{
+				showErrorInfo( "修改月工作评价失败", err.message );
+			}
+	});
+}
+</script>

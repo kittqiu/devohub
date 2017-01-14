@@ -4,18 +4,19 @@
 {% block inline_header %}
 
 <div class="easyui-panel" style="padding:5px;height:40px">
-	<div class="uk-width-1-1 uk-block uk-flex" style="padding:0px 5px;" >
-		<div class="uk-flex-item-auto">
+	<div style="padding:0px 5px;" >
+		<div style="float:right">
+			<a href="#" id="btn_edit_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="editDepartment(g_depMap[g_selectedNodeId])">修改部门</a>
+			<a href="#" id="btn_set_top_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="setRootDepartment(g_selectedNodeId)">置顶部门</a>
+			<a href="#" id="btn_delete" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-remove'" onclick="onDeleteNode()">删除</a>
+		</div>
+		<div>
 			<a href="#" id="btn_add_root_dep" class="easyui-linkbutton" data-options="disabled:{{ !__perm_Edit__ }},plain:true,iconCls:'icon-add'" onclick="addRootDepartment()">新增顶级部门</a>
 			<a href="#" id="btn_add_sub_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addDepartment(g_depMap[g_selectedNodeId])">新增下级部门</a>
 			<a href="#" id="btn_add_member" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addMember(g_depMap[g_selectedNodeId])">新增成员</a>
 			<a href="#" id="btn_move_up" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="moveDepartment('up')">上移</a>
 		</div>
-		<div class="uk-flex-item-none">
-			<a href="#" id="btn_edit_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="editDepartment(g_depMap[g_selectedNodeId])">修改部门</a>
-			<a href="#" id="btn_set_top_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="setRootDepartment(g_selectedNodeId)">置顶部门</a>
-			<a href="#" id="btn_delete" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-remove'" onclick="onDeleteNode()">删除</a>
-		</div>
+		
 	</div>
 </div>
 {% endblock %}

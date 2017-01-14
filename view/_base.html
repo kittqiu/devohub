@@ -24,6 +24,13 @@
 	<!-- END JAVASCRIPT COMPRESS -->
 	{% endif %}
 	{% block headscript %}<!-- head  -->{% endblock %}
+	<script type="text/javascript">
+		var ENV = {
+			user: {
+				id: "{{__request__.user.id}}"
+			}
+		};
+	</script>
 </head>
 <body>
 	<div id="bodylayout" class="easyui-layout" data-options="fit:true,border:false">
@@ -66,11 +73,9 @@
 				</div>
 			</div>
 		</div>
-		<div id="centerregion" data-options="region:'center',border:false">
-			<div id="main">
-				{% block main %}		
-				{% endblock %}
-			</div>
+		<div id="centerregion" data-options="region:'center',border:false">			
+			{% block main %}		
+			{% endblock %}
 		</div>
 	</div>
 	

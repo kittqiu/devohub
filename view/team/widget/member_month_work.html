@@ -1,0 +1,53 @@
+<div id="win_member_month_work" style="display:none">
+	<div class="easyui-panel" data-options="fit:true" style="padding:10px">		
+		<table id="wmmw_dg" class="easyui-datagrid" 
+            data-options="fit:true">
+	        <thead>
+	            <tr>
+	                <th data-options="field:'time',width:100,formatter:wmmw_format_date">日期</th>
+	                <th data-options="field:'report',width:500,formatter:wmmw_format_report">当日工作</th>
+	                <th data-options="field:'duration',width:50">用时</th>
+	                <th data-options="field:'task_name',width:150">所属任务</th>
+	                <th data-options="field:'project_name',width:150">所属项目</th>
+	            </tr>
+	        </thead>
+    	</table>
+	</div>
+</div>
+<script type="text/javascript">
+var wmmw_Id = '#win_member_month_work';
+
+function showMemberMonthWork(user,date){
+	$(wmmw_Id).window({
+		title: user.name + "的月工作",
+		width:1000,
+		height:600,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	getJSON( '/api/project/u/' + user.id + '/monthwork', {year:date.getFullYear(), month:date.getMonth()}, function(err, data ){
+				if(!err){
+					if( data.length == 0 ){
+						data = [{time: 0, report:'',duration: '', task_name:'',project_name: ''}];//显示一条无记录的提示
+					}
+					$('#wmmw_dg').datagrid('loadData', data );
+				}
+			}
+		);	
+}
+
+function wmmw_format_date(val,row){
+	if( val == 0 )
+		return '无记录';
+	else
+		return formatDate(val);
+}
+
+function wmmw_format_report( val, row){
+	return '<pre class="dv-pre-clear" style="padding:0">'+val+'</pre>';
+}
+</script>

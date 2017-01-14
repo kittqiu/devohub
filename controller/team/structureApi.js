@@ -18,7 +18,7 @@ function* $_render( context, model, view ){
 /**************
 GET METHOD:
 /team/structure/
-/team/structure/department/:id/edit
+/team/structure/tree
 
 /api/team/department/list
 /api/team/department/:id
@@ -42,20 +42,9 @@ module.exports = {
 		base.setHistoryUrl(this);
 	},
 
-	'GET /team/structure/department/:id/edit': function* (id){
-		var dep = yield base.$getDepartment(id),
-			form = {
-				src: '/api/team/department/' + id,
-				name: this.translate('Edit') + this.translate('Department'),
-				submit: this.translate('Save'),
-				action: '/api/team/department/' + id
-			},
-			model = {
-				__id: id,
-				__form: form, 
-				parent: yield base.$getDepartment(dep.parent)
-			};
-		yield $_render( this, model, 'department_form.html');
+	/*返回团队树型页面*/
+	'GET /team/structure/tree': function* (){
+		yield $_render( this, {}, 'structure_tree.html');
 	},
 
 	'GET /api/team/department/freeusers': function* (){
