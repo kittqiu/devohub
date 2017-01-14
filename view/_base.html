@@ -27,7 +27,10 @@
 	<script type="text/javascript">
 		var ENV = {
 			user: {
-				id: "{{__request__.user.id}}"
+				id: "{{__request__.user.id}}",
+				username: "{{__request__.user.username}}",
+				name: "{{__request__.user.name}}",
+				email: "{{__request__.user.email}}"
 			}
 		};
 	</script>
@@ -39,15 +42,26 @@
 			<div id="header">		
 				<ul id="top" class="dv-navbar-nav uk-navbar-nav">
 					<li><a href="/">项目管理系统</a></li>
+					{% if __user__ %}
 					<li><a href="/project/">项目</a></li>
-					<li><a href="/team/">团队</a></li>   
+					<li><a href="/team/">团队</a></li>
+					{% endif %}
 					{% if __user__.username == 'Admin' %}
 					<li><a href="/manage/">manage</a></li>	        
 					{% endif %}
 				</ul>    	   					
 				<ul class="dv-navbar-nav uk-navbar-nav" style="float:right;">
 					{% if __user__ %}
-					<li class="" data-uk-dropdown="{pos:'left-bottom'}" style="padding-top:10px;margin-right:20px;">
+					<li>
+						<a href="#"  class="easyui-menubutton" data-options="menu:'#menu_user_setting',hasDownArrow:false" style="width:120px;padding-top:15px;border-width:0;background:#000"><span id="span_menu_user_name">{{ __request__.user.name }}</span><i class="uk-icon-caret-down"></i></a>
+						<div id="menu_user_setting" style="width:150px;" data-options="onClick:menu_user_Handler">
+							<div id="btn_changePassword" data-options="iconCls:'icon-edit'">{{ _('change password')}}</div>
+							<div id="btn_changeInfo" data-options="iconCls:'icon-edit'">修改个人信息</div>
+							<div class="menu-sep"></div>
+							<div id="btn_logout" data>{{ _('logout')}}</div>
+						</div>
+					</li>
+					<!--li class="" data-uk-dropdown="{pos:'left-bottom'}" style="padding-top:10px;margin-right:20px;">
 							{{ __request__.user.name }}<i class="uk-icon-caret-down"></i>
 							<div class="uk-dropdown uk-dropdown-navbar" style="top: 30px; left: -170px;">
 								<ul class="uk-nav uk-nav-navbar uk-subnav-pill">
@@ -57,12 +71,12 @@
 									<li class="uk-active"><a href="/auth/signout?referer={{__request__.url}}">{{ _('logout')}}</a></li>
 								</ul>
 							</div>
-					</li>
+					</li-->
 					{% else %}
 					<li><a href="/login" class="">{{ _('log in') }}</a></li>
 					<li><a href="/signup" class="">{{ _('sign up') }}</a></li>
 					{% endif %}
-				</ul>		
+				</ul>
 			</div>
 			{% endblock %}
 		</div>
@@ -78,10 +92,23 @@
 			{% endblock %}
 		</div>
 	</div>
-	
+	{% include './system/widget/change_password.html' %}
+	{% include './system/widget/change_user_info.html' %}
 	
 	{% block footerscript %}
 	<script type="text/javascript">
+
+	function menu_user_Handler(item){
+		if( item.id == 'btn_logout'){
+			var url = "/auth/signout?referer={{__request__.url}}";
+			window.location.assign(url);
+		}else if( item.id == 'btn_changePassword'){
+			changeMyPassword();
+		}else if( item.id == 'btn_changeInfo'){
+			changeMyInfo();
+		}
+		
+	}
 
 	var helptxt = null;
 	function showHelp(){

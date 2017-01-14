@@ -16,6 +16,7 @@ function getView(view){
 
 function* $getModel(model){
 	model.__production__ = PRODUCTION;
+	model.__salt__ = config.security.salt;
 	return model;
 }
 

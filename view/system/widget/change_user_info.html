@@ -1,0 +1,60 @@
+<div id="win_change_user_info" style="display:none">
+	<div class="easyui-panel" data-options="fit:true">		
+		<form id="ff_win_change_user_info" method="post" class="easyui-form" style="padding:20px 20px;" data-options="" >
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wcui_username" name="wcui_username" style="width:95%" data-options="label:'用户名:',disabled:true">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="wcui_name" name="wcui_name" style="width:95%" data-options="label:'中文名:',required:true, validType:'length[6,20]',prompt:'1-100字符'">
+			</div>
+			<div>
+				<input class="easyui-textbox" id="wcui_email" name="wcui_email" style="width:95%" data-options="label:'Email:',disabled:true">
+			</div>
+		</form>
+		<div class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wcui_submitForm()" style="width:120px">修改</a>
+		</div>
+	</div>
+</div>
+<script src="/static/js/sha1.min.js"></script>
+<script type="text/javascript">
+function changeMyInfo(){
+	$('#win_change_user_info').window({
+		title: "修改个人信息",
+		width:400,
+		height:240,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	$('#wcui_username').textbox('setValue', ENV.user.username);
+	$('#wcui_name').textbox('setValue', ENV.user.name);
+	$('#wcui_email').textbox('setValue', ENV.user.email);
+}
+
+function wcui_submitForm(){
+	var data = {
+		name: $("#wcui_name").textbox('getValue')
+	};
+	var properties = {name:'中文名'};
+	var vr = validateJsonObj('userEdit', data, properties);
+	if( vr === true ){
+
+		postJSON( '/api/user/'+ENV.user.id, data, function(err, result){
+				if( !err ){
+					showInfo( '个人信息修改成功。');
+					$('#win_change_user_info').window( 'close');
+					$('#span_menu_user_name').text(data.name);
+					ENV.user.name = data.name;
+				}else{
+					showErrorInfo( "个人信息修改失败", err.message );
+				}
+		});
+	}else{
+		showErrorInfo( '填写错误', vr );
+	}
+}
+</script>
