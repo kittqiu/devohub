@@ -128,3 +128,39 @@ function formatDateToMonth(date){
 	var mm = date.getMonth()+1;
 	return date.getFullYear() + '-' + (mm>9?mm:'0'+mm);	
 }
+
+
+/***** 提供给EASY_UI使用 *****/
+function formatter_DateMonth(date){
+	if (!date){return '';}
+	var y = date.getFullYear();
+	var m = date.getMonth() + 1;
+	return y + '-' + (m<10?('0'+m):m);
+}
+function parser_DateMonth(s){
+	if (!s) return new Date();
+	var ss = (s.split('-'));
+	var y = parseInt(ss[0],10);
+	var m = parseInt(ss[1],10);
+	var d = parseInt(ss[2],10);
+	if (!isNaN(y) && !isNaN(m) && !isNaN(d)){
+		return new Date(y,m-1,d);
+	}else if(!isNaN(y) && !isNaN(m)){
+		return new Date(y,m-1);
+	} else {
+		return new Date();
+	}
+}
+function formatter_Date(date){
+	if (!date){return '';}
+	var y = date.getFullYear();
+	var m = date.getMonth() + 1;
+	var dd = date.getDate();
+	return y + '-' + (m<10?('0'+m):m) + '-' + (dd>9?dd:'0'+dd);
+}
+function formatter_second_dg(value,row,index){
+	var date = new Date(value);
+	var dd = date.getDate(),
+		mm = date.getMonth()+1;
+	return date.getFullYear() + '-' + (mm>9?mm:'0'+mm) + '-' + (dd>9?dd:'0'+dd);
+}

@@ -107,7 +107,6 @@ GET:
 /auth/ConfirmEmail/:id
 /auth/ConfirmEmail
 /auth/signout
-/user/changeinfo
 
 /api/user/:id
 
@@ -398,11 +397,6 @@ module.exports = {
 		this.body = {
 			id: user.id
 		};
-	},
-
-	'GET /user/changeinfo': function*(){
-		var model = {  };
-		yield  $render( this, model, 'changeinfo.html' );
 	},
 
 	'GET /api/user/:id': function*(id){

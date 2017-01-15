@@ -24,7 +24,6 @@ GET METHOD:
 /project/p/allHistory?page=xx
 /project/p/myDoing?page=xx
 /project/p/myHistory?page=xx
-/project/p/creation
 /project/p/:id/build
 /project/p/:id/daily
 /project/p/:id/edit
@@ -137,21 +136,6 @@ module.exports = {
 		base.setHistoryUrl(this);
 	},
 
-	'GET /project/p/creation': function*(){
-		yield base.user.$testPerm(this, base.config.PERM_CREATE_PROJECT);
-		var 
-			form = {
-				name: this.translate('Create project'),
-				submit: this.translate('Save'),
-				action: '/api/project/p'
-			},
-			model = {
-				__form: form,
-				users: yield base.user.$list()
-			};
-		yield $_render( this, model, 'project_form.html');
-	},
-
 	'GET /project/p/:id/build': function* (id){
 		var hasPerm = yield base.user.$havePermEditProject(this,id),
 			project = yield base.project.$get(id) || {},
@@ -202,43 +186,39 @@ module.exports = {
 	'GET /api/project/p/allDoing': function*(){
 		var index = this.request.query.page || '1',
 			index = parseInt(index),
-			page_size = base.config.PAGE_SIZE,
-			page = new Page(index, page_size), 
-			rs = yield yield base.project.$listAllOnRun( page_size*(index-1), page_size);
-		page.total = yield base.project.$countAllOnRun();
-		this.body = { page:page, projects: rs};
+			page_size = this.request.query.rows ? parseInt(this.request.query.rows) :base.config.PAGE_SIZE,
+			rs = yield yield base.project.$listAllOnRun( page_size*(index-1), page_size),
+			total = yield base.project.$countAllOnRun();
+		this.body = { total:total, rows: rs};
 	},
 
 	'GET /api/project/p/allHistory': function*(){
 		var	index = this.request.query.page || '1',
 			index = parseInt(index),
-			page_size = base.config.PAGE_SIZE,
-			page = new Page(index, page_size), 
-			rs = yield yield base.project.$listAllOnEnd( page_size*(index-1), page_size);
-		page.total = yield base.project.$countAllOnEnd();
-		this.body = { page:page, projects: rs};
+			page_size = this.request.query.rows ? parseInt(this.request.query.rows) :base.config.PAGE_SIZE,
+			rs = yield yield base.project.$listAllOnEnd( page_size*(index-1), page_size),
+			total = yield base.project.$countAllOnEnd();
+		this.body = { total:total, rows: rs};
 	},
 
 	'GET /api/project/p/myDoing': function*(){
 		var uid = this.request.query.uid || this.request.user.id,
 			index = this.request.query.page || '1',
 			index = parseInt(index),
-			page_size = base.config.PAGE_SIZE,
-			page = new Page(index, page_size), 
-			rs = yield yield base.project.$listUserJoinOnRun( uid, page_size*(index-1), page_size);
-		page.total = yield base.project.$countUserJoinOnRun(uid);
-		this.body = { page:page, projects: rs};
+			page_size = this.request.query.rows ? parseInt(this.request.query.rows) : base.config.PAGE_SIZE,
+			rs = yield yield base.project.$listUserJoinOnRun( uid, page_size*(index-1), page_size),
+			total = yield base.project.$countUserJoinOnRun(uid);
+		this.body = { total:total, rows: rs};
 	},
 
 	'GET /api/project/p/myHistory': function*(){
 		var uid = this.request.query.uid || this.request.user.id,
 			index = this.request.query.page || '1',
 			index = parseInt(index),
-			page_size = base.config.PAGE_SIZE,
-			page = new Page(index, page_size), 
-			rs = yield yield base.project.$listUserJoinOnEnd( uid, page_size*(index-1), page_size);
-		page.total = yield base.project.$countUserJoinOnEnd(uid);
-		this.body = { page:page, projects: rs};
+			page_size = this.request.query.rows ? parseInt(this.request.query.rows) : base.config.PAGE_SIZE,
+			rs = yield yield base.project.$listUserJoinOnEnd( uid, page_size*(index-1), page_size),
+			total = yield base.project.$countUserJoinOnEnd(uid);
+		this.body = { total:total, rows: rs};
 	},
 
 	'GET /api/project/group/:id': function* (id){

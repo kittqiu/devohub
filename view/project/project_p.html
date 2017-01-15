@@ -1,39 +1,61 @@
 {% extends '../_inline_base.html' %}
-
-
 {% block inline_header %}
-
-<div class="easyui-panel" style="padding:5px;height:40px">
-	<div class="uk-width-1-1 uk-block uk-flex" style="padding:0px 5px;" >
-		<div class="uk-flex-item-auto">
-			<span>过滤器：</span>
-			<select id="project-filter" class="easyui-combobox" name="project-filter" style="width:80px;" data-options="">
-				<option value="aa">我参与的</option>
-				<option>所有的</option>
-			</select>
-			<input type="checkbox" style="margin-left:20px;"><span>显示历史项目</span>
-		</div>
-		<div class="uk-flex-item-none">
-			<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'">新建</a>
-		</div>
+<div class="easyui-panel" style="padding:5px;height:40px;">
+	<div style="float:right">
+		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="new_project()">新建</a>
+		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'" onclick="new_project()">修改</a>
 	</div>
-	
-	
+	<div>
+		<span>过滤器：</span>
+		<select id="project-filter" class="easyui-combobox" name="project-filter" style="width:80px;" data-options="onChange:project_onFilterChange">
+			<option value="mine">我参与的</option>
+			<option value="all">所有的</option>
+		</select>
+		<input id="cb_toggle_history" type="checkbox" style="margin-left:20px;" onclick="project_toggle_show_history()"><span>查看历史项目</span>
+	</div>
 </div>
 {% endblock %}
 
 {% block inline_main %}
-<table id="project-dg" class="easyui-datagrid" title="Row Border in DataGrid" style="width:100%;height:250px"
-		data-options="singleSelect:true,fitColumns:true,url:'datagrid_data1.json',method:'get'">
-	<thead>
-		<tr>
-			<th data-options="field:'itemid',width:80">Item ID</th>
-			<th data-options="field:'productid',width:100">Product</th>
-			<th data-options="field:'listprice',width:80,align:'right'">List Price</th>
-			<th data-options="field:'unitcost',width:80,align:'right'">Unit Cost</th>
-			<th data-options="field:'attr1',width:250">Attribute</th>
-			<th data-options="field:'status',width:60,align:'center'">Status</th>
-		</tr>
-	</thead>
-</table>
+<div class="easyui-panel" data-options="fit:true,border:false">
+	<table id="project-dg" class="easyui-datagrid" title="我正参与的项目" 
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get'">
+		<thead>
+			<tr>
+				<th data-options="field:'name',width:160">名称</th>
+				<th data-options="field:'master_name',width:100">负责人</th>
+				<th data-options="field:'start_time',width:80,formatter:formatter_second_dg">开始时间</th>
+				<th data-options="field:'end_time',width:80,formatter:formatter_second_dg">结束时间</th>
+			</tr>
+		</thead>
+	</table>
+</div>
+{% include './widget/new_project.html' %}
+
+<script type="text/javascript">
+var gp_isHistory = false, gp_isMime = true;
+function project_list_reload(){
+	$('#project-dg').datagrid('reload');
+}
+function project_list_reset_url(){
+	if( gp_isHistory ){
+		$('#project-dg').datagrid('getPanel').panel('setTitle', gp_isMime?'我参与的历史项目':'所有已完成的历史项目');
+		$('#project-dg').datagrid('options').url = gp_isMime?'/api/project/p/myHistory':'/api/project/p/allHistory';
+
+	}else{
+		$('#project-dg').datagrid('getPanel').panel('setTitle', gp_isMime?'我正参与的项目':'所有正在执行的项目');
+		$('#project-dg').datagrid('options').url = gp_isMime?'/api/project/p/myDoing':'/api/project/p/allDoing';
+	}
+}
+function project_toggle_show_history(){
+	gp_isHistory = $('#cb_toggle_history').is(':checked');
+	project_list_reset_url();
+	project_list_reload();
+}
+function project_onFilterChange(newValue,oldValue){
+	gp_isMime = newValue === 'mine';
+	project_list_reset_url();
+	project_list_reload();
+}
+</script>
 {% endblock %}

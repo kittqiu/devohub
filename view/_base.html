@@ -18,6 +18,7 @@
 	<!-- BEGIN JAVASCRIPT COMPRESS -->
 	<script src="/static/js/jquery.js"></script>
 	<script src="/static/js/jquery.easyui.min.js"></script>
+	<script src="/static/js/easyui-lang-zh_CN.js"></script>
 	<script src="/static/js/jjv.js"></script>
 	<script src="/static/js/form_schema.js"></script>
 	<script src="/static/js/vendor.js"></script>
@@ -61,17 +62,6 @@
 							<div id="btn_logout" data>{{ _('logout')}}</div>
 						</div>
 					</li>
-					<!--li class="" data-uk-dropdown="{pos:'left-bottom'}" style="padding-top:10px;margin-right:20px;">
-							{{ __request__.user.name }}<i class="uk-icon-caret-down"></i>
-							<div class="uk-dropdown uk-dropdown-navbar" style="top: 30px; left: -170px;">
-								<ul class="uk-nav uk-nav-navbar uk-subnav-pill">
-									<li><a href="/user/changepassword">{{ _('change password')}}</a></li>
-									<li><a href="/user/changeinfo">修改个人信息</a></li>
-									<li class="uk-nav-divider"></li>
-									<li class="uk-active"><a href="/auth/signout?referer={{__request__.url}}">{{ _('logout')}}</a></li>
-								</ul>
-							</div>
-					</li-->
 					{% else %}
 					<li><a href="/login" class="">{{ _('log in') }}</a></li>
 					<li><a href="/signup" class="">{{ _('sign up') }}</a></li>
@@ -136,7 +126,6 @@
 	$(function(){
 		var paths = location.pathname.split('/'),
 			subsys = '/' + paths[1] + '/';
-			console.log(subsys)
 		$("a[href='" + subsys + "']").parent().addClass('uk-active');
 	});
 	</script>
