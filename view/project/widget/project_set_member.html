@@ -1,0 +1,329 @@
+<div id="win_project_set_member" style="display:none">
+	<table id="wpsm_tg" class="easyui-treegrid" 
+		data-options="
+			rownumbers: true,
+			idField: 'id',
+			treeField: 'name',
+			fit:true,
+			toolbar: '#wpsm_tb',
+			onSelect:gpsm_tg_onSelect 
+		">
+		<thead>
+			<tr>
+				<th data-options="field:'name'" width="220">成员列表</th>
+				<th data-options="field:'role'" width="100" >角色</th>
+				<th data-options="field:'responsibility'" width="350">职责</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="wpsm_tb">
+		<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="wpsm_add_group()">新建组</a>
+		<a id="wpsm_btn_edit_group" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true,disabled:true" onclick="wpsm_edit_group()">修改组</a>
+		<a id="wpsm_btn_add_member" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true,disabled:true" onclick="wpsm_add_member()">添加新成员</a>
+		<a id="wpsm_btn_edit_member" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true,disabled:true" onclick="wpsm_edit_member()">修改新成员</a>
+		<a id="wpsm_btn_remove_member" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true,disabled:true" onclick="wpsm_remove_member()">删除成员</a>
+	</div>
+</div>
+<div id="wpsm_new_group" style="display:none">	
+	<div style="margin-bottom:20px;padding:10px 20px">
+		<input class="easyui-textbox" id="wpsm_ng_name" name="wpsm_ng_name" style="width:95%" data-options="label:'名称:',required:true, validType:'length[1,32]',prompt:'1-32字符'">
+	</div>	
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wpsm_ng_submit()" style="width:120px">创建</a>
+	</div>
+</div>
+<div id="wpsm_edit_group" style="display:none">	
+	<div style="margin-bottom:20px;padding:10px 20px">
+		<input class="easyui-textbox" id="wpsm_eg_name" name="wpsm_eg_name" style="width:95%" data-options="label:'名称:',required:true, validType:'length[1,32]',prompt:'1-32字符'">
+	</div>	
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wpsm_eg_submit()" style="width:120px">修改</a>
+	</div>
+</div>
+<div id="wpsm_new_member" style="display:none;padding:10px 20px">
+	<div style="margin-bottom:20px">
+		<input class="easyui-combobox" id="wpsm_nm_member" name="wpsm_nm_member" style="width:95%" data-options="label:'选择新成员:',valueField:'id',textField:'name'">
+	</div>
+	<div style="margin-bottom:20px">
+		<select id="wpsm_nm_member_role" name="wpsm_nm_member_role" class="easyui-combobox" style="width:95%" data-options="label:'参与角色:',required:true,value:'executor'">
+			<option value="leader">组负责人</option>
+			<option value="manager">管理兼执行</option>
+			<option value="executor">执行成员</option>
+		</select>
+	</div>
+	<div style="margin-bottom:20px">
+		<input class="easyui-textbox" id="wpsm_nm_member_responsibility" name="wpsm_nm_member_responsibility" style="width:95%" data-options="label:'职责:',required:true,prompt:'填写职责说明,1-30字符'">
+	</div>
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wpsm_nm_submit()" style="width:120px">添加</a>
+	</div>
+</div>
+<div id="wpsm_edit_member" style="display:none;padding:10px 20px">
+	<div style="margin-bottom:20px">
+		<input class="easyui-textbox" id="wpsm_em_member" name="wpsm_em_member" style="width:95%" data-options="label:'成员:',disabled:true">
+	</div>
+	<div style="margin-bottom:20px">
+		<select id="wpsm_em_member_role" name="wpsm_em_member_role" class="easyui-combobox" style="width:95%" data-options="label:'参与角色:',required:true,value:'executor'">
+			<option value="leader">组负责人</option>
+			<option value="manager">管理兼执行</option>
+			<option value="executor">执行成员</option>
+		</select>
+	</div>
+	<div style="margin-bottom:20px">
+		<input class="easyui-textbox" id="wpsm_em_member_responsibility" name="wpsm_em_member_responsibility" style="width:95%" data-options="label:'职责:',required:true,prompt:'填写职责说明,1-30字符'">
+	</div>
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wpsm_em_submit()" style="width:120px">修改</a>
+	</div>
+</div>
+<script type="text/javascript">
+var gpsm_project = {};
+var gpsm_select_node;
+var gpsm_members_id = [];
+var gpsm_project_details;
+var gpsm_group_map = {};
+var gpsm_member_map = {};
+var gpsm_roleOptions = {
+	leader: '组负责人',
+	manager:'管理兼执行',
+	executor: '执行成员'
+};
+
+function gpsm_loadData(){
+	getJSON( '/api/project/p/'+gpsm_project.id, function(err, result) {
+		if( !err ){
+			var i;
+			var groups = result.groups, members = result.members;
+			var data = [];
+			gpsm_project_details = result;
+			gpsm_group_map = {};
+			gpsm_member_map = {};
+
+			//解析组
+			for( i = 0; i < groups.length; i++ ){
+				var g = groups[i];
+				data.push({id:g.id, name:g.name, role:'', responsibility:'', type:'group'});
+				gpsm_group_map[g.id] = g;
+			}
+			//解析成员
+			gpsm_members_id = [];
+			for( i = 0; i < members.length; i++){
+				var m = members[i];
+				if( m.group_id != 'manager'){
+					data.push({id:m.id, name:m.name,role:gpsm_roleOptions[m.role], responsibility:m.responsibility, type:'user', _parentId:m.group_id});
+				}
+				gpsm_members_id.push( m.user_id );
+				gpsm_member_map[m.id] = m;
+			}
+			$('#wpsm_tg').treegrid('loadData', {"total":data.length,"rows":data});
+		}
+	});	
+}
+
+function edit_project_member(p){
+	gpsm_project = p;
+	$('#win_project_set_member').window({
+		title: "设置项目的团队成员 - " + p.name,
+		width:720,
+		height:480,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	gpsm_loadData();
+}
+
+function gpsm_tg_onSelect(row){
+	gpsm_select_node = row;
+	if( row.type == 'group'){
+		$('#wpsm_btn_edit_group').linkbutton('enable');
+		$('#wpsm_btn_add_member').linkbutton('enable');
+		$('#wpsm_btn_edit_member').linkbutton('disable');
+		$('#wpsm_btn_remove_member').linkbutton('disable');
+	}else{
+		$('#wpsm_btn_edit_group').linkbutton('disable');
+		$('#wpsm_btn_add_member').linkbutton('disable');
+		$('#wpsm_btn_edit_member').linkbutton('enable');
+		$('#wpsm_btn_remove_member').linkbutton('enable');
+	}	
+}
+
+function wpsm_add_group(){
+	$('#wpsm_new_group').window({
+		title: "创建项目成员分组",
+		width:400,
+		height:140,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	$("#wpsm_ng_name").textbox('setValue',"");
+}
+function wpsm_ng_submit(){	
+	var data = {
+		name: $("#wpsm_ng_name").textbox('getValue')
+	};
+
+	var properties = {name:'组名'};
+	var vr = validateJsonObj('projectMemberGroup', data, properties);
+	if( vr === true ){
+		postJSON( '/api/project/p/'+gpsm_project.id + '/group' , data, function(err, result){
+				if( !err ){
+					showInfo( '成员分组创建成功。');
+					$('#wpsm_new_group').window( 'close');
+					gpsm_loadData();
+				}else{
+					showErrorInfo( "创建成员分组失败", err.message );
+				}
+		});
+	}else{
+		showErrorInfo( '填写错误', vr );
+	}
+}
+
+function wpsm_edit_group(){
+	$('#wpsm_edit_group').window({
+		title: "修改项目成员分组",
+		width:400,
+		height:140,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	$('#wpsm_eg_name').textbox('setValue', gpsm_select_node.name );
+}
+function wpsm_eg_submit(){	
+	var data = {
+		name: $("#wpsm_eg_name").textbox('getValue')
+	};
+
+	var properties = {name:'组名'};
+	var vr = validateJsonObj('projectMemberGroup', data, properties);
+	if( vr === true ){
+		postJSON( '/api/project/group/'+gpsm_select_node.id, data, function(err, result){
+				if( !err ){
+					showInfo( '成员分组名修改成功。');
+					$('#wpsm_edit_group').window( 'close');
+					gpsm_loadData();
+				}else{
+					showErrorInfo( "成员分组名修改失败", err.message );
+				}
+		});
+	}else{
+		showErrorInfo( '填写错误', vr );
+	}
+}
+
+function wpsm_add_member(){
+	getJSON( '/api/team/member/list', function(err, data) {
+		if( !err ){
+			var fd = [];
+			for(var i = 0; i < data.length; i++){
+				var d = data[i];
+				if( gpsm_members_id.indexOf(d.id) === -1 && d.name != 'Admin' ){
+					fd.push( d );
+				}
+			}
+			
+			if( fd.length > 0 ){
+				$('#wpsm_new_member').window({
+					title: "添加新成员",
+					width:500,
+					height:240,
+					modal:true,
+					minimizable:false,
+					maximizable:false,
+					collapsible:false,
+					draggable: false,
+					resizable: false
+				});
+				$('#wpsm_nm_member').combobox('loadData', fd );
+				$('#wpsm_nm_member').combobox('setValue', fd[0].id );
+				$('#wpsm_nm_member_role').combobox('setValue', 'executor' );
+				$('#wpsm_nm_member_responsibility').textbox('setValue',"");
+			}else{
+				showInfo('无成员可添加！')
+			}
+		}
+	});
+}
+
+function wpsm_nm_submit(){
+	var data = {
+		name: gpsm_select_node.name,
+		members:[{user_id:$('#wpsm_nm_member').combobox('getValue'),
+			role:$('#wpsm_nm_member_role').combobox('getValue'),
+			responsibility:$('#wpsm_nm_member_responsibility').textbox('getValue')}]
+	};
+
+	postJSON( '/api/project/group/'+gpsm_select_node.id, data, function(err, result){
+			if( !err ){
+				showInfo( '添加新成员成功。');
+				$('#wpsm_new_member').window( 'close');
+				gpsm_loadData();
+			}else{
+				showErrorInfo( "添加新成员失败", err.message );
+			}
+	});
+}
+
+function wpsm_edit_member(){
+	$('#wpsm_edit_member').window({
+		title: "修改成员",
+		width:500,
+		height:240,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	$('#wpsm_em_member').textbox('setValue', gpsm_select_node.name );
+	$('#wpsm_em_member_role').combobox('setValue', gpsm_select_node.role );
+	$('#wpsm_em_member_responsibility').textbox('setValue', gpsm_select_node.responsibility );	
+}
+
+function wpsm_em_submit(){
+	var data = {
+		members:[{id:gpsm_select_node.id,
+			role:$('#wpsm_em_member_role').combobox('getValue'),
+			responsibility:$('#wpsm_em_member_responsibility').textbox('getValue')}]
+	};
+
+	postJSON( '/api/project/group/'+gpsm_select_node._parentId, data, function(err, result){
+			if( !err ){
+				showInfo( '修改成员成功。');
+				$('#wpsm_edit_member').window( 'close');
+				gpsm_loadData();
+			}else{
+				showErrorInfo( "修改成员失败", err.message );
+			}
+	});
+}
+
+function wpsm_remove_member(){
+	$.messager.confirm('注意', '请不要随意删除成员，以保证项目数据的一致性。真的要删除该成员吗?', function(r){
+		if (r){			
+			postJSON( '/api/project/groupmember/'+gpsm_select_node.id+'/delete', function(err, result){
+				if( !err ){
+					showInfo( '删除成员成功。');
+					gpsm_loadData();
+				}else{
+					showErrorInfo( "删除成员失败", err.message );
+				}
+			});
+		}
+	});	
+}
+
+</script>

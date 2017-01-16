@@ -4,6 +4,7 @@
 	<div style="float:right">
 		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="new_project()">新建</a>
 		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'" onclick="onEditProject()">修改</a>
+		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'" onclick="onSetProjectMember()">设置团队</a>
 	</div>
 	<div>
 		<span>过滤器：</span>
@@ -32,6 +33,7 @@
 </div>
 {% include './widget/new_project.html' %}
 {% include './widget/edit_project.html' %}
+{% include './widget/project_set_member.html' %}
 
 <script type="text/javascript">
 /***view pager***/
@@ -63,6 +65,10 @@ function project_onFilterChange(newValue,oldValue){
 function onEditProject(){
 	var row = $('#project-dg').datagrid('getSelected');
 	edit_project(row);
+}
+function onSetProjectMember(){
+	var row = $('#project-dg').datagrid('getSelected');
+	edit_project_member(row);
 }
 
 </script>

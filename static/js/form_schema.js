@@ -67,6 +67,13 @@ var SCHEMA_PROPERTY = {
 		pattern:'^\\s*[^\\s]+.*$',
 		desc: '名称'
 	},
+	NAMESHORT:{
+		type: 'string',
+		minLength: 1,
+		maxLength: 50,
+		pattern:'^\\s*[^\\s]+.*$',
+		desc: '名称'
+	},
 	PASSWORD:{
 		type: 'string',
 		minLength: 6,
@@ -161,6 +168,13 @@ var SCHEMAS = {
 			details:SCHEMA_PROPERTY.EXPLANATION
 		},
 		required:['name', 'start_time', 'end_time', 'master_id', 'details']
+	},
+	projectMemberGroup: {
+		type: 'object',
+		properties: {
+			name: SCHEMA_PROPERTY.NAMESHORT
+		},
+		required:['name']
 	},
 	createTask: {
 		type: 'object',
