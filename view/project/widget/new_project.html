@@ -67,7 +67,7 @@ function wnpj_submitForm(){
 		start_time: parser_DateMonth($('#wnpj_start_time').datebox('getValue' )).getTime(),
 		end_time: parser_DateMonth($('#wnpj_end_time').datebox('getValue' )).getTime(),
 		master_id: $("#wnpj_master").combobox('getValue'),
-		details: $("#wnpj_details").textbox('getValue'),
+		details: $("#wnpj_details").textbox('getValue')
 	};
 
 	var properties = {name:'项目名称',start_time:'计划开始时间', end_time:'计划结束时间', master_id:'项目负责人', details:'项目说明'};

@@ -3,7 +3,7 @@
 <div class="easyui-panel" style="padding:5px;height:40px;">
 	<div style="float:right">
 		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="new_project()">新建</a>
-		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'" onclick="new_project()">修改</a>
+		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'" onclick="onEditProject()">修改</a>
 	</div>
 	<div>
 		<span>过滤器：</span>
@@ -31,8 +31,10 @@
 	</table>
 </div>
 {% include './widget/new_project.html' %}
+{% include './widget/edit_project.html' %}
 
 <script type="text/javascript">
+/***view pager***/
 var gp_isHistory = false, gp_isMime = true;
 function project_list_reload(){
 	$('#project-dg').datagrid('reload');
@@ -57,5 +59,11 @@ function project_onFilterChange(newValue,oldValue){
 	project_list_reset_url();
 	project_list_reload();
 }
+
+function onEditProject(){
+	var row = $('#project-dg').datagrid('getSelected');
+	edit_project(row);
+}
+
 </script>
 {% endblock %}
