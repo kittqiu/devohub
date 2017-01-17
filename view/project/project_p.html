@@ -2,9 +2,9 @@
 {% block inline_header %}
 <div class="easyui-panel" style="padding:5px;height:40px;">
 	<div style="float:right">
-		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'" onclick="new_project()">新建</a>
-		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'" onclick="onEditProject()">修改</a>
-		<a href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'" onclick="onSetProjectMember()">设置团队</a>
+		<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Create }}" onclick="new_project()">新建</a>
+		<a href="#" id="project_btn_edit_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="onEditProject()">修改</a>
+		<a href="#" id="project_btn_set_member" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="onSetProjectMember()">设置团队</a>
 	</div>
 	<div>
 		<span>过滤器：</span>
@@ -20,7 +20,7 @@
 {% block inline_main %}
 <div class="easyui-panel" data-options="fit:true,border:false">
 	<table id="project-dg" class="easyui-datagrid" title="我正参与的项目" 
-			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get'">
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',onSelect:project_dg_onSelect">
 		<thead>
 			<tr>
 				<th data-options="field:'name',width:160">名称</th>
@@ -37,7 +37,10 @@
 
 <script type="text/javascript">
 /***view pager***/
+ENV.user.perm = {};
+ENV.user.perm.PERM_CREATE_PROJECT={{ __perm_Create }};
 var gp_isHistory = false, gp_isMime = true;
+
 function project_list_reload(){
 	$('#project-dg').datagrid('reload');
 }
@@ -60,6 +63,7 @@ function project_onFilterChange(newValue,oldValue){
 	gp_isMime = newValue === 'mine';
 	project_list_reset_url();
 	project_list_reload();
+	project_onResetUI();
 }
 
 function onEditProject(){
@@ -70,6 +74,29 @@ function onSetProjectMember(){
 	var row = $('#project-dg').datagrid('getSelected');
 	edit_project_member(row);
 }
+function project_onResetUI(){
+	$('#project_btn_edit_project').linkbutton('disable');
+	$('#project_btn_set_member').linkbutton('disable');	
+}
+
+function project_dg_onSelect(index,row){
+	if( row.master_id == ENV.user.id ){
+		$('#project_btn_edit_project').linkbutton('enable');
+		$('#project_btn_set_member').linkbutton('enable');
+	}else{
+		$('#project_btn_edit_project').linkbutton('disable');
+		$('#project_btn_set_member').linkbutton('disable');
+	}
+}
+
+function project_onReady(){
+	if( ENV.user.perm.PERM_CREATE_PROJECT ){
+		//$('#project_btn_new_project').linkbutton('enable');
+	}else{
+		//$('#project_btn_new_project').linkbutton('disable');
+	}
+}
+$(project_onReady);
 
 </script>
 {% endblock %}

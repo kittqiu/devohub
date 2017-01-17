@@ -65,7 +65,8 @@ module.exports = {
 	},
 
 	'GET /project/p': function* (){
-		yield $_render( this, {}, 'project_p.html');
+		var canCreate = yield base.user.$havePerm(this, base.config.PERM_CREATE_PROJECT);
+		yield $_render( this, {__perm_Create: canCreate}, 'project_p.html');
 	},
 
 	'GET /project/group/:id/edit': function* (id){

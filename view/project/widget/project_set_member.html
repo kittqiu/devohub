@@ -151,6 +151,13 @@ function gpsm_tg_onSelect(row){
 	}	
 }
 
+function gpsm_reset_ui(){
+	$('#wpsm_btn_edit_group').linkbutton('disable');
+	$('#wpsm_btn_add_member').linkbutton('disable');
+	$('#wpsm_btn_edit_member').linkbutton('disable');
+	$('#wpsm_btn_remove_member').linkbutton('disable');
+}
+
 function wpsm_add_group(){
 	$('#wpsm_new_group').window({
 		title: "创建项目成员分组",
@@ -316,8 +323,9 @@ function wpsm_remove_member(){
 		if (r){			
 			postJSON( '/api/project/groupmember/'+gpsm_select_node.id+'/delete', function(err, result){
 				if( !err ){
-					showInfo( '删除成员成功。');
+					showInfo( '删除成员成功。');					
 					gpsm_loadData();
+					gpsm_reset_ui();
 				}else{
 					showErrorInfo( "删除成员失败", err.message );
 				}
