@@ -20,7 +20,7 @@
 {% block inline_main %}
 <div class="easyui-panel" data-options="fit:true,border:false">
 	<table id="project-dg" class="easyui-datagrid" title="我正参与的项目" 
-			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',onSelect:project_dg_onSelect">
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',onSelect:project_dg_onSelect,onDblClickRow:project_dg_onDblClick">
 		<thead>
 			<tr>
 				<th data-options="field:'name',width:160">名称</th>
@@ -89,12 +89,20 @@ function project_dg_onSelect(index,row){
 	}
 }
 
-function project_onReady(){
-	if( ENV.user.perm.PERM_CREATE_PROJECT ){
-		//$('#project_btn_new_project').linkbutton('enable');
-	}else{
-		//$('#project_btn_new_project').linkbutton('disable');
+function project_dg_onDblClick(index,row){
+	var title = '项目：'+ row.name;
+	var tab = $('#tt').tabs('getTab', title );
+	if( !tab ){
+		$('#tt').tabs('add',{
+			title: '项目：'+ row.name,
+			href: '/project/p/'+ row.id +'/build',
+			closable: true
+		});
 	}
+}
+
+function project_onReady(){
+	
 }
 $(project_onReady);
 

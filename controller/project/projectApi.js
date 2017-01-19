@@ -18,8 +18,6 @@ function* $_render( context, model, view ){
 /******
 GET METHOD:
 /project
-/project/group/:id/edit
-/project/history
 /project/p/:id/build
 /project/p/:id/daily
 /project/p/:id/edit
@@ -69,40 +67,14 @@ module.exports = {
 		yield $_render( this, {__perm_Create: canCreate}, 'project_p.html');
 	},
 
-	'GET /project/group/:id/edit': function* (id){
-		var group = yield base.modelGroup.$find(id),
-			model = {
-				__id: id,
-				__project_id: group.project_id,
-				__form: {
-					src: '/api/project/group/' + id,
-					action: '/api/project/group/' + id,
-					submit: this.translate('Save')
-			},
-			roles: base.project.roleOptions(),
-			users: yield base.project.$listOptionalUsers(group.project_id||'none')
-		};
-		yield $_render( this, model, 'p/group_form.html');
-	},
-
-	'GET /project/history': function*(){
-		var canCreate = yield base.user.$havePerm(this, base.config.PERM_CREATE_PROJECT),
-			model = {
-				projects: yield base.project.$listUserJoinOnEnd( this.request.user.id ),
-				__perm_Create: canCreate
-			};
-		yield $_render( this, model, 'project_index.html');
-		base.setHistoryUrl(this);
-	},
-
 	'GET /project/p/:id/build': function* (id){
 		var hasPerm = yield base.user.$havePermEditProject(this,id),
 			project = yield base.project.$get(id) || {},
 			model = {
 				__id: id,
-				__mode__: hasPerm?'rw':'ro'
+				__perm_Edit_: hasPerm
 			};
-		yield $_render( this, model, 'p/project_build.html');
+		yield $_render( this, model, 'project_build.html');
 	},
 	'GET /project/p/:id/daily': function* (id){
 		yield $_render( this, {__id:id}, 'p/project_daily.html');
@@ -197,6 +169,12 @@ module.exports = {
 		this.body = yield base.project.$listTaskRelies(id);
 	},
 
+	/**
+	 * 得到项目信息，不仅包含项目model对象，而且包含
+	 * master_name、creator_name、groups(成员组)和members(成员列表)
+	 * groups是数组，每个元素是Group的model对象
+	 * members是数组，每个元素不仅包含Member的model对象，还包含用户名name
+	 */
 	'GET /api/project/p/:id': function* (id){
 		this.body = yield base.project.$get(id) || [];
 	},
@@ -334,6 +312,7 @@ module.exports = {
 			parent: pid,
 			name: data.name,
 			automode: data.automode,
+			milestone: data.milestone,
 			order: order,
 			plan_duration: data.duration,
 			plan_start_time: data.start_time,
@@ -403,7 +382,7 @@ module.exports = {
 
 		yield db.op.$update_record( r, data, 
 			['name', 'executor_id', 'manager_id', 'plan_duration', 'plan_start_time', 'plan_end_time', 
-				'automode', 'difficulty', 'details'])
+				'automode', 'milestone','difficulty', 'details'])
 		yield base.task.$setRelies(id, r.project_id,relies);
 		yield base.task.$sendNoticeEmail( id, "您的任务信息发生了变更---来自项目管理系统" );			
 

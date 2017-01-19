@@ -1,0 +1,144 @@
+<div id="win_new_task" style="display:none">
+	<div class="easyui-panel" data-options="fit:true" style="padding:20px 20px">
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="wntsk_name" name="wntsk_name" style="width:95%" data-options="label:'任务名称:',required:true,validType:'length[3,50]',prompt:'3-50字符'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="wntsk_parent" name="wntsk_parent" style="width:95%" data-options="label:'父任务:',disabled:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-combobox" id="wntsk_executor" name="wntsk_executor" style="width:95%" data-options="label:'负责人:',required:true,valueField:'user_id',textField:'name',">
+		</div>
+		<div style="margin-bottom:20px">
+			<select id="wntsk_milestone" name="wntsk_milestone" class="easyui-combobox" style="width:95%" data-options="label:'是否为里程碑:',required:true,value:'0'">
+				<option value="0">否，任务时间可能受到依赖任务自动调整</option>
+				<option value="1">是，任务时间只能手工修改</option>
+			</select>
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-numberspinner" id="wntsk_duration" name="wntsk_duration" style="width:95%" data-options="label:'计划工时:',required:true,min:0,max:240,value:0">
+		</div>
+		<div style="margin-bottom:20px">
+			<select id="wntsk_automode" name="wntsk_automode" class="easyui-combobox" style="width:95%" data-options="label:'计划模式:',required:true,value:'1',onChange:wntsk_onChangeAutoMode">
+				<option value="0">自动</option>
+				<option value="1">手动</option>
+			</select>
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wntsk_start_time" name="wntsk_start_time" style="width:95%" data-options="label:'计划开始时间:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wntsk_end_time" name="wntsk_end_time" style="width:95%" data-options="label:'计划结束时间:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="wntsk_rely_to" name="wntsk_rely_to" style="width:95%" data-options="label:'前置任务:',required:true,promt:'填写标识，用逗号分隔'">
+		</div>
+		<div style="margin-bottom:20px">
+			<select id="wntsk_difficulty" name="wntsk_difficulty" class="easyui-combobox" style="width:95%" data-options="label:'任务难度:',required:true,value:'1'">
+				<option value="0">简单</option>
+				<option value="1">普通</option>
+				<option value="2">困难</option>
+				<option value="99">无需执行</option>
+			</select>
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="wntsk_details" name="wntsk_details" style="width:95%;height:60px" data-options="label:'任务说明:',multiline:true,prompt:'如未明确，可暂时不填。在需求确认阶段再修改。'">
+		</div>
+		<div class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wntsk_submit()" style="width:120px">创建</a>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+function new_task(){
+	$('#wntsk_name').textbox('setValue', '');
+	$('#wntsk_parent').textbox('setValue', '无');
+	$('#wntsk_start_time').datebox({
+		formatter:formatter_Date,
+		parser:parser_DateMonth,
+		editable:false
+	});
+	$('#wntsk_start_time').datebox('setValue', formatNow());
+	$('#wntsk_end_time').datebox({
+		formatter:formatter_Date,
+		parser:parser_DateMonth,
+		editable:false
+	});
+	$('#wntsk_end_time').datebox('setValue', formatNow());
+	$('#wntsk_executor').combobox('loadData', gpb_project.members);
+	$('#wntsk_executor').combobox('select', ENV.user.id);
+	$("#wntsk_duration").numberspinner('setValue', 0);
+	$('#wntsk_automode').combobox('select', "1");
+	$('#wntsk_milestone').combobox('select', "0");	
+	$('#wntsk_difficulty').combobox('select', "1");
+	$('#wntsk_details').textbox('setValue', '');
+	$('#wntsk_rely_to').textbox('disable');
+	
+
+	$('#win_new_task').window({
+		title: "创建新任务",
+		width:600,
+		height:640,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+}
+
+function wntsk_onChangeAutoMode(newValue,oldValue){
+	if( newValue == '0' ){
+		$('#wntsk_start_time').datebox('disable');
+		$('#wntsk_end_time').datebox('disable');
+		$('#wntsk_rely_to').textbox('enable');
+	}else{
+		$('#wntsk_start_time').datebox('enable');
+		$('#wntsk_end_time').datebox('enable');
+		$('#wntsk_rely_to').textbox('disable');
+	}
+}
+
+function wntsk_submit(){
+	var rs = [];
+	var data = {
+			name: $("#wntsk_name").textbox('getValue'),
+			parent:'root',
+			executor: $("#wntsk_executor").combobox('getValue'),
+			duration: parseInt($("#wntsk_duration").numberspinner('getValue')),
+			start_time: parser_DateMonth($('#wntsk_start_time').datebox('getValue' )).getTime(),
+			automode: parseInt($("#wntsk_automode").combobox('getValue')),
+			end_time: parser_DateMonth($('#wntsk_end_time').datebox('getValue' )).getTime(),
+			difficulty: parseInt($("#wntsk_difficulty").combobox('getValue')),
+			details: $("#wntsk_details").textbox('getValue'),
+			milestone:parseInt($("#wntsk_milestone").combobox('getValue')),
+			relyTo: rs
+		};
+	console.log(data);
+	
+	var properties = {name:'任务名称',parent:'父任务',start_time:'计划开始时间', end_time:'计划结束时间', executor:'任务负责人', duration:'计划工时', automode:'计划模式',difficulty:'任务难度', details:'任务说明',relyTo:'前置任务',milestone:'置为里程碑'};
+	var vr = validateJsonObj('createTask', data, properties);
+	if( vr === true ){
+		if(data.start_time > data.end_time){
+			showErrorInfo( "计划结束时间应该要晚于开始时间！" );
+			return;
+		}
+		if( data.automode == 0 && rs.length===0){
+			showErrorInfo( "计划模式为自动时，需要设置依赖任务！" );
+		}
+
+		postJSON( '/api/project/p/'+gpb_project_id+'/task', data, function(err, result){
+				if( !err ){
+					showInfo( '任务创建成功。');
+					$('#win_new_task').window( 'close');
+					gpb_appendTask(result.id);
+				}else{
+					showErrorInfo( "任务创建失败", err.message );
+				}
+		});
+	}else{
+		showErrorInfo( '填写错误', vr );
+	}
+}
+</script>

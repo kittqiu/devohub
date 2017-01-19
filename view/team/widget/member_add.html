@@ -10,9 +10,7 @@
 var g_memberDepId;
 function addMember(department){
 	getJSON( '/api/team/department/freeusers', function(err, fusers){
-		if(err){
-			fatal(err);
-		}else{
+		if(!err){
 			$('#wam_user_list').datalist('loadData', fusers);
 			if( fusers.length === 0 ){
 				showInfo('所有用户都已分配完毕，没有可供选择的用户！');

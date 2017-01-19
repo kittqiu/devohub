@@ -7,7 +7,8 @@ module.exports = function(warp){
 		base.column_id('project_id', {index:true}),
 		base.column_id('parent', {defaultValue:'root'}),
 		base.column_varchar_100('name'),
-		base.column_bigint('automode', {defaultValue:1}), 
+		base.column_bigint('automode', {defaultValue:1}),
+		base.column_bigint('milestone', {defaultValue:0}), 
 		//base.column_bigint('number', {defaultValue:0}),//no in project
 		base.column_bigint('order', {defaultValue:0}),//order in the same 
 		//base.column_varchar_100('rely_to', {defaultValue:''}),//number list, e. 1, 5

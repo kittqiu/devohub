@@ -1,0 +1,138 @@
+<div class="easyui-layout" data-options="fit:true,border:false">
+		<div data-options="region:'north',border:false" style="padding:5px">
+			<div class="easyui-panel" style="padding:5px;height:40px;">
+				<div style="float:right">
+					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">上移</a>
+					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">下移</a>
+					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">置为项级</a>
+				</div>
+				<div>
+					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Edit_ }}" onclick="new_task()">顶级任务</a>
+					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Edit_ }}" onclick="new_task()">下属任务</a>
+				</div>				
+			</div>
+		</div>
+		<div data-options="region:'center',border:false" style="padding:5px" >
+			<table id="pb_tg" class="easyui-treegrid" style="width:1040px"
+				data-options="
+					rownumbers: true,
+					idField: 'id',
+					treeField: 'name',
+					fit:true,
+					onSelect:gpb_tg_onSelect 
+				">
+				<thead>
+					<tr>
+						<th data-options="field:'name',formatter:pb_formatter_name" width="400">任务名称</th>
+						<th data-options="field:'status',formatter:pb_formatter_status" width="80">状态</th>
+						<th data-options="field:'executor_id',formatter:pb_formatter_executor" width="80" >负责人</th>						
+						<th data-options="field:'planmode',formatter:pb_formatter_automode" width="80">计划模式</th>
+						<th data-options="field:'rely',formatter:pb_formatter_rely" width="80" >前置任务</th>
+						<th data-options="field:'plan_start_time',formatter:formatter_second_dg" width="80">计划开始时间</th>
+						<th data-options="field:'plan_end_time',formatter:formatter_second_dg" width="80">计划结束时间</th>
+						<th data-options="field:'start_time',formatter:pb_formatter_start_time" width="80">实际开始时间</th>
+						<th data-options="field:'end_time',formatter:pb_formatter_end_time" width="80">实际结束时间</th>
+						<th data-options="field:'plan_duration'" width="80">计划工时</th>
+						<th data-options="field:'duration'" width="80">实际工时</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
+{% include './widget/new_task.html' %}
+
+<script type="text/javascript">
+var gpb_project_id = "{{ __id }}";
+var gpb_project;
+var gpb_tg_id = 'pb_tg';
+var gpb_userMap = {};
+var gpb_taskStatusMap = {
+	created: '待需求确认',
+	clear: '待接收执行',
+	doing: '正在执行',
+	pending: '已暂停执行',
+	cancel: '已取消', 
+	commit: '已提交',
+	completed: '已完成'
+};
+
+$(function(){
+	getJSON( '/api/project/p/'+gpb_project_id, function(err, data){
+		if(!err){
+			gpb_project = data;
+			var ms = data.members;
+			for(var i = 0; i < ms.length; i++ ){
+				var m = ms[i];
+				gpb_userMap[m.user_id] = m;
+			}
+		}
+		getJSON( '/api/project/p/'+gpb_project_id + '/tasklist', function(err, data){
+			if(!err){
+				$('#'+gpb_tg_id).treegrid('loadData', {"total":data.length,"rows":data});
+			}
+		});
+	});
+	
+});
+function pb_formatter_name(value,row,index){
+	return row.milestone === 1 ? '<span style="color:#e28327">' + value + '</span>' : value;
+}
+function pb_formatter_executor(value,row,index){	
+	return gpb_userMap[value].name;
+}
+var pb_status_colors = {
+	doing:'#2d7091',
+	commit: '#2d7091',
+	completed: '#659f13'
+};
+function pb_formatter_status(value,row,index){
+	if( pb_status_colors.hasOwnProperty(value)){
+		return '<span style="color:'+ pb_status_colors[value] +'">' + gpb_taskStatusMap[value] + '</span>';
+	}else{
+		return gpb_taskStatusMap[value];
+	}
+}
+function pb_formatter_duration(value,row,index){
+	if( row.status === 'completed' ){
+		return row.duration;
+	}else{
+		return row.plan_duration;
+	}
+}
+function pb_formatter_rely(value,row,index){
+	return value;
+}
+function pb_formatter_automode(value,row,index){
+	return row.automode === 0 ? '自动' : '手动';
+}
+function pb_formatter_start_time(value,row,index){
+	return row.start_time === 0 ? '无' : formatter_second_dg(row.start_time);
+}
+function pb_formatter_end_time(value,row,index){
+	return row.end_time === 0 ? '无' : formatter_second_dg(row.end_time);
+}
+
+
+function gpb_tg_onSelect(row){
+	gpsm_select_node = row;
+	if( row.type == 'group'){
+		$('#wpsm_btn_edit_group').linkbutton('enable');
+		$('#wpsm_btn_add_member').linkbutton('enable');
+		$('#wpsm_btn_edit_member').linkbutton('disable');
+		$('#wpsm_btn_remove_member').linkbutton('disable');
+	}else{
+		$('#wpsm_btn_edit_group').linkbutton('disable');
+		$('#wpsm_btn_add_member').linkbutton('disable');
+		$('#wpsm_btn_edit_member').linkbutton('enable');
+		$('#wpsm_btn_remove_member').linkbutton('enable');
+	}	
+}
+
+
+function gpb_appendTask(){
+
+}
+
+</script>
