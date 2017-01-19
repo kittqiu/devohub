@@ -50,9 +50,13 @@
 	</div>
 </div>
 <script type="text/javascript">
-function new_task(){
+var wntsk_pid ;
+function new_task(parentId){
+	wntsk_pid = parentId;
+	var parent = gpb_taskMap[parentId];
+
 	$('#wntsk_name').textbox('setValue', '');
-	$('#wntsk_parent').textbox('setValue', '无');
+	$('#wntsk_parent').textbox('setValue', parent.name);
 	$('#wntsk_start_time').datebox({
 		formatter:formatter_Date,
 		parser:parser_DateMonth,
@@ -104,7 +108,7 @@ function wntsk_submit(){
 	var rs = [];
 	var data = {
 			name: $("#wntsk_name").textbox('getValue'),
-			parent:'root',
+			parent:wntsk_pid,
 			executor: $("#wntsk_executor").combobox('getValue'),
 			duration: parseInt($("#wntsk_duration").numberspinner('getValue')),
 			start_time: parser_DateMonth($('#wntsk_start_time').datebox('getValue' )).getTime(),

@@ -1,25 +1,30 @@
+<script src="/static/js/treegrid-dnd.js"></script>
 <div class="easyui-layout" data-options="fit:true,border:false">
 		<div data-options="region:'north',border:false" style="padding:5px">
 			<div class="easyui-panel" style="padding:5px;height:40px;">
 				<div style="float:right">
-					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">上移</a>
-					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">下移</a>
-					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">置为项级</a>
+					<!--a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">上移</a>
+					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">下移</a-->
+					<a href="#" id="pb_btn_set_parent_as_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_set_task_parent_root()">置为项级</a>
 				</div>
 				<div>
-					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Edit_ }}" onclick="new_task()">顶级任务</a>
-					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Edit_ }}" onclick="new_task()">下属任务</a>
+					<a href="#" id="project_btn_new_task_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Edit_ }}" onclick="new_task('root')">顶级任务</a>
+					<a href="#" id="project_btn_new_subtask" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:true" onclick="new_task(gpb_select_node.id)">下属任务</a>
 				</div>				
 			</div>
 		</div>
 		<div data-options="region:'center',border:false" style="padding:5px" >
-			<table id="pb_tg" class="easyui-treegrid" style="width:1040px"
+			<table id="pb_tg" class="easyui-treegrid" 
 				data-options="
 					rownumbers: true,
 					idField: 'id',
 					treeField: 'name',
 					fit:true,
-					onSelect:gpb_tg_onSelect 
+					onSelect:pb_tg_onSelect,
+					onLoadSuccess: function(row){
+						$(this).treegrid('enableDnd', row?row.id:null);
+					},
+					onDrop:pb_tg_onDrop
 				">
 				<thead>
 					<tr>
@@ -45,9 +50,10 @@
 
 <script type="text/javascript">
 var gpb_project_id = "{{ __id }}";
-var gpb_project;
-var gpb_tg_id = 'pb_tg';
+var gpb_project, gpb_select_node, gpb_tasks;
+var gpb_tg_id = '#pb_tg';
 var gpb_userMap = {};
+var gpb_taskMap = {'root':{id:'root',name:'无'}};
 var gpb_taskStatusMap = {
 	created: '待需求确认',
 	clear: '待接收执行',
@@ -57,8 +63,9 @@ var gpb_taskStatusMap = {
 	commit: '已提交',
 	completed: '已完成'
 };
+var gpb_has_perm_edit = {{ __perm_Edit_ }};
 
-$(function(){
+$(function(){	
 	getJSON( '/api/project/p/'+gpb_project_id, function(err, data){
 		if(!err){
 			gpb_project = data;
@@ -70,10 +77,19 @@ $(function(){
 		}
 		getJSON( '/api/project/p/'+gpb_project_id + '/tasklist', function(err, data){
 			if(!err){
-				$('#'+gpb_tg_id).treegrid('loadData', {"total":data.length,"rows":data});
+				for( var i = 0; i < data.length; i++ ){
+					var t = data[i];
+					gpb_taskMap[t.id] = t;
+					if( t.parent != 'root'){
+						t['_parentId'] = t.parent;
+					}
+				}
+				gpb_tasks = data;
+				$(gpb_tg_id).treegrid('loadData', {"total":data.length,"rows":data});
 			}
 		});
 	});
+
 	
 });
 function pb_formatter_name(value,row,index){
@@ -102,7 +118,7 @@ function pb_formatter_duration(value,row,index){
 	}
 }
 function pb_formatter_rely(value,row,index){
-	return value;
+	return '无';
 }
 function pb_formatter_automode(value,row,index){
 	return row.automode === 0 ? '自动' : '手动';
@@ -115,24 +131,59 @@ function pb_formatter_end_time(value,row,index){
 }
 
 
-function gpb_tg_onSelect(row){
-	gpsm_select_node = row;
-	if( row.type == 'group'){
-		$('#wpsm_btn_edit_group').linkbutton('enable');
-		$('#wpsm_btn_add_member').linkbutton('enable');
-		$('#wpsm_btn_edit_member').linkbutton('disable');
-		$('#wpsm_btn_remove_member').linkbutton('disable');
-	}else{
-		$('#wpsm_btn_edit_group').linkbutton('disable');
-		$('#wpsm_btn_add_member').linkbutton('disable');
-		$('#wpsm_btn_edit_member').linkbutton('enable');
-		$('#wpsm_btn_remove_member').linkbutton('enable');
-	}	
+function pb_tg_onSelect(row){
+	gpb_select_node = row;
+	if( gpb_has_perm_edit ){
+		$('#project_btn_new_subtask').linkbutton('enable');
+		if( row.hasOwnProperty('_parentId')){
+			$('#pb_btn_set_parent_as_root').linkbutton('enable');
+		}else{
+			$('#pb_btn_set_parent_as_root').linkbutton('disable');
+		}			
+	}
 }
 
+function pb_tg_onDrop(targetRow,sourceRow,point){
+	postJSON( '/api/project/task/'+sourceRow.id+'/move', {action:'update_parent',parent:targetRow.id}, function(err, result){
+		if( !err ){
+			showInfo( '更新任务成功。');
+			//$(gpb_tg_id).treegrid('select',gpb_select_node.id);
+		}else{
+			showErrorInfo( "更新任务失败", err.message );
+		}
+	});
+}
 
-function gpb_appendTask(){
+function pb_set_task_parent_root(){	
+	postJSON( '/api/project/task/'+gpb_select_node.id+'/move', {action:'update_parent',parent:'root'}, function(err, result){
+			if( !err ){
+				showInfo( '更新任务成功。');
+				var t = $(gpb_tg_id).treegrid('pop',gpb_select_node.id);
+				$(gpb_tg_id).treegrid('append',{
+					data:[t]
+				});
+				$(gpb_tg_id).treegrid('select',gpb_select_node.id);
+				$(gpb_tg_id).treegrid('enableDnd',gpb_select_node.id);
+			}else{
+				showErrorInfo( "更新任务失败", err.message );
+			}
+	});
+}	
 
+function gpb_appendTask(tid){
+	getJSON( '/api/project/task/'+tid, function(err, task){
+		if(!err){
+			gpb_taskMap[task.id] = task;
+			gpb_tasks.push( task );
+			var ts = [];
+			ts.push( task );
+
+			$(gpb_tg_id).treegrid('append',{
+				parent: task.parent=='root'?'':task.parent, 
+				data: ts
+			});
+		}
+	});
 }
 
 </script>
