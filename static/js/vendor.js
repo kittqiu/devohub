@@ -101,6 +101,8 @@ function jumpToURL(url, timeout){
 	}, timeout );		
 }
 
+var one_day_time = 86400000;
+
 function formatDate(second, withTime ){
 	var date = new Date(second);
 	if( withTime ){
@@ -116,9 +118,9 @@ function formatDate(second, withTime ){
 		var dd = date.getDate(),
 			mm = date.getMonth()+1;
 		return date.getFullYear() + '-' + (mm>9?mm:'0'+mm) + '-' + (dd>9?dd:'0'+dd);	
-	}
-		
+	}		
 }
+
 
 function formatNow(){
 	return formatDate( Date.now());

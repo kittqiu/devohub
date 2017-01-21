@@ -7,10 +7,10 @@
 			<input class="easyui-textbox" id="wntsk_parent" name="wntsk_parent" style="width:95%" data-options="label:'父任务:',disabled:true">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="easyui-combobox" id="wntsk_executor" name="wntsk_executor" style="width:95%" data-options="label:'负责人:',required:true,valueField:'user_id',textField:'name',">
+			<input class="easyui-combobox" id="wntsk_executor" name="wntsk_executor" style="width:95%" data-options="label:'执行人:',required:true,valueField:'user_id',textField:'name',">
 		</div>
 		<div style="margin-bottom:20px">
-			<select id="wntsk_milestone" name="wntsk_milestone" class="easyui-combobox" style="width:95%" data-options="label:'是否为里程碑:',required:true,value:'0'">
+			<select id="wntsk_milestone" name="wntsk_milestone" class="easyui-combobox" style="width:95%" data-options="label:'是否为里程碑:',required:true,value:'0',onChange:wntsk_onChangeMilestone">
 				<option value="0">否，任务时间可能受到依赖任务自动调整</option>
 				<option value="1">是，任务时间只能手工修改</option>
 			</select>
@@ -31,7 +31,7 @@
 			<input class="" id="wntsk_end_time" name="wntsk_end_time" style="width:95%" data-options="label:'计划结束时间:',required:true">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="easyui-textbox" id="wntsk_rely_to" name="wntsk_rely_to" style="width:95%" data-options="label:'前置任务:',required:true,promt:'填写标识，用逗号分隔'">
+			<input class="easyui-textbox" id="wntsk_rely_to" name="wntsk_rely_to" style="width:95%" data-options="label:'前置任务:',required:true,prompt:'填写标识，用英文逗号分隔，例如1,2'">
 		</div>
 		<div style="margin-bottom:20px">
 			<select id="wntsk_difficulty" name="wntsk_difficulty" class="easyui-combobox" style="width:95%" data-options="label:'任务难度:',required:true,value:'1'">
@@ -92,6 +92,15 @@ function new_task(parentId){
 	});
 }
 
+function wntsk_onChangeMilestone(newValue,oldValue){
+	if( newValue == '1' ){//里程碑只能是手动模式
+		$('#wntsk_automode').combobox('select', "1");
+		$('#wntsk_automode').combobox('disable');
+	}else{
+		$('#wntsk_automode').combobox('enable');
+	}
+}
+
 function wntsk_onChangeAutoMode(newValue,oldValue){
 	if( newValue == '0' ){
 		$('#wntsk_start_time').datebox('disable');
@@ -104,22 +113,59 @@ function wntsk_onChangeAutoMode(newValue,oldValue){
 	}
 }
 
+function wntsk_calcRelyTask(){
+	var rely = $("#wntsk_rely_to").textbox('getValue');
+	var duration = parseInt($("#wntsk_duration").numberspinner('getValue'));
+	var rs = rely.split(',');
+	var ro = {start_time:0,end_time:0, rs:[]};
+	for( var i = 0; i < rs.length; i++ ){
+		var r = parseInt(rs[i]);
+		if( r ){
+			if( r > gpb_sortTasks.length || r < 1 ){
+				return false;
+			}else{
+				var task = gpb_sortTasks[r];
+				var start_time = task.plan_end_time + one_day_time;
+				var end_time = start_time + (Math.ceil(duration/8)-1)*one_day_time;
+				ro.start_time = Math.max(ro.start_time, start_time);
+				ro.end_time = Math.max(ro.end_time, end_time);
+				ro.rs.push( task.id );
+			}
+		}
+	}
+	return ro;
+}
+
 function wntsk_submit(){
 	var rs = [];
+	var automode = parseInt($("#wntsk_automode").combobox('getValue'));
+	var start_time = parser_DateMonth($('#wntsk_start_time').datebox('getValue' )).getTime();
+	var end_time = parser_DateMonth($('#wntsk_end_time').datebox('getValue' )).getTime();
+	if( automode == 0 ){
+		var o = wntsk_calcRelyTask();
+		if( !o ){
+			showErrorInfo( "依赖的任务填写有误！可能不是有效的标识。" );
+			return;
+		}else{
+			start_time = o.start_time;
+			end_time = o.end_time;
+			rs = o.rs;
+		}
+	}
+	
 	var data = {
 			name: $("#wntsk_name").textbox('getValue'),
 			parent:wntsk_pid,
 			executor: $("#wntsk_executor").combobox('getValue'),
 			duration: parseInt($("#wntsk_duration").numberspinner('getValue')),
-			start_time: parser_DateMonth($('#wntsk_start_time').datebox('getValue' )).getTime(),
-			automode: parseInt($("#wntsk_automode").combobox('getValue')),
-			end_time: parser_DateMonth($('#wntsk_end_time').datebox('getValue' )).getTime(),
+			start_time: start_time,
+			automode: automode,
+			end_time: end_time,
 			difficulty: parseInt($("#wntsk_difficulty").combobox('getValue')),
 			details: $("#wntsk_details").textbox('getValue'),
 			milestone:parseInt($("#wntsk_milestone").combobox('getValue')),
 			relyTo: rs
 		};
-	console.log(data);
 	
 	var properties = {name:'任务名称',parent:'父任务',start_time:'计划开始时间', end_time:'计划结束时间', executor:'任务负责人', duration:'计划工时', automode:'计划模式',difficulty:'任务难度', details:'任务说明',relyTo:'前置任务',milestone:'置为里程碑'};
 	var vr = validateJsonObj('createTask', data, properties);
@@ -130,6 +176,7 @@ function wntsk_submit(){
 		}
 		if( data.automode == 0 && rs.length===0){
 			showErrorInfo( "计划模式为自动时，需要设置依赖任务！" );
+			return;
 		}
 
 		postJSON( '/api/project/p/'+gpb_project_id+'/task', data, function(err, result){

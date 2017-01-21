@@ -382,9 +382,11 @@ module.exports = {
 
 		yield db.op.$update_record( r, data, 
 			['name', 'executor_id', 'manager_id', 'plan_duration', 'plan_start_time', 'plan_end_time', 
-				'automode', 'milestone','difficulty', 'details'])
-		yield base.task.$setRelies(id, r.project_id,relies);
-		yield base.task.$sendNoticeEmail( id, "您的任务信息发生了变更---来自项目管理系统" );			
+				'automode', 'milestone','difficulty', 'details']);
+		if( data.relyTo !== undefined ){
+			yield base.task.$setRelies(id, r.project_id,relies);
+		}		
+		//yield base.task.$sendNoticeEmail( id, "您的任务信息发生了变更---来自项目管理系统" );			
 
 		this.body = {
 			result: 'ok',

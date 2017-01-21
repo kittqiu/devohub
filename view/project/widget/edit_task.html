@@ -1,0 +1,199 @@
+<div id="win_edit_task" style="display:none">
+	<div class="easyui-panel" data-options="fit:true" style="padding:20px 20px">
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="wetsk_name" name="wetsk_name" style="width:95%" data-options="label:'任务名称:',required:true,validType:'length[3,50]',prompt:'3-50字符'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="wetsk_parent" name="wetsk_parent" style="width:95%" data-options="label:'父任务:',disabled:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-combobox" id="wetsk_executor" name="wetsk_executor" style="width:95%" data-options="label:'执行人:',required:true,valueField:'user_id',textField:'name',">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-combobox" id="wetsk_manager" name="wetsk_manager" style="width:95%" data-options="label:'工作审核人:',required:true,valueField:'user_id',textField:'name',">
+		</div>
+		<div style="margin-bottom:20px">
+			<select id="wetsk_milestone" name="wetsk_milestone" class="easyui-combobox" style="width:95%" data-options="label:'是否为里程碑:',required:true,value:'0',onChange:wetsk_onChangeMilestone">
+				<option value="0">否，任务时间可能受到依赖任务自动调整</option>
+				<option value="1">是，任务时间只能手工修改</option>
+			</select>
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-numberspinner" id="wetsk_duration" name="wetsk_duration" style="width:95%" data-options="label:'计划工时:',required:true,min:0,max:240,value:0">
+		</div>
+		<div style="margin-bottom:20px">
+			<select id="wetsk_automode" name="wetsk_automode" class="easyui-combobox" style="width:95%" data-options="label:'计划模式:',required:true,value:'1',onChange:wetsk_onChangeAutoMode">
+				<option value="0">自动</option>
+				<option value="1">手动</option>
+			</select>
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wetsk_plan_start_time" name="wetsk_plan_start_time" style="width:95%" data-options="label:'计划开始时间:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wetsk_plan_end_time" name="wetsk_plan_end_time" style="width:95%" data-options="label:'计划结束时间:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="wetsk_rely_to" name="wetsk_rely_to" style="width:95%" data-options="label:'前置任务:',required:true,prompt:'填写标识，用英文逗号分隔，例如1,2'">
+		</div>
+		<div style="margin-bottom:20px">
+			<select id="wetsk_difficulty" name="wetsk_difficulty" class="easyui-combobox" style="width:95%" data-options="label:'任务难度:',required:true,value:'1'">
+				<option value="0">简单</option>
+				<option value="1">普通</option>
+				<option value="2">困难</option>
+				<option value="99">无需执行</option>
+			</select>
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="wetsk_details" name="wetsk_details" style="width:95%;height:60px" data-options="label:'任务说明:',multiline:true,prompt:'如未明确，可暂时不填。在需求确认阶段再修改。'">
+		</div>
+		<div class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wetsk_submit()" style="width:120px">修改</a>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+var wetsk_taskId ;
+function pb_edit_task(taskId){
+	wetsk_taskId = taskId;
+	var task = gpb_taskMap[taskId];
+
+	$('#wetsk_name').textbox('setValue', task.name );
+	$('#wetsk_parent').textbox('setValue', task.parent == 'root'?'无':gpb_taskMap[task.parent].name);
+	$('#wetsk_plan_start_time').datebox({
+		formatter:formatter_Date,
+		parser:parser_DateMonth,
+		editable:false
+	});
+	$('#wetsk_plan_start_time').datebox('setValue', formatDate(task.plan_start_time));
+	$('#wetsk_plan_end_time').datebox({
+		formatter:formatter_Date,
+		parser:parser_DateMonth,
+		editable:false
+	});
+	$('#wetsk_plan_end_time').datebox('setValue', formatDate(task.plan_end_time));
+	$('#wetsk_executor').combobox('loadData', gpb_project.members);
+	$('#wetsk_executor').combobox('select', task.executor_id);
+	$('#wetsk_manager').combobox('loadData', gpb_project.members);
+	$('#wetsk_manager').combobox('select', task.manager_id);
+	$("#wetsk_duration").numberspinner('setValue', task.plan_duration);
+	$('#wetsk_automode').combobox('select', task.automode);
+	$('#wetsk_milestone').combobox('select', task.milestone);	
+	$('#wetsk_difficulty').combobox('select', task.difficulty);
+	$('#wetsk_details').textbox('setValue', task.details);
+	$('#wetsk_rely_to').textbox(task.automode==1?'disable':'enable');
+	
+
+	$('#win_edit_task').window({
+		title: "修改任务",
+		width:600,
+		height:670,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+}
+
+function wetsk_onChangeMilestone(newValue,oldValue){
+	if( newValue == '1' ){//里程碑只能是手动模式
+		$('#wetsk_automode').combobox('select', "1");
+		$('#wetsk_automode').combobox('disable');
+	}else{
+		$('#wetsk_automode').combobox('enable');
+	}
+}
+
+function wetsk_onChangeAutoMode(newValue,oldValue){
+	if( newValue == '0' ){
+		$('#wetsk_plan_start_time').datebox('disable');
+		$('#wetsk_plan_end_time').datebox('disable');
+		$('#wetsk_rely_to').textbox('enable');
+	}else{
+		$('#wetsk_plan_start_time').datebox('enable');
+		$('#wetsk_plan_end_time').datebox('enable');
+		$('#wetsk_rely_to').textbox('disable');
+	}
+}
+
+function wetsk_calcRelyTask(){
+	var rely = $("#wetsk_rely_to").textbox('getValue');
+	var duration = parseInt($("#wetsk_duration").numberspinner('getValue'));
+	var rs = rely.split(',');
+	var ro = {start_time:0,end_time:0, rs:[]};
+	for( var i = 0; i < rs.length; i++ ){
+		var r = parseInt(rs[i]);
+		if( r ){
+			if( r > gpb_sortTasks.length || r < 1 ){
+				return false;
+			}else{
+				var task = gpb_sortTasks[r];
+				var start_time = task.plan_end_time + one_day_time;
+				var end_time = start_time + (Math.ceil(duration/8)-1)*one_day_time;
+				ro.start_time = Math.max(ro.start_time, start_time);
+				ro.end_time = Math.max(ro.end_time, end_time);
+				ro.rs.push( task.id );
+			}
+		}
+	}
+	return ro;
+}
+
+function wetsk_submit(){
+	var rs = [];
+	var automode = parseInt($("#wetsk_automode").combobox('getValue'));
+	var start_time = parser_DateMonth($('#wetsk_plan_start_time').datebox('getValue' )).getTime();
+	var end_time = parser_DateMonth($('#wetsk_plan_end_time').datebox('getValue' )).getTime();
+	if( automode == 0 ){
+		var o = wetsk_calcRelyTask();
+		if( !o ){
+			showErrorInfo( "依赖的任务填写有误！可能不是有效的标识，或者有循环依赖情况发生。" );
+			return;
+		}else{
+			start_time = o.start_time;
+			end_time = o.end_time;
+			rs = o.rs;
+		}
+	}
+	
+	var data = {
+			name: $("#wetsk_name").textbox('getValue'),
+			executor_id: $("#wetsk_executor").combobox('getValue'),
+			manager_id: $("#wetsk_manager").combobox('getValue'),
+			plan_duration: parseInt($("#wetsk_duration").numberspinner('getValue')),
+			plan_start_time: start_time,
+			automode: automode,
+			plan_end_time: end_time,
+			difficulty: parseInt($("#wetsk_difficulty").combobox('getValue')),
+			details: $("#wetsk_details").textbox('getValue'),
+			milestone:parseInt($("#wetsk_milestone").combobox('getValue')),
+			relyTo: rs
+		};
+	
+	var properties = {name:'任务名称',plan_start_time:'计划开始时间', plan_end_time:'计划结束时间', executor_id:'任务执行人', manager_id:'任务审核人',plan_duration:'计划工时', automode:'计划模式',difficulty:'任务难度', details:'任务说明',relyTo:'前置任务',milestone:'置为里程碑'};
+	var vr = validateJsonObj('editTask', data, properties);
+	if( vr === true ){
+		if(data.plan_start_time > data.plan_end_time){
+			showErrorInfo( "计划结束时间应该要晚于开始时间！" );
+			return;
+		}
+		if( data.automode == 0 && rs.length===0){
+			showErrorInfo( "计划模式为自动时，需要设置依赖任务！" );
+		}
+
+		postJSON( '/api/project/task/'+wetsk_taskId, data, function(err, result){
+				if( !err ){
+					showInfo( '任务修改成功。');
+					$('#win_edit_task').window( 'close');
+					gpb_updateTask(wetsk_taskId);
+				}else{
+					showErrorInfo( "任务修改失败", err.message );
+				}
+		});
+	}else{
+		showErrorInfo( '填写错误', vr );
+	}
+}
+</script>

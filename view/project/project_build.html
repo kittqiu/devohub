@@ -3,14 +3,16 @@
 		<div data-options="region:'north',border:false" style="padding:5px">
 			<div class="easyui-panel" style="padding:5px;height:40px;">
 				<div style="float:right">
-					<!--a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">上移</a>
-					<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:{{ !__perm_Edit_ }}" onclick="new_project()">下移</a-->
+					<a href="#" id="pb_btn_task_up" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_task_move('up')">上移</a>
+					<a href="#" id="pb_btn_task_down" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_task_move('down')">下移</a>
 					<a href="#" id="pb_btn_set_parent_as_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_set_task_parent_root()">置为项级</a>
 				</div>
 				<div>
 					<a href="#" id="project_btn_new_task_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Edit_ }}" onclick="new_task('root')">顶级任务</a>
+					<a href="#" id="project_btn_new_brother_task" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:true" onclick="new_task(gpb_select_node.parent)">同级任务</a>
 					<a href="#" id="project_btn_new_subtask" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:true" onclick="new_task(gpb_select_node.id)">下属任务</a>
-				</div>				
+					<a href="#" id="pb_btn_edit_task" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_edit_task(gpb_select_node.id)">修改任务</a>
+				</div>
 			</div>
 		</div>
 		<div data-options="region:'center',border:false" style="padding:5px" >
@@ -21,16 +23,16 @@
 					treeField: 'name',
 					fit:true,
 					onSelect:pb_tg_onSelect,
-					onLoadSuccess: function(row){
-						$(this).treegrid('enableDnd', row?row.id:null);
-					},
-					onDrop:pb_tg_onDrop
+					onLoadSuccess: pb_tg_onLoadSuccess,
+					onDrop:pb_tg_onDrop,
+					onDragOver:pb_tg_onDragOver
 				">
 				<thead>
 					<tr>
 						<th data-options="field:'name',formatter:pb_formatter_name" width="400">任务名称</th>
 						<th data-options="field:'status',formatter:pb_formatter_status" width="80">状态</th>
-						<th data-options="field:'executor_id',formatter:pb_formatter_executor" width="80" >负责人</th>						
+						<th data-options="field:'executor_id',formatter:pb_formatter_executor" width="80" >负责人</th>
+						<th data-options="field:'manager_id',formatter:pb_formatter_manager" width="80" >工作审核人</th>
 						<th data-options="field:'planmode',formatter:pb_formatter_automode" width="80">计划模式</th>
 						<th data-options="field:'rely',formatter:pb_formatter_rely" width="80" >前置任务</th>
 						<th data-options="field:'plan_start_time',formatter:formatter_second_dg" width="80">计划开始时间</th>
@@ -39,6 +41,7 @@
 						<th data-options="field:'end_time',formatter:pb_formatter_end_time" width="80">实际结束时间</th>
 						<th data-options="field:'plan_duration'" width="80">计划工时</th>
 						<th data-options="field:'duration'" width="80">实际工时</th>
+						<th data-options="field:'difficulty',formatter:pb_formatter_difficulty" width="80">难度</th>
 					</tr>
 				</thead>
 			</table>
@@ -47,13 +50,15 @@
 </div>
 
 {% include './widget/new_task.html' %}
+{% include './widget/edit_task.html' %}
 
 <script type="text/javascript">
 var gpb_project_id = "{{ __id }}";
 var gpb_project, gpb_select_node, gpb_tasks;
 var gpb_tg_id = '#pb_tg';
 var gpb_userMap = {};
-var gpb_taskMap = {'root':{id:'root',name:'无'}};
+var gpb_taskMap = {'root':{id:'root',name:'无', mark:0}};
+var gpb_sortTasks = [];
 var gpb_taskStatusMap = {
 	created: '待需求确认',
 	clear: '待接收执行',
@@ -63,7 +68,55 @@ var gpb_taskStatusMap = {
 	commit: '已提交',
 	completed: '已完成'
 };
+var gpb_difficultyMap = {
+	0: '简单',
+	1: '普通',
+	2: '困难',
+	99: '无需执行'
+};
 var gpb_has_perm_edit = {{ __perm_Edit_ }};
+
+function pb_init_btn_status(){
+	$('#project_btn_new_subtask').linkbutton( 'disable');//里程碑任务必须是叶结点
+	$('#project_btn_new_brother_task').linkbutton( 'disable');
+	$('#pb_btn_edit_task').linkbutton('disable');
+	$('#pb_btn_task_up').linkbutton('disable');
+	$('#pb_btn_task_down').linkbutton('disable');
+	$('#pb_btn_set_parent_as_root').linkbutton('disable');
+}
+
+function pb_load_rely_data(){
+	getJSON( '/api/project/p/'+ gpb_project_id +'/taskrelylist', function(err, data ){
+			if(!err){
+				data.forEach( function(r, index) {
+					var task = gpb_taskMap[r.task_id];
+					if( task ){
+						task.rely.push(r.rely_task_id);
+					}
+				});
+				$(gpb_tg_id).treegrid('loadData', {"total":gpb_tasks.length,"rows":gpb_tasks});
+			}
+		}
+	);
+}
+
+function pb_load_data(){
+	getJSON( '/api/project/p/'+gpb_project_id + '/tasklist', function(err, data){
+		if(!err){
+			for( var i = 0; i < data.length; i++ ){
+				var t = data[i];
+				gpb_taskMap[t.id] = t;
+				if( t.parent != 'root'){
+					t['_parentId'] = t.parent;
+				}
+				t.rely = [];
+			}
+			gpb_tasks = data;
+			pb_load_rely_data();
+		}
+	});	
+	pb_init_btn_status();
+}
 
 $(function(){	
 	getJSON( '/api/project/p/'+gpb_project_id, function(err, data){
@@ -75,27 +128,17 @@ $(function(){
 				gpb_userMap[m.user_id] = m;
 			}
 		}
-		getJSON( '/api/project/p/'+gpb_project_id + '/tasklist', function(err, data){
-			if(!err){
-				for( var i = 0; i < data.length; i++ ){
-					var t = data[i];
-					gpb_taskMap[t.id] = t;
-					if( t.parent != 'root'){
-						t['_parentId'] = t.parent;
-					}
-				}
-				gpb_tasks = data;
-				$(gpb_tg_id).treegrid('loadData', {"total":data.length,"rows":data});
-			}
-		});
-	});
-
-	
+		pb_load_data();
+	});	
 });
+
 function pb_formatter_name(value,row,index){
 	return row.milestone === 1 ? '<span style="color:#e28327">' + value + '</span>' : value;
 }
 function pb_formatter_executor(value,row,index){	
+	return gpb_userMap[value].name;
+}
+function pb_formatter_manager(value,row,index){	
 	return gpb_userMap[value].name;
 }
 var pb_status_colors = {
@@ -110,15 +153,25 @@ function pb_formatter_status(value,row,index){
 		return gpb_taskStatusMap[value];
 	}
 }
-function pb_formatter_duration(value,row,index){
+function pb_formatter_duration(value,row){
 	if( row.status === 'completed' ){
 		return row.duration;
 	}else{
 		return row.plan_duration;
 	}
 }
-function pb_formatter_rely(value,row,index){
-	return '无';
+function pb_formatter_rely(value,row){
+	if( value.length == 0 ){
+		return '无';
+	}else{
+		if( gpb_sortTasks.length > 0 ){
+			var rs = [];
+			for(var i = 0; i < value.length; i++){
+				rs.push(gpb_taskMap[value[i]].mark);
+			}
+			return rs.toString();
+		}
+	}	
 }
 function pb_formatter_automode(value,row,index){
 	return row.automode === 0 ? '自动' : '手动';
@@ -129,17 +182,61 @@ function pb_formatter_start_time(value,row,index){
 function pb_formatter_end_time(value,row,index){
 	return row.end_time === 0 ? '无' : formatter_second_dg(row.end_time);
 }
+function pb_formatter_difficulty(value,row,index){
+	return gpb_difficultyMap[value];
+}
+function pb_showRelyTask(){
+	for( var i = 1; i < gpb_sortTasks.length; i++ ){
+		var t = gpb_sortTasks[i];
+		if( t.rely.length > 0 ){
+			$(gpb_tg_id).treegrid('refresh',t.id);
+		}
+	}
+}
+function pb_makeMark(data,index){
+	for(var i = 0; i < data.length; i++ ){
+		index++;
+		var o = data[i];
+		var t = gpb_taskMap[o.id];
+		t.mark = index;
+		gpb_sortTasks[index] = t;		
 
+		if( o.hasOwnProperty('children')){
+			index = pb_makeMark(o.children, index);
+		}
+	}
+	return index;
+}
 
+function pb_tg_resetMark(){
+	var data = $(gpb_tg_id).treegrid('getData');
+	gpb_sortTasks = [];
+	pb_makeMark(data, 0);
+	pb_showRelyTask();
+}
+function pb_tg_onLoadSuccess(row){
+	$(this).treegrid('enableDnd', row?row.id:null);
+	pb_tg_resetMark();
+	if( !!gpb_select_node ){
+		$(gpb_tg_id).treegrid('select', gpb_select_node.id);
+	}
+}
 function pb_tg_onSelect(row){
 	gpb_select_node = row;
 	if( gpb_has_perm_edit ){
-		$('#project_btn_new_subtask').linkbutton('enable');
+		$('#project_btn_new_subtask').linkbutton( row.milestone ?'disable': 'enable');//里程碑任务必须是叶结点
+		$('#project_btn_new_brother_task').linkbutton( row.milestone ?'disable': 'enable');
+		
+		$('#pb_btn_edit_task').linkbutton('enable');
+		$('#pb_btn_task_up').linkbutton('enable');
+		$('#pb_btn_task_down').linkbutton('enable');
+		
 		if( row.hasOwnProperty('_parentId')){
 			$('#pb_btn_set_parent_as_root').linkbutton('enable');
 		}else{
 			$('#pb_btn_set_parent_as_root').linkbutton('disable');
-		}			
+		}
+		
 	}
 }
 
@@ -147,13 +244,36 @@ function pb_tg_onDrop(targetRow,sourceRow,point){
 	postJSON( '/api/project/task/'+sourceRow.id+'/move', {action:'update_parent',parent:targetRow.id}, function(err, result){
 		if( !err ){
 			showInfo( '更新任务成功。');
-			//$(gpb_tg_id).treegrid('select',gpb_select_node.id);
+			var t = gpb_taskMap[sourceRow.id];
+			var orgParentId = t.parent;
+			
+			t.parent = targetRow.id;
+			pb_tg_resetMark();
+			gpb_resetParentTaskTime(t);//更新新任务列表祖先节点的时间点
+			if( orgParentId != 'root' ){
+				var orgParent = gpb_taskMap[t.parent];
+				gpb_resetTaskTime(orgParent);
+				gpb_resetParentTaskTime(orgParent);
+			}			
 		}else{
 			showErrorInfo( "更新任务失败", err.message );
 		}
 	});
 }
+function pb_tg_onDragOver(targetRow, sourceRow){
+	return !targetRow.milestone;
+}
 
+function pb_task_move(action){
+	postJSON( '/api/project/task/'+gpb_select_node.id+'/move', {action:action}, function(err, result){
+			if( !err ){
+				showInfo( '更新任务成功。数据将重新加载。');
+				pb_load_data();
+			}else{
+				showErrorInfo( "更新任务失败", err.message );
+			}
+	});
+}
 function pb_set_task_parent_root(){	
 	postJSON( '/api/project/task/'+gpb_select_node.id+'/move', {action:'update_parent',parent:'root'}, function(err, result){
 			if( !err ){
@@ -168,7 +288,63 @@ function pb_set_task_parent_root(){
 				showErrorInfo( "更新任务失败", err.message );
 			}
 	});
-}	
+}
+
+
+function gpb_resetTaskTime(task){
+	var children = $(gpb_tg_id).treegrid("getChildren");
+	if( children && children.length > 0 ){
+		var start_time = children[0].plan_start_time;
+		var end_time = children[0].plan_end_time;
+		for( var i = 1; i < children.length; i++ ){
+			var c = children[i];
+			if( start_time > c.plan_start_time ){
+				start_time = c.plan_start_time;
+			}
+			if( end_time < c.plan_end_time ){
+				end_time = c.plan_end_time;
+			}
+		}
+		if( start_time != task.plan_start_time || end_time != task.plan_end_time ){
+			var updatedata = [{id:task.id,plan_start_time:start_time, plan_end_time:end_time}];
+			postJSON( '/api/project/tasklist/updateplan', updatedata, function(err, result){
+			if( err ){
+				showErrorInfo( "自动更新父任务时间失败", err.message );
+			}
+		});
+		}
+	}	
+}
+
+function gpb_resetParentTaskTime(task){
+	var updatedata = [];
+	while( task.parent != 'root'){
+		var parent = gpb_taskMap[task.parent];
+		var isChanged = false;
+		if( parent.plan_start_time > task.plan_start_time){
+			parent.plan_start_time = task.plan_start_time;
+			isChanged = true;
+		}
+		if( parent.plan_end_time < task.plan_end_time){
+			parent.plan_end_time = task.plan_end_time;
+			isChanged = true;
+		}
+		if( isChanged ){
+			updatedata.push({id:parent.id,plan_start_time:parent.plan_start_time, plan_end_time:parent.plan_end_time});
+			$(gpb_tg_id).treegrid('refresh',parent.id);
+		}
+		task = parent;
+	}
+	if( updatedata.length > 0 ){
+		postJSON( '/api/project/tasklist/updateplan', updatedata, function(err, result){
+			if( !err ){
+				//showInfo( '更新任务成功。');
+			}else{
+				showErrorInfo( "自动更新父任务时间失败", err.message );
+			}
+		});
+	}
+}
 
 function gpb_appendTask(tid){
 	getJSON( '/api/project/task/'+tid, function(err, task){
@@ -182,6 +358,32 @@ function gpb_appendTask(tid){
 				parent: task.parent=='root'?'':task.parent, 
 				data: ts
 			});
+			$(gpb_tg_id).treegrid('enableDnd',tid);
+			pb_tg_resetMark();
+			gpb_resetParentTaskTime(task);
+		}
+	});
+}
+
+function gpb_updateTask(tid){
+	getJSON( '/api/project/task/'+tid, function(err, data){
+		if(!err){
+			var task = gpb_taskMap[tid];
+			task.name = data.name;
+			task.plan_start_time = data.plan_start_time;
+			task.plan_end_time = data.plan_end_time;
+			task.automode = data.automode;
+			task.plan_duration = data.plan_duration;
+			task.difficulty = data.difficulty;
+			task.details = data.details;
+			task.executor_id = data.executor_id;
+			task.manager_id = data.manager_id;
+			task.executor_name = gpb_userMap[data.executor_id].name;
+			task.manager_name = gpb_userMap[data.manager_id].name;
+			task.rely = data.rely;
+			task.milestone = data.milestone;
+			$(gpb_tg_id).treegrid('refresh',task.id);
+			gpb_resetParentTaskTime(task);
 		}
 	});
 }
