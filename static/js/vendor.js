@@ -166,3 +166,33 @@ function formatter_second_dg(value,row,index){
 		mm = date.getMonth()+1;
 	return date.getFullYear() + '-' + (mm>9?mm:'0'+mm) + '-' + (dd>9?dd:'0'+dd);
 }
+function formatter_pre( value, row, index){
+	return '<pre class="dv-pre-clear" style="font-size:12px">' + value + '</pre>';
+}
+function formatter_percent(value, row, index){
+	return value + '%';
+}
+
+
+/*********project subsystem*************/
+var gpb_taskStatusMap = {
+	created: '待需求确认',
+	clear: '待接收执行',
+	doing: '正在执行',
+	pending: '已暂停执行',
+	cancel: '已取消', 
+	commit: '已提交',
+	completed: '已完成'
+};
+var pb_status_colors = {
+	doing:'#2d7091',
+	commit: '#2d7091',
+	completed: '#659f13'
+};
+function pb_formatter_status(value,row,index){
+	if( pb_status_colors.hasOwnProperty(value)){
+		return '<span style="color:'+ pb_status_colors[value] +'">' + gpb_taskStatusMap[value] + '</span>';
+	}else{
+		return gpb_taskStatusMap[value];
+	}
+}

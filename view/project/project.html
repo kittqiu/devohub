@@ -3,14 +3,42 @@
 
 {% block main %}
 <div id="tt" class="easyui-tabs" data-options="fit:true,border:false">
-		<div title="项目" style="padding:10px" data-options="href:'/project/p'">		   
-		</div>
-		<div title="任务" style="padding:10px">
-			<ul class="easyui-tree" data-options="url:'tree_data1.json',method:'get',animate:true"></ul>
-		</div>
-		<div title="日志" data-options="" style="padding:10px">
-			
-		</div>
+	<div title="项目" style="padding:10px" data-options="href:'/project/p'">		   
 	</div>
+	<div title="任务" style="padding:10px" data-options="href:'/project/task'">
+	</div>
+	<div title="日志" data-options="" style="padding:10px">
+		
+	</div>
+</div>
+<script type="text/javascript">
+var project_opened;
+function view_project(p){
+	if( !!project_opened ){
+		$('#tt').tabs('close', '项目：'+ project_opened.name );
+		project_opened = null;
+	}
+
+	var title = '项目：'+ p.name;
+	project_opened = p;
+	$('#tt').tabs('add',{
+		title: '项目：'+ p.name,
+		href: '/project/p/'+ p.id +'/build',
+		closable: true,
+		collapsible:true,
+		onBeforeClose:function(title,index){
+			if( !!project_opened ){
+				var t = '项目：'+ project_opened.name;
+				project_opened = null;
+				$('#tt').tabs('close', t );
+				return false;
+			}
+			return true;
+		},
+		onClose:function(title,index){			
+		}
+	});
+}
+</script>
 {% endblock %}
 

@@ -1,0 +1,125 @@
+{% extends '../../_inline_base.html' %}
+{% block inline_header %}
+<div class="easyui-panel" style="padding:5px;height:40px;">
+	<div style="float:right">
+		<a href="#" id="ptab_task_btn_view_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-redo',disabled:true" onclick="ptab_task_onViewProject()">查看项目</a>
+	</div>
+	<div>
+		<span>过滤器：</span>
+		<select id="task-filter" class="easyui-combobox" name="task-filter" style="width:120px;" data-options="onChange:ptab_task_onFilterChange">
+			<option value="doing">正在执行的</option>
+			<option value="planning">待执行的</option>
+			<option value="manage">我管理的</option>
+		</select>
+		<span id="tasktab_div_toggle_history"><input id="tasktab_cb_toggle_history" type="checkbox" style="margin-left:20px;" onclick="ptab_task_toggle_show_history()"><span>查看历史任务</span></span>
+	</div>
+</div>
+{% endblock %}
+
+{% block inline_main %}
+<div class="easyui-panel" data-options="fit:true,border:false">
+	<table id="ptab-task-dg" class="easyui-datagrid" title="我正在执行任务" 
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/t/listExecuting',method:'get',onDblClickRow:project_dg_onDblClick, onSelect:ptab_task_onSelectRow">
+		<thead>
+			<tr>
+				<th data-options="field:'name',width:160">任务名称</th>
+				<th data-options="field:'status',width:80, formatter:pb_formatter_status">任务状态</th>
+				<th data-options="field:'plan_start_time',width:80,formatter:formatter_second_dg">计划开始时间</th>
+				<th data-options="field:'plan_end_time',width:80,formatter:formatter_second_dg">计划结束时间</th>
+				<th data-options="field:'percent',width:80,formatter:formatter_percent">当前进度</th>
+				<th data-options="field:'manager_name',width:80">任务审核人</th>
+				<th data-options="field:'plan_duration',width:80">计划用时(小时)</th>
+				<th data-options="field:'duration',width:80">已用时(小时)</th>
+				<th data-options="field:'project_name',width:80">所属的项目</th>
+			</tr>
+		</thead>
+	</table>
+</div>
+
+<script type="text/javascript">
+var gt_isHistory = false, gt_filter = 'doing', gt_select_row;
+var gt_titles = {
+	'doing': '我正在执行的任务',
+	'planning':'我待执行的任务',
+	'manage':'我管理的任务'
+};
+var gt_urls = {
+	'doing': '/api/project/t/listExecuting',
+	'planning':'/api/project/t/listQueue',
+	'manage':'/api/project/t/listManage'
+};
+var gt_urls_history = {
+	'doing': '/api/project/t/history/listCompleted',
+	'manage': '/api/project/t/history/listManage'
+};
+
+
+function ptab_task_list_reload(){
+	$('#ptab-task-dg').datagrid('reload');
+	$('#ptab_task_btn_view_project').linkbutton( 'disable');
+}
+function ptab_task_list_reset_url(){
+	$('#ptab-task-dg').datagrid('getPanel').panel('setTitle', gt_titles[gt_filter] + (gp_isHistory&&gt_filter!="planning"?'(含历史任务)':''));
+	if( gp_isHistory ){
+		$('#ptab-task-dg').datagrid('options').url = gt_urls_history[gt_filter];
+	}else{
+		$('#ptab-task-dg').datagrid('options').url = gt_urls[gt_filter];
+	}
+}
+function ptab_task_toggle_show_history(){
+	gp_isHistory = $('#tasktab_cb_toggle_history').is(':checked');
+	ptab_task_list_reset_url();
+	ptab_task_list_reload();
+}
+function ptab_task_onFilterChange(newValue,oldValue){	
+	gt_filter = newValue;
+	ptab_task_list_reset_url();
+	ptab_task_list_reload();
+	
+	if( newValue == 'planning' ){
+		$('#tasktab_div_toggle_history').hide();
+	}else{
+		$('#tasktab_div_toggle_history').show();
+	}
+}
+
+function ptab_task_onSelectRow(index,row){
+	gt_select_row = row;
+	$('#ptab_task_btn_view_project').linkbutton( 'enable');
+}
+function project_dg_onDblClick(index,row){
+	var title = '项目：'+ row.name;
+	var tab = $('#tt').tabs('getTab', title );
+	if( !tab ){
+		$('#tt').tabs('add',{
+			title: '项目：'+ row.name,
+			href: '/project/p/'+ row.id +'/build',
+			closable: true
+		});
+	}
+}
+
+function ptab_task_onViewProject(){
+	var row = gt_select_row;
+	var project = { id:row.project_id, name:row.project_name };
+	view_project(project);
+	/*
+	
+	var title = '项目：'+ row.project_name;
+	var tab = $('#tt').tabs('getTab', title );
+	if( !tab ){
+		$('#tt').tabs('add',{
+			title: '项目：'+ row.project_name,
+			href: '/project/p/'+ row.project_id +'/build',
+			closable: true
+		});
+	}*/
+}
+
+function ptab_task_onReady(){
+	
+}
+$(ptab_task_onReady);
+
+</script>
+{% endblock %}

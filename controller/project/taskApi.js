@@ -114,40 +114,41 @@ module.exports = {
 	},
 
 	'GET /api/project/t/listExecuting': function* (){
-		var uid = this.request.query.uid || '';
-		this.body = yield base.task.$listExecutingOfUser(uid);
+		var uid = this.request.query.uid || this.request.user.id;
+		var data = yield base.task.$listExecutingOfUser(uid);
+		this.body = {total:data.length, rows:data};
 	},
 
 	'GET /api/project/t/listManage': function* (){
 		var uid = this.request.query.uid || this.request.user.id;
-		this.body = yield base.task.$listManageOfUser(uid);
+		var data = yield base.task.$listManageOfUser(uid);
+		this.body = {total:data.length, rows:data};
 	},
 
 	'GET /api/project/t/listQueue': function* (){
-		var uid = this.request.query.uid || '';
-		this.body = yield base.task.$listQueueOfUser(uid);
+		var uid = this.request.query.uid || this.request.user.id;
+		var data = yield base.task.$listQueueOfUser(uid);
+		this.body = {total:data.length, rows:data};
 	},
 
 	'GET /api/project/t/history/listCompleted': function* (){
 		var uid = this.request.query.uid || this.request.user.id,
 			index = this.request.query.page || '1',
 			index = parseInt(index),
-			page_size = base.config.PAGE_SIZE,
-			page = new Page(index, page_size), 
-			rs = yield base.task.$listHistoryExecuteOfUser(uid, page_size*(index-1), page_size);
-		page.total = yield base.task.$countHistoryExecuteOfUser(uid);
-		this.body = { page:page, tasks: rs};
+			page_size = this.request.query.rows ? parseInt(this.request.query.rows) :base.config.PAGE_SIZE,
+			rs = yield base.task.$listHistoryExecuteOfUser(uid, page_size*(index-1), page_size),
+			total = yield base.task.$countHistoryExecuteOfUser(uid);
+		this.body = { total:total, rows: rs};
 	},
 
 	'GET /api/project/t/history/listManage': function* (){
 		var uid = this.request.query.uid || this.request.user.id,
 			index = this.request.query.page || "1",
 			index = parseInt(index),
-			page_size = base.config.PAGE_SIZE,
-			page = new Page(index, page_size), 
-			rs = yield base.task.$listHistoryManageOfUser(uid, page_size*(index-1), page_size);
-		page.total = yield base.task.$countHistoryManageOfUser(uid);
-		this.body = { page:page, tasks: rs};
+			page_size = this.request.query.rows ? parseInt(this.request.query.rows) :base.config.PAGE_SIZE,
+			rs = yield base.task.$listHistoryManageOfUser(uid, page_size*(index-1), page_size),
+			total = yield base.task.$countHistoryManageOfUser(uid);
+		this.body = { total:total, rows: rs};
 	},
 
 	'GET /api/project/t/:id/listFlow': function* (id){

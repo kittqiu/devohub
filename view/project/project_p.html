@@ -90,7 +90,8 @@ function project_dg_onSelect(index,row){
 }
 
 function project_dg_onDblClick(index,row){
-	var title = '项目：'+ row.name;
+	view_project(row)
+	/*var title = '项目：'+ row.name;
 	var tab = $('#tt').tabs('getTab', title );
 	if( !tab ){
 		$('#tt').tabs('add',{
@@ -98,7 +99,7 @@ function project_dg_onDblClick(index,row){
 			href: '/project/p/'+ row.id +'/build',
 			closable: true
 		});
-	}
+	}*/
 }
 
 function project_onReady(){

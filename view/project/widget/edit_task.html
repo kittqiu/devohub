@@ -7,10 +7,10 @@
 			<input class="easyui-textbox" id="wetsk_parent" name="wetsk_parent" style="width:95%" data-options="label:'父任务:',disabled:true">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="easyui-combobox" id="wetsk_executor" name="wetsk_executor" style="width:95%" data-options="label:'执行人:',required:true,valueField:'user_id',textField:'name',">
+			<input class="easyui-combobox" id="wetsk_executor" name="wetsk_executor" style="width:95%" data-options="label:'执行人:',required:true,valueField:'user_id',textField:'name'">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="easyui-combobox" id="wetsk_manager" name="wetsk_manager" style="width:95%" data-options="label:'工作审核人:',required:true,valueField:'user_id',textField:'name',">
+			<input class="easyui-combobox" id="wetsk_manager" name="wetsk_manager" style="width:95%" data-options="label:'工作审核人:',required:true,valueField:'user_id',textField:'name'">
 		</div>
 		<div style="margin-bottom:20px">
 			<select id="wetsk_milestone" name="wetsk_milestone" class="easyui-combobox" style="width:95%" data-options="label:'是否为里程碑:',required:true,value:'0',onChange:wetsk_onChangeMilestone">
@@ -54,6 +54,7 @@
 </div>
 <script type="text/javascript">
 var wetsk_taskId ;
+
 function pb_edit_task(taskId){
 	wetsk_taskId = taskId;
 	var task = gpb_taskMap[taskId];
@@ -82,6 +83,8 @@ function pb_edit_task(taskId){
 	$('#wetsk_difficulty').combobox('select', task.difficulty);
 	$('#wetsk_details').textbox('setValue', task.details);
 	$('#wetsk_rely_to').textbox(task.automode==1?'disable':'enable');
+	$('#wetsk_rely_to').textbox('setValue', pb_getTaskRelyMark(taskId).toString());
+	
 	
 
 	$('#win_edit_task').window({
@@ -118,7 +121,25 @@ function wetsk_onChangeAutoMode(newValue,oldValue){
 	}
 }
 
+/*得到所有依赖该任务的子任务*/
+function wetsk_getReliedTasks(tid){
+	var ts = [];
+	var i;
+	for( i = 0; i < gpb_relies.length; i++ ){
+		var r = gpb_relies[i];
+		if( r.rely_task_id === tid){
+			ts.push( r.task_id );
+		}
+	}
+	for( i = 0; i < ts.length; i++ ){
+		var tus = wetsk_getReliedTasks(ts[i]);
+		ts = ts.concat(tus);
+	}
+	return ts;
+}
+
 function wetsk_calcRelyTask(){
+	var relied_tasks = wetsk_getReliedTasks(wetsk_taskId);
 	var rely = $("#wetsk_rely_to").textbox('getValue');
 	var duration = parseInt($("#wetsk_duration").numberspinner('getValue'));
 	var rs = rely.split(',');
@@ -130,6 +151,10 @@ function wetsk_calcRelyTask(){
 				return false;
 			}else{
 				var task = gpb_sortTasks[r];
+				if( relied_tasks.indexOf(task.id) !== -1 ){//不允许循环依赖
+					return false;
+				}
+
 				var start_time = task.plan_end_time + one_day_time;
 				var end_time = start_time + (Math.ceil(duration/8)-1)*one_day_time;
 				ro.start_time = Math.max(ro.start_time, start_time);
@@ -147,6 +172,7 @@ function wetsk_submit(){
 	var start_time = parser_DateMonth($('#wetsk_plan_start_time').datebox('getValue' )).getTime();
 	var end_time = parser_DateMonth($('#wetsk_plan_end_time').datebox('getValue' )).getTime();
 	if( automode == 0 ){
+
 		var o = wetsk_calcRelyTask();
 		if( !o ){
 			showErrorInfo( "依赖的任务填写有误！可能不是有效的标识，或者有循环依赖情况发生。" );

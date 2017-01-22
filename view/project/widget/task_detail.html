@@ -1,0 +1,270 @@
+<div id="win_view_task" style="display:none">
+	<div class="easyui-panel" data-options="fit:true" style="padding:5px">
+		<div style="padding:5px;">
+			<table class="uk-table dv-border">
+				<tbody>
+					<tr>
+						<td class="uk-width-2-10 uk-block-muted">任务名称：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_name"></span></td>
+						<td class="uk-width-2-10 uk-block-muted">状态：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_status"></span></td>
+					</tr>
+					<tr>
+						<td class="uk-width-2-10 uk-block-muted">执行人：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_executor"></span></td>
+						<td class="uk-width-2-10 uk-block-muted">工作审核人：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_manager"></span></td>
+					</tr>
+					<tr>
+						<td class="uk-width-2-10 uk-block-muted">计划工期(小时)：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_plan_duration"></span></td>
+						<td class="uk-width-2-10 uk-block-muted">实际工期(小时)：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_duration"></span></td>
+					</tr>
+					<tr>
+						<td class="uk-width-2-10 uk-block-muted">计划模式：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_automode"></span></td>
+						<td class="uk-width-2-10 uk-block-muted">任务难度：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_difficulty"></span></td>
+					</tr>
+					<tr>
+						<td class="uk-width-2-10 uk-block-muted">计划开始时间：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_plan_start_time"></span></td>
+						<td class="uk-width-2-10 uk-block-muted">实际开始时间：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_start_time"></span></td>
+					</tr>
+					<tr>
+						<td class="uk-width-2-10 uk-block-muted">计划结束时间：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_plan_end_time"></span></td>
+						<td class="uk-width-2-10 uk-block-muted">实际结束时间：</td>
+						<td class="uk-width-3-10"><span id="wvtsk_end_time"></span></td>
+					</tr>
+					<tr>
+						<td class="uk-block-muted">前置任务:</td>
+						<td><span id="wvtsk_rely"></span></td>
+						<td class="uk-block-muted">进度:</td>
+						<td><span id="wvtsk_percent"></span>%</td>
+					</tr>
+					<!--tr class={task.isLeaf()?'uk-hidden':''}>
+						<td class="uk-block-muted">下属总工期(已执行):</td>
+						<td colSpan="3" >{ task.total_duration }小时</td>
+					</tr-->
+					<tr>
+						<td class="uk-block-muted">任务说明:</td>
+						<td colSpan="3" ><pre class="dv-pre-clear" id="wvtsk_details"></pre></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div style="padding:5px;margin-bottom:20px">
+			<table id="task-flow-dg" title="工作流" data-options="" style="width:98%;margin-bottom:10px">
+				<thead>
+					<tr>
+						<th data-options="field:'action',formatter:formatter_task_flow_aciton,width:80">操作</th>
+						<th data-options="field:'user_name',width:80">用户</th>
+						<th data-options="field:'created_at',width:80,formatter:wvt_formatter_time">时间</th>
+						<th data-options="field:'reply',formatter:formatter_pre, width:500">回复信息</th>
+					</tr>
+				</thead>
+			</table>
+			<div class="easyui-panel" style="width:98%;height:150px;padding:10px">
+				<div style="margin-bottom:5px">
+					<input class="easyui-combobox" id="wvtsk_action" name="wvtsk_action" style="width:200px" data-options="label:'选择操作:',required:true,valueField:'action',textField:'action_name'">
+				</div>
+				<div style="margin-bottom:10px">
+					<input class="easyui-textbox" id="wvtsk_reply" name="wvtsk_reply" style="width:95%;height:60px" data-options="label:'备注说明:',multiline:true">
+				</div>
+				<div class="uk-text-center">
+					<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wvtsk_submit()" style="width:120px">提交</a>
+				</div>
+			</div>
+		</div>
+		<div style="padding:5px;">
+			<table id="task-daily-dg" title="进展日志" data-options="" style="width:98%">
+				<thead>
+					<tr>
+						<th data-options="field:'updated_at',formatter:wvt_formatter_time,width:80">时间</th>
+						<th data-options="field:'user_name',width:80">执行人</th>
+						<th data-options="field:'duration',width:80">用时</th>
+						<th data-options="field:'report',formatter:formatter_pre, width:270">当日工作</th>
+						<th data-options="field:'plan',formatter:formatter_pre, width:230">明日计划</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+var TASKACTIONMAP = {
+	confirm: '确认要求',
+	understand: '已理解要求',
+	accept: '接收任务',
+	reply: '回复',
+	commit: '提交',
+	pause: '暂停执行',
+	cancel: '取消任务',
+	complete: '完成',
+	reopen: '继续执行',
+	resume: '恢复执行'
+};
+var ActionOnStatus = {
+	created: {
+		executor: ['reply'],
+		manager: ['confirm', 'reply', 'cancel']
+	},
+	clear: {
+		executor: ['accept', 'reply'],
+		manager: ['reply', 'cancel']
+	},/*
+	understood: {
+		executor: ['accept', 'reply'],
+		manager: ['reply', 'cancel']
+	},*/
+	doing: {
+		executor: ['commit', 'reply'],
+		manager: ['reply', 'pause', 'cancel']
+	},
+	commit: {
+		executor: ['reply'],
+		manager: ['complete', 'reopen', 'reply']
+	},
+	pending: {
+		executor: ['reply'],
+		manager: ['resume', 'cancel', 'reply']
+	},
+	cancel: {
+		executor: ['reply'],
+		manager: ['reply']
+	},
+	completed: {
+		executor: ['reply'],
+		manager: ['reply']
+	}
+};
+
+var wvtsk_taskId;
+
+function wvtsk_initFlowCombo(){
+	var task = gpb_taskMap[wvtsk_taskId];
+	var actions = [];
+	var i;
+	if( task.executor_id === ENV.user.id ){
+		actions = actions.concat( ActionOnStatus[task.status].executor );
+	}
+	if( task.manager_id === ENV.user.id ){
+		var list = ActionOnStatus[task.status].manager;
+		for( i = 0; i < list.length; i++){
+			if( actions.indexOf(list[i])===-1){
+				actions.push(list[i]);
+			}
+		}
+	}
+	if(actions.length === 0){
+		actions.push( 'reply' );
+	}
+
+	var data = [];
+	for( i = 0; i < actions.length; i++ ){
+		var a = actions[i];
+		data.push({action:a, action_name:TASKACTIONMAP[a]})
+	}
+
+	$('#wvtsk_action').combobox('loadData', data );
+	$('#wvtsk_action').combobox('select', actions[0] );
+}
+
+
+
+function pb_view_task(taskId){
+	wvtsk_taskId = taskId;
+	var task = gpb_taskMap[taskId];
+	var rely = pb_getTaskRelyMark(task.id);
+
+	$('#wvtsk_name').text(task.name);
+	$('#wvtsk_status').text(gpb_taskStatusMap[task.status]);
+	$('#wvtsk_executor').text(gpb_userMap[task.executor_id].name);
+	$('#wvtsk_manager').text(gpb_userMap[task.manager_id].name);
+	$('#wvtsk_plan_duration').text(task.plan_duration);
+	$('#wvtsk_duration').text(task.duration);
+	$('#wvtsk_automode').text(task.automode?'手动':'自动');
+	$('#wvtsk_difficulty').text(gpb_difficultyMap[task.difficulty]);
+	$('#wvtsk_plan_start_time').text(formatDate(task.plan_start_time));
+	$('#wvtsk_start_time').text(task.start_time!==0?formatDate(task.start_time):'无');
+	$('#wvtsk_plan_end_time').text(formatDate(task.plan_end_time));
+	$('#wvtsk_end_time').text(task.end_time!==0?formatDate(task.end_time):'无');
+	$('#wvtsk_rely').text(rely.length==0?'无':rely.toString());
+	$('#wvtsk_percent').text(task.percent);
+	$('#wvtsk_details').text(task.details);
+
+	$('#task-flow-dg').datagrid({
+		url:'/api/project/t/' + taskId + '/listFlow',
+		method:'get',
+		onLoadSuccess: function(data){
+			if(data.total==0){
+				$('#task-flow-dg').datagrid('loadData', [{action:'',user_name:'无',created_at:0,reply:'无'}] );
+			}
+		}
+	});
+	wvtsk_initFlowCombo();
+	$('#task-daily-dg').datagrid({
+		url:'/api/project/t/' + taskId + '/daily',
+		method:'get',
+		onLoadSuccess: function(data){
+			if(data.total==0){
+				$('#task-daily-dg').datagrid('loadData', [{duration:'无',user_name:'无',updated_at:0,report:'无',plan:'无'}] );
+			}
+		}
+	});
+	
+	$('#win_view_task').window({
+		title: "任务 - " + task.name,
+		width:800,
+		height:640,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+}
+
+
+function formatter_task_flow_aciton(value,row,index){
+	return value?TASKACTIONMAP[value]:'无';
+}
+function wvt_formatter_time(value,row,index){
+	return value==0?'无':formatter_second_dg(value);
+}
+
+function wvtsk_reload_view(taskId){
+
+	var task = gpb_taskMap[taskId];
+	console.log(task);
+	$('#wvtsk_status').text(gpb_taskStatusMap[task.status]);
+	$('#wvtsk_start_time').text(task.start_time!==0?formatDate(task.start_time):'无');
+	$('#wvtsk_end_time').text(task.end_time!==0?formatDate(task.end_time):'无');
+	wvtsk_initFlowCombo();
+	$("#wvtsk_reply").textbox('setValue',"");
+}
+
+function wvtsk_submit(){	
+	var data = {
+		action: $("#wvtsk_action").combobox('getValue'),
+		reply: $("#wvtsk_reply").textbox('getValue')
+	};
+	if( data.action !== 'accept' && data.reply.length === 0){
+		showErrorInfo("请填写必要的备注说明，如原因或提交信息");
+	}
+	postJSON( '/api/project/t/'+wvtsk_taskId + '/flow', data, function(err, result){
+			if( !err ){
+				showInfo( '工作流已成功添加。');
+				$('#task-flow-dg').datagrid('reload');
+				gpb_updateTask(wvtsk_taskId,wvtsk_reload_view);
+			}else{
+				showErrorInfo( "工作流添加失败", err.message );
+			}
+	});
+	
+}
+</script>
