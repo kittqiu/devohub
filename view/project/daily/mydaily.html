@@ -1,0 +1,123 @@
+<div class="easyui-layout" data-options="fit:true,border:false">
+	<div data-options="region:'north',border:false">
+		<div class="easyui-layout" data-options="border:false,height:40" style="width:100%;height:40px;">
+			<div data-options="region:'east', border:false" style="width:120px;">
+				<a href="#" id="" class="easyui-linkbutton" data-options="" onclick="mydaily_onNext()"><i class="uk-icon-angle-double-right"></i>后一工作日</a>
+			</div>
+			<div data-options="region:'west', border:false" style="width:120px;">
+				<a href="#" id="" class="easyui-linkbutton" data-options="" onclick="mydaily_onPrevious()"><i class="uk-icon-angle-double-left"></i>前一工作日</a>
+			</div>
+			<div data-options="region:'center', border:false" class="uk-text-center">
+				<input id="mydaily-date" class="" style="width:120px;">
+			</div>
+		</div>
+	</div>
+	<div data-options="region:'center',border:false">
+		<div class="easyui-panel" data-options="fit:true,border:false">
+			<table id="mydaily-dg" class="" 
+					data-options="fit:true,singleSelect:true,fitColumns:true,onDblClickRow:mydaily_dg_onDblClick, onBeforeSelect:mydaily_onBeforeSelectRow">
+				<thead>
+					<tr>
+						<th data-options="field:'name',width:100">任务</th>
+						<th data-options="field:'org_plan',width:200,formatter:mydaily_formatter_pre">今日计划</th>
+						<th data-options="field:'report',width:200,formatter:mydaily_formatter_pre_report">今日工作</th>
+						<th data-options="field:'plan',width:200,formatter:mydaily_formatter_pre">明日计划</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+{% include './widget/edit_daily.html' %}
+
+<script type="text/javascript">
+function mydaily_loadData( dateTime ){
+	getJSON( '/api/project/daily', {date:dateTime}, function(err, data ){
+			if(!err){
+				for(var i = 0; i < data.length; i++){
+					var r = data[i];
+					r.org_plan = r.daily.org_plan;
+					r.report = r.daily.report;
+					r.plan = r.daily.plan;
+				}
+				$('#mydaily-dg').datagrid({
+				});
+				$('#mydaily-dg').datagrid('loadData', data);
+			}
+		}
+	);
+}
+
+$(function(){
+	mydaily_loadData(Date.now());
+
+	$('#mydaily-date').datebox({
+		formatter:formatter_Date,
+		parser:parser_DateMonth,
+		onSelect: function(date){
+			mydaily_loadData(date.getTime());
+			$('#mydaily-date').datebox('setValue',formatter_Date(date));
+		}
+	});
+	$('#mydaily-date').datebox('setValue',formatNow());
+});
+
+function mydaily_formatter_pre(value,row,index){
+	if( !!value ){
+		//return '<textarea style="width:100%">'+ value +'</textarea>';
+		return '<pre class="dv-pre-clear" style="font-size:12px">' + value + '</pre>';
+	}else{
+		return '未填写';
+	}
+}
+function mydaily_formatter_pre_report(value,row,index){
+	if( !!value ){
+		return '<pre class="dv-pre-clear" style="font-size:12px">' + value + '</pre>'+ (row.daily.duration?'<span>用时:'+row.daily.duration+'小时</span>':'');
+	}else{
+		return '未填写';
+	}
+}
+
+function mydaily_toWorkday( day, offset ){
+	day.setDate(day.getDate() +　offset);
+	var dayTime = day.getTime();
+	getJSON( '/api/date/isworkday', {year:day.getFullYear(), month: day.getMonth(), date: day.getDate() },
+		 function(err, data ){
+			if(!err){
+				if( data === true ){
+					mydaily_loadData(dayTime);
+					 $('#mydaily-date').datebox('setValue', formatter_Date(day));
+				}else{
+					mydaily_toWorkday(day, offset);
+				}
+			}
+		}
+	);
+}
+
+function mydaily_onPrevious(){
+	var d = $('#mydaily-date').datebox('getValue');
+	var day = parser_DateMonth(d);
+	mydaily_toWorkday(day, -1);
+}
+function mydaily_onNext(){
+	var d = $('#mydaily-date').datebox('getValue');
+	var day = parser_DateMonth(d);
+	mydaily_toWorkday(day, 1);
+}
+
+function mydaily_dg_onDblClick(index,row){
+	var d = $('#mydaily-date').datebox('getValue');
+	var day = parser_DateMonth(d);
+	mydaily_edit_daily(row,day);
+}
+function mydaily_onBeforeSelectRow(index,row){
+	return false;
+}
+
+function mydaily_reload(){
+	var d = $('#mydaily-date').datebox('getValue');
+	var day = parser_DateMonth(d);
+	mydaily_loadData(day.getTime());
+}
+</script>

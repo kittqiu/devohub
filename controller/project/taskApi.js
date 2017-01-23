@@ -12,7 +12,7 @@ var
 	modelUser = db.user;
 
 function* $_render( context, model, view ){
-    context.render( 'project/task/' + view, yield home.$getModel.apply(context, [model]) );
+    context.render( 'project/' + view, yield home.$getModel.apply(context, [model]) );
 }
 
 var ACTIONMAP = {
@@ -71,34 +71,17 @@ POST METHOD:
 
 module.exports = {
 	'GET /project/daily': function* (){
-		yield $_render( this, {}, 'mydaily.html');
+		yield $_render( this, {}, 'daily/mydaily.html');
 		base.setHistoryUrl(this);
 	},
 
 	'GET /project/daily/team': function* (){
-		yield $_render( this, {}, 'team_daily.html');
+		yield $_render( this, {}, 'daily/team_daily.html');
 		base.setHistoryUrl(this);
 	},
 
 	'GET /project/task': function* (){
-		yield $_render( this, {}, 'task_index.html');
-		base.setHistoryUrl(this);
-	},
-
-	'GET /project/task/history': function* (){
-		var page = this.request.query.page || 1;
-		yield $_render( this, {__page__:page}, 'task_history.html');
-		base.setHistoryUrl(this);
-	},
-
-	'GET /project/task/manage': function* (){
-		yield $_render( this, {}, 'task_manage.html');
-		base.setHistoryUrl(this);
-	},
-
-	'GET /project/task/manage/history': function* (){
-		var page = this.request.query.page || 1;
-		yield $_render( this, {__page__:page}, 'task_manage_history.html');
+		yield $_render( this, {}, 'task/task_index.html');
 		base.setHistoryUrl(this);
 	},
 

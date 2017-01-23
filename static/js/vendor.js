@@ -166,6 +166,9 @@ function formatter_second_dg(value,row,index){
 		mm = date.getMonth()+1;
 	return date.getFullYear() + '-' + (mm>9?mm:'0'+mm) + '-' + (dd>9?dd:'0'+dd);
 }
+function formatter_time_dg(value,row,index){
+	return formatDate(value,true);
+}
 function formatter_pre( value, row, index){
 	return '<pre class="dv-pre-clear" style="font-size:12px">' + value + '</pre>';
 }

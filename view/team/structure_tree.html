@@ -2,11 +2,7 @@
 <body>
 	<ul id="_structure_tree_"></ul>
 	<script type="text/javascript">
-	var ENV = {
-		user: {
-			id: "{{__request__.user.id}}"
-		}
-	};
+	
 	/***** Tree UI *****/
 	var g_departments, g_users, g_treedata;
 	var g_depMap={}, g_userMap={}, g_selectedNodeId='root';
@@ -85,7 +81,7 @@
 						g_selectedNodeId = node.id;
 						if( !isDepartment(node.id)){//只响应用户选择
 							if( onStructureTreeSelectUser !== undefined && $.isFunction(onStructureTreeSelectUser)){
-							onStructureTreeSelectUser( g_userMap[node.id], node );
+								onStructureTreeSelectUser( g_userMap[node.id], node );
 							}
 						}				
 					}

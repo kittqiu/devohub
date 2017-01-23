@@ -1,0 +1,76 @@
+<div id="win_change_user_role" style="display:none;padding:20px">
+	<div style="margin-bottom:20px">
+		<input class="easyui-combobox" id="wcur_user" name="wcur_user" style="width:90%" data-options="label:'选择用户:',required:true,valueField:'id',textField:'name',onChange:wcur_onChangeUser">
+	</div>
+	<div style="margin-bottom:20px">
+		<div class="easyui-datalist" id="wcur_role" name="wcur_role" title="选择启用的角色" style="width:90%;height:120px" data-options="url:'/api/sys/role/list',method:'get',singleSelect:false, valueField:'id',textField:'name'">
+		</div>
+	</div>
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wcur_submit()" style="width:120px">保存</a>
+	</div>
+</div>
+<script type="text/javascript">
+var wcur_user_id;
+function wcur_loadUserRole(uid){
+	getJSON( '/api/sys/user/'+uid+'/roles', function(err, rs ){				
+			if(!err){
+				var data = $('#wcur_role').datalist('getData');
+				$('#wcur_role').datalist('clearSelections');
+
+				for(var i = 0; i < rs.length; i++ ){
+					for( var j = 0; j < data.total; j++ ){
+						if( data.rows[j].id == rs[i].id){
+							$('#wcur_role').datalist('selectRow', j );
+						}
+					}
+				}
+			}
+		}
+	);
+}
+
+function wcur_loadData( ){
+	getJSON( '/api/team/member/list', function(err, us ){
+		if(!err){
+			var uid = us[0].id;		
+			wcur_user_id = uid;
+			$('#wcur_user').combobox('loadData', us);
+			$('#wcur_user').combobox('select', uid);
+		}
+	});
+}
+
+function wcur_open_win(){
+	$('#win_change_user_role').window({
+		title: "用户角色管理",
+		width:400,
+		height:300,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	wcur_loadData();
+}
+
+function wcur_onChangeUser(newValue,oldValue){
+	wcur_user_id = newValue;
+	wcur_loadUserRole(newValue);
+}
+
+function wcur_submit(){
+	var rows = $('#wcur_role').datalist('getSelections');
+	var roles = [];
+	for(var i = 0; i < rows.length; i++ ){
+		roles.push( rows[i].id );
+	}
+	postJSON( '/api/sys/user/'+wcur_user_id+'/roles', roles, function(err, result){
+		if( !err ){
+			showInfo("保存成功！");
+		}
+	});
+}
+</script>

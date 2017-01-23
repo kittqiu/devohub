@@ -51,7 +51,7 @@
 					</tr-->
 					<tr>
 						<td class="uk-block-muted">任务说明:</td>
-						<td colSpan="3" ><pre class="dv-pre-clear" id="wvtsk_details"></pre></td>
+						<td colSpan="3" ><pre class="dv-pre-clear" style="font-size:12px" id="wvtsk_details"></pre></td>
 					</tr>
 				</tbody>
 			</table>
@@ -63,7 +63,7 @@
 						<th data-options="field:'action',formatter:formatter_task_flow_aciton,width:80">操作</th>
 						<th data-options="field:'user_name',width:80">用户</th>
 						<th data-options="field:'created_at',width:80,formatter:wvt_formatter_time">时间</th>
-						<th data-options="field:'reply',formatter:formatter_pre, width:500">回复信息</th>
+						<th data-options="field:'reply',formatter:formatter_pre, width:480">回复信息</th>
 					</tr>
 				</thead>
 			</table>
@@ -86,8 +86,8 @@
 						<th data-options="field:'updated_at',formatter:wvt_formatter_time,width:80">时间</th>
 						<th data-options="field:'user_name',width:80">执行人</th>
 						<th data-options="field:'duration',width:80">用时</th>
-						<th data-options="field:'report',formatter:formatter_pre, width:270">当日工作</th>
-						<th data-options="field:'plan',formatter:formatter_pre, width:230">明日计划</th>
+						<th data-options="field:'report',formatter:formatter_pre, width:260">当日工作</th>
+						<th data-options="field:'plan',formatter:formatter_pre, width:220">明日计划</th>
 					</tr>
 				</thead>
 			</table>
@@ -95,52 +95,7 @@
 	</div>
 </div>
 <script type="text/javascript">
-var TASKACTIONMAP = {
-	confirm: '确认要求',
-	understand: '已理解要求',
-	accept: '接收任务',
-	reply: '回复',
-	commit: '提交',
-	pause: '暂停执行',
-	cancel: '取消任务',
-	complete: '完成',
-	reopen: '继续执行',
-	resume: '恢复执行'
-};
-var ActionOnStatus = {
-	created: {
-		executor: ['reply'],
-		manager: ['confirm', 'reply', 'cancel']
-	},
-	clear: {
-		executor: ['accept', 'reply'],
-		manager: ['reply', 'cancel']
-	},/*
-	understood: {
-		executor: ['accept', 'reply'],
-		manager: ['reply', 'cancel']
-	},*/
-	doing: {
-		executor: ['commit', 'reply'],
-		manager: ['reply', 'pause', 'cancel']
-	},
-	commit: {
-		executor: ['reply'],
-		manager: ['complete', 'reopen', 'reply']
-	},
-	pending: {
-		executor: ['reply'],
-		manager: ['resume', 'cancel', 'reply']
-	},
-	cancel: {
-		executor: ['reply'],
-		manager: ['reply']
-	},
-	completed: {
-		executor: ['reply'],
-		manager: ['reply']
-	}
-};
+
 
 var wvtsk_taskId;
 
@@ -234,13 +189,12 @@ function formatter_task_flow_aciton(value,row,index){
 	return value?TASKACTIONMAP[value]:'无';
 }
 function wvt_formatter_time(value,row,index){
-	return value==0?'无':formatter_second_dg(value);
+	return value==0?'无':formatter_time_dg(value);
 }
 
 function wvtsk_reload_view(taskId){
 
 	var task = gpb_taskMap[taskId];
-	console.log(task);
 	$('#wvtsk_status').text(gpb_taskStatusMap[task.status]);
 	$('#wvtsk_start_time').text(task.start_time!==0?formatDate(task.start_time):'无');
 	$('#wvtsk_end_time').text(task.end_time!==0?formatDate(task.end_time):'无');

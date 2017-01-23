@@ -1,0 +1,61 @@
+<div id="win_change_user_status" style="display:none;padding:20px">
+	<div style="margin-bottom:20px">
+		<input class="easyui-combobox" id="wcus_user" name="wcus_user" style="width:90%" data-options="label:'选择用户:',required:true,valueField:'id',textField:'name',onChange:wcus_onChangeUser">
+	</div>
+	<div style="margin-bottom:20px">
+		是否为激活状态：<input id="wcus_actived" type="checkbox" checked>激活
+	</div>
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wcus_submit()" style="width:120px">保存</a>
+	</div>
+</div>
+<script type="text/javascript">
+var wcus_user;
+function wcus_loadUser(uid){
+	getJSON( '/api/user/'+uid, function(err, rs ){
+			if(!err){
+				wcus_user = rs;
+				$('#wcus_actived').attr("checked", rs.actived );
+			}
+		}
+	);
+}
+function wcus_loadData( ){
+	getJSON( '/api/team/member/list', {contain_unactived:true}, function(err, us ){
+		if(!err){
+			var uid = us[0].id;
+			wcus_loadUser(uid);
+			$('#wcus_user').combobox('loadData', us);
+			$('#wcus_user').combobox('select', uid);
+		}
+	});
+}
+
+function wcus_open_win(){
+	$('#win_change_user_status').window({
+		title: "用户状态管理",
+		width:320,
+		height:200,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	wcus_loadData();
+}
+
+function wcus_onChangeUser(newValue,oldValue){
+	wcus_loadUser(newValue);
+}
+
+function wcus_submit(){
+	var checked = $('#wcus_actived').is(':checked');
+	postJSON( '/api/user/'+wcus_user.id+'/status', {actived:checked}, function(err, result){
+		if( !err ){
+			showInfo("保存成功！");
+		}
+	});
+}
+</script>

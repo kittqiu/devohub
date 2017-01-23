@@ -1,12 +1,12 @@
 <html>
 <body>
 	{% block inline_body %}
-	<div id="inline_bodylayout" class="easyui-layout" data-options="fit:true,border:false">
-		<div id="inline_northregion" data-options="region:'north',border:false">
+	<div class="easyui-layout" data-options="fit:true,border:false">
+		<div data-options="region:'north',border:false">
 			{% block inline_header %}
 			{% endblock %}
 		</div>
-		<div id="inline_centerregion" data-options="region:'center',border:false">
+		<div data-options="region:'center',border:false">
 			{% block inline_main %}
 			{% endblock %}
 		</div>

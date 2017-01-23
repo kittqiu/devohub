@@ -2,17 +2,17 @@
 
 
 {% block main %}
-<div id="tt" class="easyui-tabs" data-options="fit:true,border:false">
+<div id="tt" class="easyui-tabs" data-options="fit:true,border:false,onSelect:project_onSelectTab">
 	<div title="项目" style="padding:10px" data-options="href:'/project/p'">		   
 	</div>
 	<div title="任务" style="padding:10px" data-options="href:'/project/task'">
 	</div>
-	<div title="日志" data-options="" style="padding:10px">
-		
-	</div>
+	<div title="我的工作日志" style="padding:10px;" data-options="href:'/project/daily'"></div>
+	<div title="团队的工作" style="padding:10px;" data-options="href:'/project/daily/team'"></div>
 </div>
 <script type="text/javascript">
 var project_opened;
+
 function view_project(p){
 	if( !!project_opened ){
 		$('#tt').tabs('close', '项目：'+ project_opened.name );
@@ -39,6 +39,76 @@ function view_project(p){
 		}
 	});
 }
+
+/*
+var project_tabs = [
+	{loaded:false, url:'/project/p'},
+	{loaded:false, url:'/project/task'},
+	{loaded:false, url:'/project/daily'},
+	{loaded:false}
+];*/
+function project_onSelectTab(title,index){
+	/*var to = project_tabs[index];
+	if( !to.loaded ){
+		var tab = $('#tt').tabs('getTab', index );
+		$('#tt').tabs('update', { tab:tab, options:{href: to.url }});
+		tab.loaded = true;
+	}*/
+}
+
+var gpb_difficultyMap = {
+	0: '简单',
+	1: '普通',
+	2: '困难',
+	99: '无需执行'
+};
+
+var TASKACTIONMAP = {
+	confirm: '确认要求',
+	understand: '已理解要求',
+	accept: '接收任务',
+	reply: '回复',
+	commit: '提交',
+	pause: '暂停执行',
+	cancel: '取消任务',
+	complete: '完成',
+	reopen: '继续执行',
+	resume: '恢复执行'
+};
+var ActionOnStatus = {
+	created: {
+		executor: ['reply'],
+		manager: ['confirm', 'reply', 'cancel']
+	},
+	clear: {
+		executor: ['accept', 'reply'],
+		manager: ['reply', 'cancel']
+	},/*
+	understood: {
+		executor: ['accept', 'reply'],
+		manager: ['reply', 'cancel']
+	},*/
+	doing: {
+		executor: ['commit', 'reply'],
+		manager: ['reply', 'pause', 'cancel']
+	},
+	commit: {
+		executor: ['reply'],
+		manager: ['complete', 'reopen', 'reply']
+	},
+	pending: {
+		executor: ['reply'],
+		manager: ['resume', 'cancel', 'reply']
+	},
+	cancel: {
+		executor: ['reply'],
+		manager: ['reply']
+	},
+	completed: {
+		executor: ['reply'],
+		manager: ['reply']
+	}
+};
 </script>
 {% endblock %}
 

@@ -1,0 +1,31 @@
+{% extends '../_base.html' %}
+
+
+{% block main %}
+<div class="easyui-panel" data-options="fit:true" style="padding:5px">
+	<div class="easyui-panel" style="padding:5px;">
+		<a href="#" class="easyui-menubutton" data-options="menu:'#mm_user'">用户</a>
+		<a href="#" class="easyui-menubutton" data-options="menu:'#mm_project'">项目</a>
+		<a href="#" class="easyui-menubutton" data-options="menu:'#mm_tool'">工具</a>
+	</div>
+	<div id="mm_user" style="width:150px;">
+		<div onclick="wcur_open_win()">角色管理</div>
+		<div onclick="wcus_open_win()">状态管理</div>
+	</div>
+	<div id="mm_project" style="width:150px;">
+		<div>修改</div>
+		<div>删除</div>
+	</div>
+	<div id="mm_tool" style="width:150px;">
+		<div onclick="wcwd_open_win()">工作日配置</div>
+	</div>
+</div>
+
+{% include './widget/config_work_day.html' %}
+{% include './widget/change_user_status.html' %}
+{% include './widget/change_user_role.html' %}
+
+<script type="text/javascript">
+</script>
+{% endblock %}
+

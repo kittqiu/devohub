@@ -19,7 +19,7 @@
 {% block inline_main %}
 <div class="easyui-panel" data-options="fit:true,border:false">
 	<table id="ptab-task-dg" class="easyui-datagrid" title="我正在执行任务" 
-			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/t/listExecuting',method:'get',onDblClickRow:project_dg_onDblClick, onSelect:ptab_task_onSelectRow">
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/t/listExecuting',method:'get',onDblClickRow:ptab_task_dg_onDblClick, onSelect:ptab_task_onSelectRow">
 		<thead>
 			<tr>
 				<th data-options="field:'name',width:160">任务名称</th>
@@ -35,6 +35,7 @@
 		</thead>
 	</table>
 </div>
+{% include './widget/task_detail_flow.html' %}
 
 <script type="text/javascript">
 var gt_isHistory = false, gt_filter = 'doing', gt_select_row;
@@ -87,33 +88,14 @@ function ptab_task_onSelectRow(index,row){
 	gt_select_row = row;
 	$('#ptab_task_btn_view_project').linkbutton( 'enable');
 }
-function project_dg_onDblClick(index,row){
-	var title = '项目：'+ row.name;
-	var tab = $('#tt').tabs('getTab', title );
-	if( !tab ){
-		$('#tt').tabs('add',{
-			title: '项目：'+ row.name,
-			href: '/project/p/'+ row.id +'/build',
-			closable: true
-		});
-	}
+function ptab_task_dg_onDblClick(index,row){
+	ptask_task_view_task(row.id);
 }
 
 function ptab_task_onViewProject(){
 	var row = gt_select_row;
 	var project = { id:row.project_id, name:row.project_name };
 	view_project(project);
-	/*
-	
-	var title = '项目：'+ row.project_name;
-	var tab = $('#tt').tabs('getTab', title );
-	if( !tab ){
-		$('#tt').tabs('add',{
-			title: '项目：'+ row.project_name,
-			href: '/project/p/'+ row.project_id +'/build',
-			closable: true
-		});
-	}*/
 }
 
 function ptab_task_onReady(){

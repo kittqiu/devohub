@@ -1,0 +1,72 @@
+<div id="win_edit_mydaily" style="display:none">
+	<div class="easyui-panel" data-options="fit:true" style="padding:20px 20px">
+		<div style="margin-bottom:20px">
+			<input class="" id="we_mydaily_report" name="we_mydaily_report" style="width:95%;height:80px" data-options="label:'今日工作:',multiline:true,prompt:'填写今日工作'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="we_mydaily_duration" name="we_mydaily_duration" style="width:160px" data-options="label:'今日用时:',required:true,min:0,max:24">小时
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="we_mydaily_percent" name="we_mydaily_percent" style="width:160px" data-options="label:'总体进度:',required:true,min:0,max:100,increment:10">%
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="we_mydaily_plan" name="we_mydaily_plan" style="width:95%;height:80px" data-options="label:'明日计划:',multiline:true,prompt:'填写明日计划工作'">
+		</div>
+		<div class="uk-text-center">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="we_mydaily_submit()" style="width:120px">提交</a>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+var we_mydaily_record, we_mydaily_date;
+
+function mydaily_edit_daily(record,date){
+	we_mydaily_record = record;
+	we_mydaily_date = date;
+
+	$('#we_mydaily_report').textbox({});
+	$('#we_mydaily_report').textbox('setValue', record.report );
+	$('#we_mydaily_plan').textbox({});
+	$('#we_mydaily_plan').textbox('setValue', record.plan );
+	$('#we_mydaily_duration').numberspinner({});
+	var duration = record.daily.duration;
+	$('#we_mydaily_duration').numberspinner('setValue', duration?duration:0 );
+	$('#we_mydaily_percent').numberspinner({});
+	$('#we_mydaily_percent').numberspinner('setValue', record.percent );
+
+	$('#win_edit_mydaily').window({
+		title: "修改任务日志",
+		width:600,
+		height:400,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+}
+
+function we_mydaily_submit(){
+	var data = {
+		task_id: we_mydaily_record.id,
+		duration: parseInt($("#we_mydaily_duration").numberspinner('getValue')),
+		report: $("#we_mydaily_report").textbox('getValue'),
+		plan: $("#we_mydaily_plan").textbox('getValue'),
+		percent: parseInt($("#we_mydaily_percent").numberspinner('getValue')),
+		time: we_mydaily_date.getTime()
+	};
+
+	var daily_id = we_mydaily_record.daily.id;
+
+	postJSON( '/api/project/daily/'+ (daily_id? daily_id: 'creation'), data, function(err, result){
+			if( !err ){
+				showInfo( '日志提交成功。');
+				$('#win_edit_mydaily').window( 'close');
+				mydaily_reload();
+			}else{
+				showErrorInfo( "日志提交失败", err.message );
+			}
+	});
+}
+</script>
