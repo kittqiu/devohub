@@ -19,7 +19,7 @@
 			<div data-options="region:'center',border:false">				
 				<div class="easyui-panel" data-options="fit:true,border:false" >
 					<table id="teamdaily-dg" class=""
-							data-options="fit:true,singleSelect:true,fitColumns:true,onDblClickRow:teamdaily_dg_onDblClick, onBeforeSelect:teamdaily_onBeforeSelectRow" style="display:none">
+							data-options="fit:true,singleSelect:true,fitColumns:true,onBeforeSelect:teamdaily_onBeforeSelectRow" style="display:none">
 						<thead>
 							<tr>
 								<th data-options="field:'name',width:100">任务</th>
@@ -124,11 +124,6 @@ function teamdaily_onNext(){
 	teamdaily_toWorkday(day, 1);
 }
 
-function teamdaily_dg_onDblClick(index,row){
-	var d = $('#teamdaily-date').datebox('getValue');
-	var day = parser_DateMonth(d);
-	teamdaily_edit_daily(row,day);
-}
 function teamdaily_onBeforeSelectRow(index,row){
 	return false;
 }

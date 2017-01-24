@@ -1,5 +1,5 @@
 <div id="ptab_task_win_view_task" style="display:none">
-	<div class="easyui-panel" data-options="fit:true" style="padding:5px">
+	<div class="" id="pt_wvtsk_panel" data-options="fit:true" style="padding:5px">
 		<div style="padding:5px;">
 			<table class="uk-table dv-border">
 				<tbody>
@@ -67,15 +67,15 @@
 					</tr>
 				</thead>
 			</table>
-			<div class="easyui-panel" style="width:98%;height:150px;padding:10px">
+			<div class="" id="pt_wvtsk_panel_add_flow" style="width:98%;height:150px;padding:10px">
 				<div style="margin-bottom:5px">
-					<input class="easyui-combobox" id="pt_wvtsk_action" name="pt_wvtsk_action" style="width:200px" data-options="label:'选择操作:',required:true,valueField:'action',textField:'action_name'">
+					<input class="" id="pt_wvtsk_action" name="pt_wvtsk_action" style="width:200px" data-options="label:'选择操作:',required:true,valueField:'action',textField:'action_name'">
 				</div>
 				<div style="margin-bottom:10px">
-					<input class="easyui-textbox" id="pt_wvtsk_reply" name="pt_wvtsk_reply" style="width:95%;height:60px" data-options="label:'备注说明:',multiline:true">
+					<input class="" id="pt_wvtsk_reply" name="pt_wvtsk_reply" style="width:95%;height:60px" data-options="label:'备注说明:',multiline:true">
 				</div>
 				<div class="uk-text-center">
-					<a href="javascript:void(0)" class="easyui-linkbutton" onclick="pt_wvtsk_submit()" style="width:120px">提交</a>
+					<a href="javascript:void(0)" id="pt_wvtsk_submit" class="" onclick="pt_wvtsk_submit()" style="width:120px">提交</a>
 				</div>
 			</div>
 		</div>
@@ -83,11 +83,11 @@
 			<table id="pt-task-daily-dg" title="进展日志" data-options="" style="width:98%">
 				<thead>
 					<tr>
-						<th data-options="field:'updated_at',formatter:pt_wvtsk_formatter_time,width:80">时间</th>
-						<th data-options="field:'user_name',width:80">执行人</th>
-						<th data-options="field:'duration',width:80">用时</th>
+						<th data-options="field:'updated_at',formatter:pt_wvtsk_formatter_time,width:120">时间</th>
+						<th data-options="field:'user_name',width:60">执行人</th>
+						<th data-options="field:'duration',width:60">用时</th>
 						<th data-options="field:'report',formatter:formatter_pre, width:260">当日工作</th>
-						<th data-options="field:'plan',formatter:formatter_pre, width:220">明日计划</th>
+						<th data-options="field:'plan',formatter:formatter_pre, width:230">明日计划</th>
 					</tr>
 				</thead>
 			</table>
@@ -97,6 +97,18 @@
 <script type="text/javascript">
 
 var pt_wvtsk_taskId, pt_wvtsk_task;
+
+var pt_wvtsk_init = false;
+function pt_wvtsk_initView(){
+	if( !pt_wvtsk_init ){
+		pt_wvtsk_init = true;
+		$('#pt_wvtsk_panel').panel({});
+		$('#pt_wvtsk_panel_add_flow').panel({});
+		$('#pt_wvtsk_reply').textbox({});
+		$('#pt_wvtsk_action').combobox({});
+		$('#pt_wvtsk_submit').linkbutton({});
+	}
+}
 
 function pt_wvtsk_initFlowCombo(){
 	var task = pt_wvtsk_task;
@@ -149,6 +161,7 @@ function pt_task_init_view(task){
 
 function ptask_task_view_task(taskId){
 	pt_wvtsk_taskId = taskId;
+	pt_wvtsk_initView();
 
 	getJSON( '/api/project/task/'+taskId, function(err, task){
 		if(!err){

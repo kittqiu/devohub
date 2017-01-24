@@ -1,27 +1,38 @@
 <div id="win_edit_department" style="display:none">
-	<div class="easyui-panel" data-options="fit:true">		
-		<form id="ff_win_edit_dep" method="post" class="easyui-form" style="padding:40px 40px;" data-options="" >
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wed_dep_name" name="wed_dep_name" style="width:100%" data-options="label:'名称:',required:true, validType:'length[3,50]',prompt:'3-50字符'">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wed_parent_name" name="wed_parent_name" style="width:100%" data-options="label:'部门隶属于:',readonly:true,disabled:true">
-			</div>
-		</form>
+	<div id="wed_panel" class="" data-options="fit:true" style="padding:20px 20px;">
+		<div style="margin-bottom:20px">
+			<input class="" id="wed_dep_name" name="wed_dep_name" style="width:95%" data-options="label:'名称:',required:true, validType:'length[3,50]',prompt:'3-50字符'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wed_parent_name" name="wed_parent_name" style="width:95%" data-options="label:'部门隶属于:',readonly:true,disabled:true">
+		</div>
 		<div class="uk-text-center">
-			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wed_submitForm()" style="width:120px">保存</a>
+			<a href="javascript:void(0)" id="wed_submit" class="" onclick="wed_submitForm()" style="width:120px">保存</a>
 		</div>
 	</div>
 </div>
 <script type="text/javascript">
+var wed_init = false;
+function wed_initView(){
+	if( !wed_init ){
+		wed_init = true;
+		$('#wed_panel').panel({});
+		$('#wed_dep_name').textbox({});
+		$('#wed_parent_name').textbox({});
+		$('#wed_submit').linkbutton({});
+	}
+}
+
 var wed_department;
 function editDepartment(dep){
 	wed_department = dep;
+
+	wed_initView();
 	var parent = dep.parent != 'root'? g_depMap[dep.parent]: {id:'root',name:'无'};
 	$('#win_edit_department').window({
 		title: "修改部门",
 		width:400,
-		height:260,
+		height:220,
 		modal:true,
 		minimizable:false,
 		maximizable:false,

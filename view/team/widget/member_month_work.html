@@ -1,7 +1,6 @@
 <div id="win_member_month_work" style="display:none">
-	<div class="easyui-panel" data-options="fit:true" style="padding:10px">		
-		<table id="wmmw_dg" class="easyui-datagrid" 
-            data-options="fit:true">
+	<div id="wmmw_panel" class="" data-options="fit:true" style="padding:10px">		
+		<table id="wmmw_dg" class="" data-options="fit:true,singleSelect:true">
 	        <thead>
 	            <tr>
 	                <th data-options="field:'time',width:100,formatter:wmmw_format_date">日期</th>
@@ -15,9 +14,19 @@
 	</div>
 </div>
 <script type="text/javascript">
+var wmmw_init = false;
+function wmmw_initView(){
+	if( !wmmw_init ){		
+		wmmw_init = true;
+		$('#wmmw_panel').panel({});
+		$('#wmmw_dg').datagrid({});
+	}
+}
+
 var wmmw_Id = '#win_member_month_work';
 
 function showMemberMonthWork(user,date){
+	wmmw_initView();
 	$(wmmw_Id).window({
 		title: user.name + "的月工作",
 		width:1000,
@@ -30,14 +39,14 @@ function showMemberMonthWork(user,date){
 		resizable: false
 	});
 	getJSON( '/api/project/u/' + user.id + '/monthwork', {year:date.getFullYear(), month:date.getMonth()}, function(err, data ){
-				if(!err){
-					if( data.length == 0 ){
-						data = [{time: 0, report:'',duration: '', task_name:'',project_name: ''}];//显示一条无记录的提示
-					}
-					$('#wmmw_dg').datagrid('loadData', data );
+			if(!err){
+				if( data.length == 0 ){
+					data = [{time: 0, report:'',duration: '', task_name:'',project_name: ''}];//显示一条无记录的提示
 				}
+				$('#wmmw_dg').datagrid('loadData', data );
 			}
-		);	
+		}
+	);	
 }
 
 function wmmw_format_date(val,row){

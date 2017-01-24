@@ -1,14 +1,24 @@
 <div id="win_add_member" style="display:none">
-	<div class="easyui-panel" data-options="fit:true" style="padding:20px 30px">		
+	<div id="wam_panel" class="" data-options="fit:true" style="padding:20px 30px">
 		<div id="wam_user_list" ></div>
 		<div class="uk-text-center" style="margin-top:20px">
-			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wam_submit()" style="width:120px">增加</a>
+			<a href="javascript:void(0)" id="wam_submit" class="" onclick="wam_submit()" style="width:120px">增加</a>
 		</div>
 	</div>
 </div>
 <script type="text/javascript">
+var wam_init = false;
+function wam_initView(){
+	if( !wam_init ){		
+		wam_init = true;
+		$('#wam_panel').panel({});
+		$('#wam_submit').linkbutton({});
+	}
+}
+
 var g_memberDepId;
 function addMember(department){
+	wam_initView();
 	getJSON( '/api/team/department/freeusers', function(err, fusers){
 		if(!err){
 			$('#wam_user_list').datalist('loadData', fusers);

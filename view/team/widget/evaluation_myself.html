@@ -1,32 +1,48 @@
-<div id="win_evaluation_myself" style="display:none">	
-		<form id="ff_win_edit_evaluation" method="post" class="easyui-form" style="padding:20px 20px;" data-options="fit:true" >
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wem_corework" name="wem_corework" style="width:90%" data-options="label:'核心工作项：',labelWidth:150,required:true, prompt:'填写最重要的一项工作'">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wem_output" name="wem_output" style="width:90%;height:60px" data-options="label:'成果小结（重点）：',labelWidth:150,multiline:true,prompt:'用1-2句话量化地描述你的成果，例如：共完成整体计划50%，共分解为15个任务，提交XXX文档'">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wem_process" name="wem_process" style="width:90%;height:60px" data-options="label:'过程小结：',labelWidth:150,multiline:true,prompt:'简要量化描述过程是否有序，包含是否有制订计划，分解为多少个任务，xxx%的任务按时完成'">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wem_goodjob" name="wem_goodjob" style="width:90%;height:60px" data-options="label:'为自己点赞的地方(重点)：',labelWidth:150,multiline:true,prompt:'填写在整个过程中1-2个突出的并值得表扬的行为。如果放空，表示没有'">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wem_badjob" name="wem_badjob" style="width:90%;height:60px" data-options="label:'令自己遗憾的地方：',labelWidth:150,multiline:true,prompt:'填写做得不足的方面。如果放空，表示没有'">
-			</div>
-			<div>
-				<input class="easyui-textbox" id="wem_other" name="wem_other" style="width:90%;height:60px" data-options="label:'其他需要说明：',labelWidth:150,multiline:true,prompt:'选填，如果有其他项相对重要的工作'">
-			</div>
-		</form>
-		<div id="wem_footer" class="uk-text-center">
-			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wem_submit()" style="width:120px">提交</a>
+<div id="win_evaluation_myself" style="display:none">
+	<div id="wemy_panel" class="" data-options="fit:true" style="padding:20px 30px">
+		<div style="margin-bottom:20px">
+			<input class="" id="wem_corework" name="wem_corework" style="width:90%" data-options="label:'核心工作项：',labelWidth:150,required:true, prompt:'填写最重要的一项工作'">
 		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wem_output" name="wem_output" style="width:90%;height:60px" data-options="label:'成果小结（重点）：',labelWidth:150,multiline:true,prompt:'用1-2句话量化地描述你的成果，例如：共完成整体计划50%，共分解为15个任务，提交XXX文档'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wem_process" name="wem_process" style="width:90%;height:60px" data-options="label:'过程小结：',labelWidth:150,multiline:true,prompt:'简要量化描述过程是否有序，包含是否有制订计划，分解为多少个任务，xxx%的任务按时完成'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wem_goodjob" name="wem_goodjob" style="width:90%;height:60px" data-options="label:'为自己点赞的地方(重点)：',labelWidth:150,multiline:true,prompt:'填写在整个过程中1-2个突出的并值得表扬的行为。如果放空，表示没有'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wem_badjob" name="wem_badjob" style="width:90%;height:60px" data-options="label:'令自己遗憾的地方：',labelWidth:150,multiline:true,prompt:'填写做得不足的方面。如果放空，表示没有'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wem_other" name="wem_other" style="width:90%;height:60px" data-options="label:'其他需要说明：',labelWidth:150,multiline:true,prompt:'选填，如果有其他项相对重要的工作'">
+		</div>
+		<div id="wem_footer" class="uk-text-center">
+			<a href="javascript:void(0)" id="wem_btn_submit" class="" onclick="wem_submit()" style="width:120px">提交</a>
+		</div>
+	</div>
 </div>
 <script type="text/javascript">
+var wemy_init = false;
+function wemy_initView(){
+	if( !wemy_init ){		
+		wemy_init = true;
+		$('#wemy_panel').panel({});
+		$('#wem_corework').textbox({});
+		$('#wem_output').textbox({});
+		$('#wem_process').textbox({});
+		$('#wem_goodjob').textbox({});
+		$('#wem_badjob').textbox({});
+		$('#wem_other').textbox({});
+		$('#wem_btn_submit').linkbutton({});
+	}
+}
+
 var wemy_Id = '#win_evaluation_myself';
 var wemy_data;
 function openWin_EditMyEvaluation(data){
+	wemy_initView();
 	$(wemy_Id).window({
 		title: "修改月工作评价",
 		width:800,

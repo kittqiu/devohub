@@ -1,25 +1,34 @@
 <div id="win_add_department" style="display:none">
-	<div class="easyui-panel" data-options="fit:true">		
-		<form id="ff_win_add_dep" method="post" class="easyui-form" style="padding:40px 40px;" data-options="" >
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wad_dep_name" name="wad_dep_name" style="width:100%" data-options="label:'名称:',required:true, validType:'length[3,50]',prompt:'3-50字符'">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wad_parent_name" name="wad_parent_name" style="width:100%" data-options="label:'部门隶属于:',readonly:true,disabled:true">
-			</div>
-		</form>
+	<div id="wad_panel" class="" data-options="fit:true" style="padding:20px 20px;">
+		<div style="margin-bottom:20px">
+			<input class="" id="wad_dep_name" name="wad_dep_name" style="width:95%" data-options="label:'名称:',required:true, validType:'length[3,50]',prompt:'3-50字符'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wad_parent_name" name="wad_parent_name" style="width:95%" data-options="label:'部门隶属于:',readonly:true,disabled:true">
+		</div>
 		<div class="uk-text-center">
-			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wad_submitForm()" style="width:120px">创建</a>
+			<a href="javascript:void(0)" id="wad_submit" class="" onclick="wad_submitForm()" style="width:120px">创建</a>
 		</div>
 	</div>
 </div>
 <script type="text/javascript">
+var wad_init = false;
+function wad_initView(){
+	if( !wad_init ){		
+		wad_init = true;
+		$('#wad_panel').panel({});
+		$('#wad_dep_name').textbox({});
+		$('#wad_parent_name').textbox({});
+		$('#wad_submit').linkbutton({});
+	}
+}
+
 function addDepartment(parent){
-	//$('#win_add_department')
+	wad_initView();
 	$('#win_add_department').window({
 		title: "创建新部门",
 		width:400,
-		height:260,
+		height:220,
 		modal:true,
 		minimizable:false,
 		maximizable:false,
