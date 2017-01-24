@@ -1,12 +1,6 @@
 <div id="win_project_set_member" style="display:none">
-	<table id="wpsm_tg" class="easyui-treegrid" 
-		data-options="
-			rownumbers: true,
-			idField: 'id',
-			treeField: 'name',
-			fit:true,
-			toolbar: '#wpsm_tb',
-			onSelect:gpsm_tg_onSelect 
+	<table id="wpsm_tg" class="" 
+		data-options="rownumbers: true,idField: 'id',treeField: 'name',fit:true,toolbar: '#wpsm_tb',onSelect:gpsm_tg_onSelect 
 		">
 		<thead>
 			<tr>
@@ -17,63 +11,63 @@
 		</thead>
 	</table>
 	<div id="wpsm_tb">
-		<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="wpsm_add_group()">新建组</a>
-		<a id="wpsm_btn_edit_group" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true,disabled:true" onclick="wpsm_edit_group()">修改组</a>
-		<a id="wpsm_btn_add_member" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true,disabled:true" onclick="wpsm_add_member()">添加新成员</a>
-		<a id="wpsm_btn_edit_member" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true,disabled:true" onclick="wpsm_edit_member()">修改新成员</a>
-		<a id="wpsm_btn_remove_member" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true,disabled:true" onclick="wpsm_remove_member()">删除成员</a>
+		<a href="#" id="wpsm_btn_add_group" class="" data-options="iconCls:'icon-add',plain:true" onclick="wpsm_add_group()">新建组</a>
+		<a id="wpsm_btn_edit_group" href="#" class="" data-options="iconCls:'icon-edit',plain:true,disabled:true" onclick="wpsm_edit_group()">修改组</a>
+		<a id="wpsm_btn_add_member" href="#" class="" data-options="iconCls:'icon-add',plain:true,disabled:true" onclick="wpsm_add_member()">添加新成员</a>
+		<a id="wpsm_btn_edit_member" href="#" class="" data-options="iconCls:'icon-edit',plain:true,disabled:true" onclick="wpsm_edit_member()">修改新成员</a>
+		<a id="wpsm_btn_remove_member" href="#" class="" data-options="iconCls:'icon-remove',plain:true,disabled:true" onclick="wpsm_remove_member()">删除成员</a>
 	</div>
 </div>
 <div id="wpsm_new_group" style="display:none">	
 	<div style="margin-bottom:20px;padding:10px 20px">
-		<input class="easyui-textbox" id="wpsm_ng_name" name="wpsm_ng_name" style="width:95%" data-options="label:'名称:',required:true, validType:'length[1,32]',prompt:'1-32字符'">
+		<input class="" id="wpsm_ng_name" name="wpsm_ng_name" style="width:95%" data-options="label:'名称:',required:true, validType:'length[1,32]',prompt:'1-32字符'">
 	</div>	
 	<div class="uk-text-center">
-		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wpsm_ng_submit()" style="width:120px">创建</a>
+		<a href="javascript:void(0)" id="wpsm_btn_ng_submit" class="" onclick="wpsm_ng_submit()" style="width:120px">创建</a>
 	</div>
 </div>
 <div id="wpsm_edit_group" style="display:none">	
 	<div style="margin-bottom:20px;padding:10px 20px">
-		<input class="easyui-textbox" id="wpsm_eg_name" name="wpsm_eg_name" style="width:95%" data-options="label:'名称:',required:true, validType:'length[1,32]',prompt:'1-32字符'">
+		<input class="" id="wpsm_eg_name" name="wpsm_eg_name" style="width:95%" data-options="label:'名称:',required:true, validType:'length[1,32]',prompt:'1-32字符'">
 	</div>	
 	<div class="uk-text-center">
-		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wpsm_eg_submit()" style="width:120px">修改</a>
+		<a href="javascript:void(0)" id="wpsm_btn_eg_submit" class="" onclick="wpsm_eg_submit()" style="width:120px">修改</a>
 	</div>
 </div>
 <div id="wpsm_new_member" style="display:none;padding:10px 20px">
 	<div style="margin-bottom:20px">
-		<input class="easyui-combobox" id="wpsm_nm_member" name="wpsm_nm_member" style="width:95%" data-options="label:'选择新成员:',valueField:'id',textField:'name'">
+		<input class="" id="wpsm_nm_member" name="wpsm_nm_member" style="width:95%" data-options="label:'选择新成员:',valueField:'id',textField:'name'">
 	</div>
 	<div style="margin-bottom:20px">
-		<select id="wpsm_nm_member_role" name="wpsm_nm_member_role" class="easyui-combobox" style="width:95%" data-options="label:'参与角色:',required:true,value:'executor'">
+		<select id="wpsm_nm_member_role" name="wpsm_nm_member_role" class="" style="width:95%" data-options="label:'参与角色:',required:true,value:'executor'">
 			<option value="leader">组负责人</option>
 			<option value="manager">管理兼执行</option>
 			<option value="executor">执行成员</option>
 		</select>
 	</div>
 	<div style="margin-bottom:20px">
-		<input class="easyui-textbox" id="wpsm_nm_member_responsibility" name="wpsm_nm_member_responsibility" style="width:95%" data-options="label:'职责:',required:true,prompt:'填写职责说明,1-30字符'">
+		<input class="" id="wpsm_nm_member_responsibility" name="wpsm_nm_member_responsibility" style="width:95%" data-options="label:'职责:',required:true,prompt:'填写职责说明,1-30字符'">
 	</div>
 	<div class="uk-text-center">
-		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wpsm_nm_submit()" style="width:120px">添加</a>
+		<a href="javascript:void(0)" id="wpsm_btn_nm_submit" class="easyui-linkbutton" onclick="wpsm_nm_submit()" style="width:120px">添加</a>
 	</div>
 </div>
 <div id="wpsm_edit_member" style="display:none;padding:10px 20px">
 	<div style="margin-bottom:20px">
-		<input class="easyui-textbox" id="wpsm_em_member" name="wpsm_em_member" style="width:95%" data-options="label:'成员:',disabled:true">
+		<input class="" id="wpsm_em_member" name="wpsm_em_member" style="width:95%" data-options="label:'成员:',disabled:true">
 	</div>
 	<div style="margin-bottom:20px">
-		<select id="wpsm_em_member_role" name="wpsm_em_member_role" class="easyui-combobox" style="width:95%" data-options="label:'参与角色:',required:true,value:'executor'">
+		<select id="wpsm_em_member_role" name="wpsm_em_member_role" class="" style="width:95%" data-options="label:'参与角色:',required:true,value:'executor'">
 			<option value="leader">组负责人</option>
 			<option value="manager">管理兼执行</option>
 			<option value="executor">执行成员</option>
 		</select>
 	</div>
 	<div style="margin-bottom:20px">
-		<input class="easyui-textbox" id="wpsm_em_member_responsibility" name="wpsm_em_member_responsibility" style="width:95%" data-options="label:'职责:',required:true,prompt:'填写职责说明,1-30字符'">
+		<input class="" id="wpsm_em_member_responsibility" name="wpsm_em_member_responsibility" style="width:95%" data-options="label:'职责:',required:true,prompt:'填写职责说明,1-30字符'">
 	</div>
 	<div class="uk-text-center">
-		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wpsm_em_submit()" style="width:120px">修改</a>
+		<a href="javascript:void(0)" id="wpsm_btn_em_submit" class="easyui-linkbutton" onclick="wpsm_em_submit()" style="width:120px">修改</a>
 	</div>
 </div>
 <script type="text/javascript">
@@ -88,6 +82,34 @@ var gpsm_roleOptions = {
 	manager:'管理兼执行',
 	executor: '执行成员'
 };
+
+var wpsm_init = false;
+function wpsm_initView(){
+	if( !wpsm_init ){
+		wpsm_init = true;
+		$('#wpsm_tg').treegrid({});
+		$('#wpsm_ng_name').textbox({});
+		$('#wpsm_eg_name').textbox({});
+		$('#wpsm_nm_member_responsibility').textbox({});
+		$('#wpsm_em_member').textbox({});
+		$('#wpsm_em_member_responsibility').textbox({});
+
+		$('#wpsm_nm_member').combobox({});
+		$('#wpsm_nm_member_role').combobox({});
+		$('#wpsm_em_member_role').combobox({});
+
+		$('#wpsm_btn_add_group').linkbutton({});
+		$('#wpsm_btn_edit_group').linkbutton({});
+		$('#wpsm_btn_add_member').linkbutton({});
+		$('#wpsm_btn_edit_member').linkbutton({});
+
+		$('#wpsm_btn_remove_member').linkbutton({});
+		$('#wpsm_btn_ng_submit').linkbutton({});
+		$('#wpsm_btn_eg_submit').linkbutton({});
+		$('#wpsm_btn_nm_submit').linkbutton({});
+		$('#wpsm_btn_em_submit').linkbutton({});
+	}
+}
 
 function gpsm_loadData(){
 	getJSON( '/api/project/p/'+gpsm_project.id, function(err, result) {
@@ -122,6 +144,7 @@ function gpsm_loadData(){
 
 function edit_project_member(p){
 	gpsm_project = p;
+	wpsm_initView();
 	$('#win_project_set_member').window({
 		title: "设置项目的团队成员 - " + p.name,
 		width:720,

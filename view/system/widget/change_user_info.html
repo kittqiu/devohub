@@ -1,24 +1,34 @@
 <div id="win_change_user_info" style="display:none">
-	<div class="easyui-panel" data-options="fit:true">		
-		<form id="ff_win_change_user_info" method="post" class="easyui-form" style="padding:20px 20px;" data-options="" >
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wcui_username" name="wcui_username" style="width:95%" data-options="label:'用户名:',disabled:true">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wcui_name" name="wcui_name" style="width:95%" data-options="label:'中文名:',required:true, validType:'length[6,20]',prompt:'1-100字符'">
-			</div>
-			<div>
-				<input class="easyui-textbox" id="wcui_email" name="wcui_email" style="width:95%" data-options="label:'Email:',disabled:true">
-			</div>
-		</form>
+	<div id="wcui_panel" class="" data-options="fit:true" style="padding:20px 20px;">
+		<div style="margin-bottom:20px">
+			<input class="" id="wcui_username" name="wcui_username" style="width:95%" data-options="label:'用户名:',disabled:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wcui_name" name="wcui_name" style="width:95%" data-options="label:'中文名:',required:true, validType:'length[6,20]',prompt:'1-100字符'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wcui_email" name="wcui_email" style="width:95%" data-options="label:'Email:',disabled:true">
+		</div>
 		<div class="uk-text-center">
-			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wcui_submitForm()" style="width:120px">修改</a>
+			<a href="javascript:void(0)" id="wcui_btn_submit" class="" onclick="wcui_submitForm()" style="width:120px">修改</a>
 		</div>
 	</div>
 </div>
-<script src="/static/js/sha1.min.js"></script>
 <script type="text/javascript">
+var wcui_init = false;
+function wcui_initView(){
+	if( !wcui_init ){
+		wcui_init = true;
+		$('#wcui_panel').panel({});
+		$('#wcui_username').textbox({});
+		$('#wcui_name').textbox({});
+		$('#wcui_email').textbox({});
+		$('#wcui_btn_submit').linkbutton({});
+	}
+}
+
 function changeMyInfo(){
+	wcui_initView();
 	$('#win_change_user_info').window({
 		title: "修改个人信息",
 		width:400,

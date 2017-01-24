@@ -20,7 +20,7 @@
 {% block inline_main %}
 <div class="easyui-panel" data-options="fit:true,border:false">
 	<table id="project-dg" class="easyui-datagrid" title="我正参与的项目" 
-			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',onSelect:project_dg_onSelect,onDblClickRow:project_dg_onDblClick">
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',onSelect:project_dg_onSelect,onDblClickRow:project_dg_onDblClick, onLoadSuccess:project_dg_onLoadSuccess">
 		<thead>
 			<tr>
 				<th data-options="field:'name',width:160">名称</th>
@@ -39,7 +39,7 @@
 /***view pager***/
 ENV.user.perm = {};
 ENV.user.perm.PERM_CREATE_PROJECT={{ __perm_Create }};
-var gp_isHistory = false, gp_isMime = true;
+var gp_isHistory = false, gp_isMime = true, gp_row_selected;
 
 function project_list_reload(){
 	$('#project-dg').datagrid('reload');
@@ -79,7 +79,23 @@ function project_onResetUI(){
 	$('#project_btn_set_member').linkbutton('disable');	
 }
 
+function project_dg_onLoadSuccess(data){
+	if( !!gp_row_selected ){
+		for(var i = 0; i < data.total; i++ ){
+			var r = data.rows[i];
+			if( r.id == gp_row_selected.id ){
+				$('#project-dg').datagrid('selectRow',i);
+				break;
+			}
+		}
+		if( i == data.total ){
+			gp_row_selected = null;
+		}
+	}
+}
+
 function project_dg_onSelect(index,row){
+	gp_row_selected = row;
 	if( row.master_id == ENV.user.id ){
 		$('#project_btn_edit_project').linkbutton('enable');
 		$('#project_btn_set_member').linkbutton('enable');

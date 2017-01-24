@@ -32,7 +32,7 @@ var
 app.name = 'devohub';
 app.proxy = true;
 
-app.use( auth.$userIdentityParser );//从cookie中解析得到用户信息
+
 app.use( bodyParser());/*try to parse body to be a json object or a form object*/
 
 
@@ -50,7 +50,6 @@ function serveStatic(){
 			method = this.request.method,
 			path = this.request.path,
 			pos;
-
 		if( method === 'GET' && (path.indexOf('/static/') === 0 || path === '/favicon.ico')){
 			log.debug('GET static path: ' + path);
 			pos = path.lastIndexOf('.');
@@ -74,6 +73,7 @@ if( process.productionMode ){
 }else{
 	serveStatic();
 }
+app.use( auth.$userIdentityParser );//从cookie中解析得到用户信息
 
 
 /*注册页面内参数替换函数*/

@@ -1,49 +1,60 @@
 <div id="win_new_project" style="display:none">
-	<div class="easyui-panel" data-options="fit:true">		
-		<form id="ff_win_new_project" method="post" class="easyui-form" style="padding:20px 20px;" data-options="" >
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wnpj_name" name="wnpj_name" style="width:95%" data-options="label:'项目名称:',required:true,prompt:'请填写项目名称,3-50字符'">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="" id="wnpj_master" name="wnpj_master" style="width:95%" data-options="label:'项目负责人:',required:true">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="" id="wnpj_start_time" name="wnpj_start_time" style="width:95%" data-options="label:'计划开始时间:',required:true">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="" id="wnpj_end_time" name="wnpj_end_time" style="width:95%" data-options="label:'计划结束时间:',required:true">
-			</div>
-			<div>
-				<input class="easyui-textbox" id="wnpj_details" name="wnpj_details" style="width:95%;height:60px" data-options="label:'项目说明:',required:true, multiline:true,prompt:'不可为空'">
-			</div>
-		</form>
+	<div id="wnpj_panel" class="" data-options="fit:true" style="padding:20px 20px;">
+		<div style="margin-bottom:20px">
+			<input class="" id="wnpj_name" name="wnpj_name" style="width:95%" data-options="label:'项目名称:',required:true,prompt:'请填写项目名称,3-50字符'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wnpj_master" name="wnpj_master" style="width:95%" data-options="label:'项目负责人:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wnpj_start_time" name="wnpj_start_time" style="width:95%" data-options="label:'计划开始时间:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wnpj_end_time" name="wnpj_end_time" style="width:95%" data-options="label:'计划结束时间:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wnpj_details" name="wnpj_details" style="width:95%;height:60px" data-options="label:'项目说明:',required:true, multiline:true,prompt:'不可为空'">
+		</div>
 		<div class="uk-text-center">
-			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wnpj_submitForm()" style="width:120px">创建</a>
+			<a href="javascript:void(0)" id="wnpj_btn_submit" class="" onclick="wnpj_submitForm()" style="width:120px">创建</a>
 		</div>
 	</div>
 </div>
 <script type="text/javascript">
+var wnpj_init = false;
+function wnpj_initView(){
+	if( !wnpj_init ){
+		wnpj_init = true;
+		$('#wnpj_panel').panel({});
+		$('#wnpj_name').textbox({});
+		$('#wnpj_details').textbox({});
+		$('#wnpj_btn_submit').linkbutton({});
+
+		$('#wnpj_start_time').datebox({
+			formatter:formatter_Date,
+			parser:parser_DateMonth,
+			editable:false
+		});
+		$('#wnpj_end_time').datebox({
+			formatter:formatter_Date,
+			parser:parser_DateMonth,
+			editable:false
+		});
+		$('#wnpj_master').combobox({
+			method:'get',
+			url:'/api/team/member/list',
+			valueField:'id',
+			textField:'name',
+			onLoadSuccess:function(){
+				$('#wnpj_master').combobox('select', ENV.user.id);
+			}
+		});
+	}
+}
+
 function new_project(){
-	$('#wnpj_start_time').datebox({
-		formatter:formatter_Date,
-		parser:parser_DateMonth,
-		editable:false
-	});
-	$('#wnpj_start_time').datebox('setValue', formatNow());
-	$('#wnpj_end_time').datebox({
-		formatter:formatter_Date,
-		parser:parser_DateMonth,
-		editable:false
-	});
-	$('#wnpj_master').combobox({
-		method:'get',
-		url:'/api/team/member/list',
-		valueField:'id',
-		textField:'name',
-		onLoadSuccess:function(){
-			$('#wnpj_master').combobox('select', ENV.user.id);
-		}
-	});
+	wnpj_initView();
+	$('#wnpj_start_time').datebox('setValue', formatNow());	
 	$("#wnpj_name").textbox('setValue', '');
 	$("#wnpj_details").textbox('setValue', '');
 
@@ -58,7 +69,6 @@ function new_project(){
 		draggable: false,
 		resizable: false
 	});
-	//$('#wcui_username').textbox('setValue', ENV.user.username);
 }
 
 function wnpj_submitForm(){

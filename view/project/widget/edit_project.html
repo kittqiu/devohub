@@ -1,60 +1,73 @@
 <div id="win_edit_project" style="display:none">
-	<div class="easyui-panel" data-options="fit:true">		
-		<form id="ff_win_edit_project" method="post" class="easyui-form" style="padding:20px 20px;" data-options="" >
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="wepj_name" name="wepj_name" style="width:95%" data-options="label:'项目名称:',required:true,prompt:'请填写项目名称,3-50字符'">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="" id="wepj_master" name="wepj_master" style="width:95%" data-options="label:'项目负责人:',required:true">
-			</div>
-			<div style="margin-bottom:20px">
-				<select id="wepj_status" name="wepj_status" class="easyui-combobox" style="width:95%" data-options="label:'项目状态:',required:true">
-					<option value="ready">准备就绪</option>
-					<option value="running">正在执行</option>
-					<option value="end">已结束</option>
-				</select>
-			</div>
-			
-			<div style="margin-bottom:20px">
-				<input class="" id="wepj_start_time" name="wepj_start_time" style="width:95%" data-options="label:'计划开始时间:',required:true">
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="" id="wepj_end_time" name="wepj_end_time" style="width:95%" data-options="label:'计划结束时间:',required:true">
-			</div>
-			<div>
-				<input class="easyui-textbox" id="wepj_details" name="wepj_details" style="width:95%;height:60px" data-options="label:'项目说明:',required:true, multiline:true,prompt:'不可为空'">
-			</div>
-		</form>
+	<div id="wepj_panel" class="" data-options="fit:true" style="padding:20px 20px;">
+		<div style="margin-bottom:20px">
+			<input class="" id="wepj_name" name="wepj_name" style="width:95%" data-options="label:'项目名称:',required:true,prompt:'请填写项目名称,3-50字符'">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wepj_master" name="wepj_master" style="width:95%" data-options="label:'项目负责人:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<select id="wepj_status" name="wepj_status" class="" style="width:95%" data-options="label:'项目状态:',required:true">
+				<option value="ready">准备就绪</option>
+				<option value="running">正在执行</option>
+				<option value="end">已结束</option>
+			</select>
+		</div>
+		
+		<div style="margin-bottom:20px">
+			<input class="" id="wepj_start_time" name="wepj_start_time" style="width:95%" data-options="label:'计划开始时间:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wepj_end_time" name="wepj_end_time" style="width:95%" data-options="label:'计划结束时间:',required:true">
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="" id="wepj_details" name="wepj_details" style="width:95%;height:60px" data-options="label:'项目说明:',required:true, multiline:true,prompt:'不可为空'">
+		</div>
 		<div class="uk-text-center">
-			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wepj_submitForm()" style="width:120px">修改</a>
+			<a href="javascript:void(0)" id="wepj_btn_submit" class="" onclick="wepj_submitForm()" style="width:120px">修改</a>
 		</div>
 	</div>
 </div>
 <script type="text/javascript">
+var wepj_init = false;
+function wepj_initView(){
+	if( !wepj_init ){
+		wepj_init = true;
+		$('#wepj_panel').panel({});
+		$('#wepj_name').textbox({});
+		$('#wepj_details').textbox({});
+		$('#wepj_status').combobox({});
+		$('#wepj_btn_submit').linkbutton({});
+
+		$('#wepj_start_time').datebox({
+			formatter:formatter_Date,
+			parser:parser_DateMonth,
+			editable:false
+		});
+		$('#wepj_end_time').datebox({
+			formatter:formatter_Date,
+			parser:parser_DateMonth,
+			editable:false
+		});
+		$('#wepj_master').combobox({
+			method:'get',
+			url:'/api/team/member/list',
+			valueField:'id',
+			textField:'name',
+			onLoadSuccess:function(){
+				$('#wepj_master').combobox('select', gp_project.master_id);
+			}
+		});
+	}
+}
+
 var gp_project = {};
 function edit_project(p){
 	gp_project = p;
-	$('#wepj_start_time').datebox({
-		formatter:formatter_Date,
-		parser:parser_DateMonth,
-		editable:false
-	});
-	$('#wepj_start_time').datebox('setValue', formatDate(p.start_time));
-	$('#wepj_end_time').datebox({
-		formatter:formatter_Date,
-		parser:parser_DateMonth,
-		editable:false
-	});
-	$('#wepj_end_time').datebox('setValue', formatDate(p.end_time));
-	$('#wepj_master').combobox({
-		method:'get',
-		url:'/api/team/member/list',
-		valueField:'id',
-		textField:'name',
-		onLoadSuccess:function(){
-			$('#wepj_master').combobox('select', gp_project.master_id);
-		}
-	});
+	
+	wepj_initView();
+	$('#wepj_start_time').datebox('setValue', formatDate(p.start_time));	
+	$('#wepj_end_time').datebox('setValue', formatDate(p.end_time));	
 	$("#wepj_name").textbox('setValue', p.name );
 	$("#wepj_details").textbox('setValue', p.details);
 	$('#wepj_status').combobox('select', p.status);
@@ -62,7 +75,7 @@ function edit_project(p){
 	$('#win_edit_project').window({
 		title: "修改项目",
 		width:400,
-		height:400,
+		height:420,
 		modal:true,
 		minimizable:false,
 		maximizable:false,

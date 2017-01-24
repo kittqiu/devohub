@@ -120,7 +120,6 @@ POST:
 */
 
 module.exports = {
-
 	'POST /api/signup': function* (){
 		var 
 			user,

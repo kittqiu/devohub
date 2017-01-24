@@ -22,6 +22,7 @@
 	<script src="/static/js/jjv.js"></script>
 	<script src="/static/js/form_schema.js"></script>
 	<script src="/static/js/vendor.js"></script>
+	<script src="/static/js/sha1.min.js"></script>
 	<!-- END JAVASCRIPT COMPRESS -->
 	{% endif %}
 	{% block headscript %}<!-- head  -->{% endblock %}
@@ -38,9 +39,9 @@
 </head>
 <body>
 	<div id="bodylayout" class="easyui-layout" data-options="fit:true,border:false">
-		<div id="northregion" data-options="region:'north',border:false">
+		<div id="northregion" data-options="region:'north',border:false"-->
 			{% block header %}
-			<div id="header">		
+			<div id="header">
 				<ul id="top" class="dv-navbar-nav uk-navbar-nav">
 					<li><a href="/">项目管理系统</a></li>
 					{% if __user__ %}
@@ -70,17 +71,17 @@
 			</div>
 			{% endblock %}
 		</div>
-		<div id="southregion" data-options="region:'south',border:false">
+		<div id="centerregion" data-options="region:'center',border:false">			
+			{% block main %}		
+			{% endblock %}
+		</div>
+		<div id="southregion" data-options="region:'south',border:false"-->
 			<div id="footer">
 				<div class="uk-width-medium-1-2 uk-container-center uk-text-center">
 					<a href="" id="devohub-loves-you">devohub-loves-you</a>
 				</div>
 			</div>
-		</div>
-		<div id="centerregion" data-options="region:'center',border:false">			
-			{% block main %}		
-			{% endblock %}
-		</div>
+		</div>		
 	</div>
 	{% include './system/widget/change_password.html' %}
 	{% include './system/widget/change_user_info.html' %}
@@ -96,31 +97,7 @@
 			changeMyPassword();
 		}else if( item.id == 'btn_changeInfo'){
 			changeMyInfo();
-		}
-		
-	}
-
-	var helptxt = null;
-	function showHelp(){
-		if( helptxt !== null ){//load help only once
-			modal = UIkit.modal("#dialog-help");
-			modal.show();
-			return;
-		}
-		var data = { path: '{{ __request__.path }}' };
-		getJSON( '/api/help', data, function(err, result ){
-			if(err){
-				fatal(err);
-			}else{
-				helptxt = result.help;
-				if( helptxt === ''){
-					helptxt = '未找到该页的帮助文档.';
-				}
-				$('#helptext').html(marked(helptxt));
-				var modal = UIkit.modal("#dialog-help");
-				modal.show();
-			}
-		});
+		}		
 	}
 
 	$(function(){
