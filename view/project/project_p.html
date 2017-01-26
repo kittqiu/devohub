@@ -5,6 +5,8 @@
 		<a href="#" id="project_btn_new_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Create }}" onclick="new_project()">新建</a>
 		<a href="#" id="project_btn_edit_project" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="onEditProject()">修改</a>
 		<a href="#" id="project_btn_set_member" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="onSetProjectMember()">设置团队</a>
+		<a href="#" id="project_btn_view_summary" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search',disabled:true" onclick="project_onViewSummary()">查看概况</a>
+		<a href="#" id="project_btn_view_daily" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search',disabled:true" onclick="project_onViewDaily()">查看进展日志</a>
 	</div>
 	<div>
 		<span>过滤器：</span>
@@ -34,6 +36,8 @@
 {% include './widget/new_project.html' %}
 {% include './widget/edit_project.html' %}
 {% include './widget/project_set_member.html' %}
+{% include './widget/view_project_summary.html' %}
+{% include './widget/view_project_daily.html' %}
 
 <script type="text/javascript">
 /***view pager***/
@@ -58,6 +62,7 @@ function project_toggle_show_history(){
 	gp_isHistory = $('#cb_toggle_history').is(':checked');
 	project_list_reset_url();
 	project_list_reload();
+	project_onResetUI();
 }
 function project_onFilterChange(newValue,oldValue){
 	gp_isMime = newValue === 'mine';
@@ -74,9 +79,17 @@ function onSetProjectMember(){
 	var row = $('#project-dg').datagrid('getSelected');
 	edit_project_member(row);
 }
+function project_onViewSummary(){
+	view_project_summary(gp_row_selected.id);
+}
+function project_onViewDaily(){
+	view_project_daily(gp_row_selected);
+}
 function project_onResetUI(){
 	$('#project_btn_edit_project').linkbutton('disable');
 	$('#project_btn_set_member').linkbutton('disable');	
+	$('#project_btn_view_summary').linkbutton('disable');
+	$('#project_btn_view_daily').linkbutton('disable');	
 }
 
 function project_dg_onLoadSuccess(data){
@@ -88,9 +101,9 @@ function project_dg_onLoadSuccess(data){
 				break;
 			}
 		}
-		if( i == data.total ){
+		/*if( i == data.total ){
 			gp_row_selected = null;
-		}
+		}*/
 	}
 }
 
@@ -103,6 +116,8 @@ function project_dg_onSelect(index,row){
 		$('#project_btn_edit_project').linkbutton('disable');
 		$('#project_btn_set_member').linkbutton('disable');
 	}
+	$('#project_btn_view_summary').linkbutton('enable');
+	$('#project_btn_view_daily').linkbutton('enable');
 }
 
 function project_dg_onDblClick(index,row){

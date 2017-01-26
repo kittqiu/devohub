@@ -1,0 +1,98 @@
+<div id="win_view_project_summary" style="display:none">
+	<div id="wvps_panel" class="" data-options="fit:true" style="padding:20px 20px;">
+		<div>
+			<table class="uk-table dv-border">			
+				<tbody>
+					<tr>
+						<td class="uk-block-muted" style="width:120px" >负责人：</td>
+						<td class=""><span id="wvps_master"></span></td>
+						<td class="uk-block-muted" style="width:120px" >状态：</td>
+						<td class=""><span id="wvps_status"></span></td>
+					</tr>
+					<tr>
+						<td class="uk-block-muted" >开始时间：</td>
+						<td class=""><span id="wvps_starttime"></span></td>
+						<td class="uk-block-muted" >结束时间：</td>
+						<td class=""><span id="wvps_endtime"></span></td>
+					</tr>
+					<tr>
+						<td class="uk-block-muted" >项目描述：</td>
+						<td class="" colspan="3"><pre id="wvps_details" class="dv-pre-clear" style="font-size:12px"></pre></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div>
+			<table id="wvps_tg" class="" data-options="title:'项目组成员', rownumbers: true, idField: 'id',treeField: 'name'" style="height:350px; width:100%">
+				<thead>
+					<tr>
+						<th data-options="field:'name'" width="220">成员列表</th>
+						<th data-options="field:'role'" width="100" >角色</th>
+						<th data-options="field:'responsibility'" width="380">职责</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+var wvps_init = false;
+function wvps_initView(){
+	if( !wvps_init ){
+		wvps_init = true;
+		$('#wvps_panel').panel({});
+		$('#wvps_tg').treegrid({});
+	}
+}
+
+var project_statuses = {ready:'准备就绪', running:'正在执行', end:'已结束'};
+
+function wvps_maketree(po){
+	var i;
+	var groups = po.groups, members = po.members;
+	var data = [];
+
+	//解析组
+	for( i = 0; i < groups.length; i++ ){
+		var g = groups[i];
+		data.push({id:g.id, name:g.name, role:'', responsibility:'', type:'group'});
+	}
+	//解析成员
+	gpsm_members_id = [];
+	for( i = 0; i < members.length; i++){
+		var m = members[i];
+		if( m.group_id != 'manager'){
+			data.push({id:m.id, name:m.name,role:gp_roleOptions[m.role], responsibility:m.responsibility, type:'user', _parentId:m.group_id});
+		}
+	}
+	$('#wvps_tg').treegrid('loadData', {"total":data.length,"rows":data});
+}
+
+function view_project_summary(pid){
+	wvps_initView();
+
+	getJSON( '/api/project/p/'+pid, function(err, data ){
+		if(!err){
+			$("#wvps_master").text( data.master_name);
+			$("#wvps_status").text( project_statuses[data.status]);
+			$("#wvps_starttime").text( formatDate(data.start_time));
+			$("#wvps_endtime").text( formatDate(data.end_time));
+			$('#wvps_details').text( data.details );
+
+			wvps_maketree(data);
+			$('#win_view_project_summary').window({
+				title: "项目 - " + data.name,
+				width:800,
+				height:560,
+				modal:true,
+				minimizable:false,
+				maximizable:false,
+				collapsible:false,
+				draggable: false,
+				resizable: false
+			});
+		}
+	});
+}
+
+</script>

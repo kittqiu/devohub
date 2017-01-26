@@ -178,6 +178,11 @@ function formatter_percent(value, row, index){
 
 
 /*********project subsystem*************/
+var gp_roleOptions = {
+	leader: '组负责人',
+	manager:'管理兼执行',
+	executor: '执行成员'
+};
 var gpb_taskStatusMap = {
 	created: '待需求确认',
 	clear: '待接收执行',

@@ -1,0 +1,122 @@
+<div id="win_view_project_daily" style="display:none">
+	<div id="wvpd_layout"class="" data-options="fit:true,border:false" >
+		<div data-options="region:'north',border:false">
+			<div id="wvpd_north_layout" class="" data-options="border:false" style="width:100%;height:60px;">
+				<div data-options="region:'east', border:false" style="width:120px;padding:10px 20px">
+					<a href="#" id="wvpd_next" class="" data-options="" onclick="wvpd_onNext()"><i class="uk-icon-angle-double-right"></i>后一工作日</a>
+				</div>
+				<div data-options="region:'west', border:false" style="width:120px;padding:10px 20px">
+					<a href="#" id="wvpd_prev" class="uk-text-center" data-options="" onclick="wvpd_onPrevious()"><i class="uk-icon-angle-double-left"></i>前一工作日</a>
+				</div>
+				<div data-options="region:'center', border:false" class="uk-text-center" style="padding:10px 20px">
+					<input id="wvpd_date" class="" style="width:120px;">
+				</div>
+			</div>
+		</div>
+		<div data-options="region:'center',border:false">
+			<table id="wvpd-dg" class="" data-options="fit:true,singleSelect:true,fitColumns:true,onBeforeSelect:wvpd_onBeforeSelectRow">
+				<thead>
+					<tr>
+						<th data-options="field:'name',width:100">任务</th>
+						<th data-options="field:'executor_name',width:80">执行人</th>
+						<th data-options="field:'manager_name',width:80">审核人</th>
+						<th data-options="field:'daily_org_plan',width:200,formatter:wvpd_formatter_pre">当日计划</th>
+						<th data-options="field:'daily_report',width:200,formatter:wvpd_formatter_pre">当日工作</th>
+						<th data-options="field:'daily_duration',width:80">当日用时(小时)</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+var wvpd_init = false;
+function wvpd_initView(){
+	if( !wvpd_init ){
+		wvpd_init = true;
+		$('#wvpd_layout').layout({});
+		$('#wvpd_north_layout').layout({});		
+		$('#wvpd_next').linkbutton({});
+		$('#wvpd_prev').linkbutton({});
+
+		$('#wvpd_date').datebox({
+		formatter:formatter_Date,
+		parser:parser_DateMonth,
+		onSelect: function(date){
+				wvpd_loadData(date.getTime());
+				$('#wvpd_date').datebox('setValue',formatter_Date(date));
+			}
+		});
+		$('#wvpd-dg').datagrid({});
+	}
+}
+
+var wvpd_project;
+function wvpd_loadData(time){
+	getJSON( '/api/project/p/'+wvpd_project.id + '/daily', {date:time}, function(err, data ){
+		if(!err){
+			for( var i = 0; i < data.length; i++ ){
+				var r = data[i];
+				r.daily_org_plan = r.daily.org_plan;
+				r.daily_report = r.daily.report;
+				r.daily_plan = r.daily.plan;
+				r.daily_duration = r.daily.duration || 0;
+			}
+			$('#wvpd-dg').datagrid('loadData', data);
+		}
+	});
+}
+
+function view_project_daily(project){
+	wvpd_initView();
+	wvpd_project = project;
+
+	var time = Date.now() - one_day_time;
+	$('#wvpd_date').datebox('setValue',formatDate(time));
+	wvpd_loadData( time );
+
+	$('#win_view_project_daily').window({
+		title: "项目进展日志 - " + project.name,
+		width:800,
+		height:560,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+}
+
+function wvpd_formatter_pre(value,row,index){
+	if( !!value ){
+		return '<pre class="dv-pre-clear" style="font-size:12px">' + value + '</pre>';
+	}else{
+		return '未填写';
+	}
+}
+
+function wvpd_today( day, offset ){
+	day.setDate(day.getDate() +　offset);
+	var dayTime = day.getTime();
+	$('#wvpd_date').datebox('setValue',formatter_Date(day));
+	wvpd_loadData( dayTime );
+}
+
+function wvpd_onPrevious(){
+	var d = $('#wvpd_date').datebox('getValue');
+	var day = parser_DateMonth(d);
+	wvpd_today(day, -1);
+}
+function wvpd_onNext(){
+	var d = $('#wvpd_date').datebox('getValue');
+	var day = parser_DateMonth(d);
+	wvpd_today(day, 1);
+}
+
+function wvpd_onBeforeSelectRow(index,row){
+	return false;
+}
+
+</script>
