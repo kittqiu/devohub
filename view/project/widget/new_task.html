@@ -1,25 +1,25 @@
 <div id="win_new_task" style="display:none">
 	<div class="easyui-panel" data-options="fit:true" style="padding:20px 20px">
 		<div style="margin-bottom:20px">
-			<input class="easyui-textbox" id="wntsk_name" name="wntsk_name" style="width:95%" data-options="label:'任务名称:',required:true,validType:'length[3,50]',prompt:'3-50字符'">
+			<input class="easyui-textbox" id="wntsk_name" name="wntsk_name" style="width:95%" data-options="label:'任务名称:',required:true,validType:'length[2,50]',prompt:'2-50字符'">
 		</div>
 		<div style="margin-bottom:20px">
 			<input class="easyui-textbox" id="wntsk_parent" name="wntsk_parent" style="width:95%" data-options="label:'父任务:',disabled:true">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="easyui-combobox" id="wntsk_executor" name="wntsk_executor" style="width:95%" data-options="label:'执行人:',required:true,valueField:'user_id',textField:'name',">
+			<input class="easyui-combobox" id="wntsk_executor" name="wntsk_executor" style="width:95%" data-options="label:'执行人:',editable:false,required:true,valueField:'user_id',textField:'name',">
 		</div>
-		<div style="margin-bottom:20px">
+		<!--div style="margin-bottom:20px">
 			<select id="wntsk_milestone" name="wntsk_milestone" class="easyui-combobox" style="width:95%" data-options="label:'是否为里程碑:',required:true,value:'0',onChange:wntsk_onChangeMilestone">
 				<option value="0">否，任务时间可能受到依赖任务自动调整</option>
 				<option value="1">是，任务时间只能手工修改</option>
 			</select>
-		</div>
+		</div-->
 		<div style="margin-bottom:20px">
 			<input class="easyui-numberspinner" id="wntsk_duration" name="wntsk_duration" style="width:95%" data-options="label:'计划工时:',required:true,min:0,max:240,value:0">
 		</div>
 		<div style="margin-bottom:20px">
-			<select id="wntsk_automode" name="wntsk_automode" class="easyui-combobox" style="width:95%" data-options="label:'计划模式:',required:true,value:'1',onChange:wntsk_onChangeAutoMode">
+			<select id="wntsk_automode" name="wntsk_automode" class="easyui-combobox" style="width:95%" data-options="label:'计划模式:',editable:false,required:true,value:'1',onChange:wntsk_onChangeAutoMode">
 				<option value="0">自动</option>
 				<option value="1">手动</option>
 			</select>
@@ -34,7 +34,7 @@
 			<input class="easyui-textbox" id="wntsk_rely_to" name="wntsk_rely_to" style="width:95%" data-options="label:'前置任务:',required:true,prompt:'填写标识，用英文逗号分隔，例如1,2'">
 		</div>
 		<div style="margin-bottom:20px">
-			<select id="wntsk_difficulty" name="wntsk_difficulty" class="easyui-combobox" style="width:95%" data-options="label:'任务难度:',required:true,value:'1'">
+			<select id="wntsk_difficulty" name="wntsk_difficulty" class="easyui-combobox" style="width:95%" data-options="label:'任务难度:',editable:false,required:true,value:'1'">
 				<option value="0">简单</option>
 				<option value="1">普通</option>
 				<option value="2">困难</option>
@@ -73,16 +73,17 @@ function new_task(parentId){
 	$('#wntsk_executor').combobox('select', ENV.user.id);
 	$("#wntsk_duration").numberspinner('setValue', 0);
 	$('#wntsk_automode').combobox('select', "1");
-	$('#wntsk_milestone').combobox('select', "0");	
+	/*$('#wntsk_milestone').combobox('select', "0");*/
 	$('#wntsk_difficulty').combobox('select', "1");
 	$('#wntsk_details').textbox('setValue', '');
 	$('#wntsk_rely_to').textbox('disable');
+	$('#wntsk_rely_to').textbox('setValue', '');
 	
 
 	$('#win_new_task').window({
 		title: "创建新任务",
 		width:600,
-		height:640,
+		height:580,
 		modal:true,
 		minimizable:false,
 		maximizable:false,
@@ -115,6 +116,10 @@ function wntsk_onChangeAutoMode(newValue,oldValue){
 
 function wntsk_calcRelyTask(){
 	var rely = $("#wntsk_rely_to").textbox('getValue');
+	var reg = /^[0-9,\,]+$/;
+	if(!reg.test(rely)){
+		return false;
+	}
 	var duration = parseInt($("#wntsk_duration").numberspinner('getValue'));
 	var rs = rely.split(',');
 	var ro = {start_time:0,end_time:0, rs:[]};
@@ -163,9 +168,14 @@ function wntsk_submit(){
 			end_time: end_time,
 			difficulty: parseInt($("#wntsk_difficulty").combobox('getValue')),
 			details: $("#wntsk_details").textbox('getValue'),
-			milestone:parseInt($("#wntsk_milestone").combobox('getValue')),
+			milestone:0/*parseInt($("#wntsk_milestone").combobox('getValue'))*/,
 			relyTo: rs
 		};
+
+	var tbfields = {wntsk_name:'任务名称'};
+	if( !validateInputField(tbfields)){
+		return false;
+	}
 	
 	var properties = {name:'任务名称',parent:'父任务',start_time:'计划开始时间', end_time:'计划结束时间', executor:'任务负责人', duration:'计划工时', automode:'计划模式',difficulty:'任务难度', details:'任务说明',relyTo:'前置任务',milestone:'置为里程碑'};
 	var vr = validateJsonObj('createTask', data, properties);

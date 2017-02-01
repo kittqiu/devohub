@@ -51,6 +51,7 @@ POST METHOD:
 /api/project/groupmember/:id/delete
 /api/project/task/:id
 /api/project/task/:id/move?action=xx
+/api/project/task/:id/milestone/toggle
 /api/project/tasklist/updateplan
 
 ********/
@@ -350,6 +351,16 @@ module.exports = {
 			result: 'ok',
 			redirect: base.getHistoryUrl(this)
 		}
+	},
+
+	'POST /api/project/task/:id/milestone/toggle': function*(id){
+		var t = yield base.modelTask.$find(id);
+		if( t === null ){
+			throw api.notFound('task', this.translate('Record not found'));
+		}
+		t.milestone = t.milestone == 0 ? 1: 0;
+		yield t.$update(['milestone']);
+		this.body = { result: 'ok'};
 	},
 
 	'POST /api/project/task/:id/move': function*(id){

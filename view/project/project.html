@@ -8,7 +8,7 @@
 	<div title="任务" style="padding:10px" data-options="href:'/project/task'">
 	</div>
 	<div title="我的工作日志" style="padding:10px;" data-options="href:'/project/daily'"></div>
-	<div title="团队的工作" style="padding:10px;" data-options="href:'/project/daily/team'"></div>
+	<div title="团队的工作日志" style="padding:10px;" data-options="href:'/project/daily/team'"></div>
 </div>
 <script type="text/javascript">
 var project_opened;
@@ -26,7 +26,7 @@ function view_project(p){
 		href: '/project/p/'+ p.id +'/build',
 		closable: true,
 		collapsible:true,
-		onBeforeClose:function(title,index){
+		/*onBeforeClose:function(title,index){
 			if( !!project_opened ){
 				var t = '项目：'+ project_opened.name;
 				project_opened = null;
@@ -34,7 +34,7 @@ function view_project(p){
 				return false;
 			}
 			return true;
-		},
+		},*/
 		onClose:function(title,index){			
 		}
 	});

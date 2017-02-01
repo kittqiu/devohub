@@ -51,6 +51,12 @@ function wed_submitForm(){
 					name: $("#wed_dep_name").textbox('getValue'),
 					pid: $("#wed_parent_name").textbox('getValue')
 				};
+				
+	var tbfields = {wed_dep_name:'部门名'};
+	if( !validateInputField(tbfields)){
+		return false;
+	}
+	
 	var properties = {name:'部门名'};
 	var vr = validateJsonObj('createDepartment', data, properties);
 	if( vr === true ){

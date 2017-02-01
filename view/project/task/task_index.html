@@ -6,7 +6,7 @@
 	</div>
 	<div>
 		<span>过滤器：</span>
-		<select id="task-filter" class="easyui-combobox" name="task-filter" style="width:120px;" data-options="onChange:ptab_task_onFilterChange">
+		<select id="task-filter" class="easyui-combobox" name="task-filter" style="width:120px;" data-options="onChange:ptab_task_onFilterChange,editable:false">
 			<option value="doing">正在执行的</option>
 			<option value="planning">待执行的</option>
 			<option value="manage">我管理的</option>
@@ -18,7 +18,7 @@
 
 {% block inline_main %}
 <div class="easyui-panel" data-options="fit:true,border:false">
-	<table id="ptab-task-dg" class="easyui-datagrid" title="我正在执行任务" 
+	<table id="ptab-task-dg" class="easyui-datagrid" title="我正在执行的任务" 
 			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/t/listExecuting',method:'get',onDblClickRow:ptab_task_dg_onDblClick, onSelect:ptab_task_onSelectRow">
 		<thead>
 			<tr>
@@ -60,7 +60,7 @@ function ptab_task_list_reload(){
 	$('#ptab_task_btn_view_project').linkbutton( 'disable');
 }
 function ptab_task_list_reset_url(){
-	$('#ptab-task-dg').datagrid('getPanel').panel('setTitle', gt_titles[gt_filter] + (gp_isHistory&&gt_filter!="planning"?'(含历史任务)':''));
+	$('#ptab-task-dg').datagrid('getPanel').panel('setTitle', gt_titles[gt_filter] + (gp_isHistory&&gt_filter!="planning"?'(历史任务)':''));
 	if( gp_isHistory ){
 		$('#ptab-task-dg').datagrid('options').url = gt_urls_history[gt_filter];
 	}else{

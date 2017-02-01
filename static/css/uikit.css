@@ -10925,7 +10925,8 @@ a.uk-datepicker-table-muted {
 .dv-pre-clear {
   border-style: none;
   margin: 0;
-  background: #fff;
+  color:#000;
+  background-color: transparent;
   overflow: auto;
   white-space: pre-wrap;
   /* CSS 3 */

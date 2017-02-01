@@ -57,22 +57,22 @@
 			</table>
 		</div>
 		<div style="padding:5px;margin-bottom:20px">
-			<table id="task-flow-dg" title="工作流" data-options="" style="width:98%;margin-bottom:10px">
+			<table id="task-flow-dg" title="工作流" data-options="singleSelect:true" style="width:750px;margin-bottom:10px">
 				<thead>
 					<tr>
 						<th data-options="field:'action',formatter:formatter_task_flow_aciton,width:80">操作</th>
-						<th data-options="field:'user_name',width:80">用户</th>
-						<th data-options="field:'created_at',width:80,formatter:wvt_formatter_time">时间</th>
-						<th data-options="field:'reply',formatter:formatter_pre, width:480">回复信息</th>
+						<th data-options="field:'user_name',width:70">用户</th>
+						<th data-options="field:'created_at',width:130,formatter:wvt_formatter_time">时间</th>
+						<th data-options="field:'reply',formatter:formatter_pre, width:460">回复信息</th>
 					</tr>
 				</thead>
 			</table>
-			<div class="easyui-panel" style="width:98%;height:150px;padding:10px">
+			<div class="easyui-panel" style="width:750px;height:150px;padding:10px">
 				<div style="margin-bottom:5px">
 					<input class="easyui-combobox" id="wvtsk_action" name="wvtsk_action" style="width:200px" data-options="label:'选择操作:',required:true,valueField:'action',textField:'action_name'">
 				</div>
 				<div style="margin-bottom:10px">
-					<input class="easyui-textbox" id="wvtsk_reply" name="wvtsk_reply" style="width:95%;height:60px" data-options="label:'备注说明:',multiline:true">
+					<input class="easyui-textbox" id="wvtsk_reply" name="wvtsk_reply" style="width:700px;height:60px" data-options="label:'备注说明:',multiline:true">
 				</div>
 				<div class="uk-text-center">
 					<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wvtsk_submit()" style="width:120px">提交</a>
@@ -80,12 +80,12 @@
 			</div>
 		</div>
 		<div style="padding:5px;">
-			<table id="task-daily-dg" title="进展日志" data-options="" style="width:98%">
+			<table id="task-daily-dg" title="进展日志" data-options="singleSelect:true" style="width:750px">
 				<thead>
 					<tr>
-						<th data-options="field:'updated_at',formatter:wvt_formatter_time,width:120">时间</th>
+						<th data-options="field:'updated_at',formatter:wvt_formatter_time_daily,width:130">时间</th>
 						<th data-options="field:'user_name',width:60">执行人</th>
-						<th data-options="field:'duration',width:60">用时</th>
+						<th data-options="field:'duration',width:50">用时</th>
 						<th data-options="field:'report',formatter:formatter_pre, width:260">当日工作</th>
 						<th data-options="field:'plan',formatter:formatter_pre, width:220">明日计划</th>
 					</tr>
@@ -156,7 +156,7 @@ function pb_view_task(taskId){
 		method:'get',
 		onLoadSuccess: function(data){
 			if(data.total==0){
-				$('#task-flow-dg').datagrid('loadData', [{action:'',user_name:'无',created_at:0,reply:'无'}] );
+				$('#task-flow-dg').datagrid('loadData', [{action:'',user_name:'',created_at:0,reply:''}] );
 			}
 		}
 	});
@@ -166,7 +166,7 @@ function pb_view_task(taskId){
 		method:'get',
 		onLoadSuccess: function(data){
 			if(data.total==0){
-				$('#task-daily-dg').datagrid('loadData', [{duration:'无',user_name:'无',updated_at:0,report:'无',plan:'无'}] );
+				$('#task-daily-dg').datagrid('loadData', [{duration:'',user_name:'',updated_at:0,report:'',plan:''}] );
 			}
 		}
 	});
@@ -186,10 +186,13 @@ function pb_view_task(taskId){
 
 
 function formatter_task_flow_aciton(value,row,index){
-	return value?TASKACTIONMAP[value]:'无';
+	return value?TASKACTIONMAP[value]:'无记录';
 }
 function wvt_formatter_time(value,row,index){
-	return value==0?'无':formatter_time_dg(value);
+	return value==0?'':formatter_time_dg(value);
+}
+function wvt_formatter_time_daily(value,row,index){
+	return value==0?'无记录':formatter_time_dg(value);
 }
 
 function wvtsk_reload_view(taskId){
@@ -200,6 +203,7 @@ function wvtsk_reload_view(taskId){
 	$('#wvtsk_end_time').text(task.end_time!==0?formatDate(task.end_time):'无');
 	wvtsk_initFlowCombo();
 	$("#wvtsk_reply").textbox('setValue',"");
+	$("#wvtsk_reply").textbox('setText',"");
 }
 
 function wvtsk_submit(){	

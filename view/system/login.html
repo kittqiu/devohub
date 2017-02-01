@@ -11,17 +11,18 @@
 {% block main %}
 <div id="login_win" style="display:none" >
 	<div class="easyui-panel" data-options="fit:true">		
-       <form id="ff" method="post" style="padding:40px 40px;" >
+       <form id="ff" method="post" style="padding:30px 40px;" >
             <div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="username" name="username" style="width:100%" data-options="label:'用户名:',required:true">
+				<input class="easyui-textbox" id="username" name="username" style="width:95%" data-options="label:'用户名:',required:true">
 			</div>
 			<div style="margin-bottom:20px">
-				<input class="easyui-passwordbox" id="password" name="password" style="width:100%" data-options="label:'密码:',required:true">
+				<input class="easyui-passwordbox" id="password" name="password" style="width:95%" data-options="label:'密码:',required:true">
 			</div>			
 		</form>
-		<div class="uk-text-center">
+		<div class="uk-text-center" style="margin-bottom:10px">
 			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:120px">登录</a>
 		</div>
+		<div id="web_explorer_suggest" class="uk-text-center" style="display:none"><span class="uk-text-warning">建议使用谷歌Chrome浏览器</span></div>
     </div>
 </div>
 {% endblock %}
@@ -70,6 +71,12 @@ $('#ff').form('submit',{
     }
 });
 }
+
+$(function(){
+	if( navigator.userAgent.indexOf('Chrome') == -1){
+		$('#web_explorer_suggest').show();
+	}
+});
 
 </script>
 {% endblock %}

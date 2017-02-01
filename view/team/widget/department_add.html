@@ -38,6 +38,7 @@ function addDepartment(parent){
 	});	
 	$('#wad_parent_name').textbox('setValue', parent.id);
 	$('#wad_parent_name').textbox('setText', parent.name);
+	$('#wad_dep_name').textbox('setValue', '');
 	$('#win_add_department').window( 'open');
 }
 
@@ -46,6 +47,12 @@ function wad_submitForm(){
 					name: $("#wad_dep_name").textbox('getValue'),
 					pid: $("#wad_parent_name").textbox('getValue')
 				};
+
+	var tbfields = {wad_dep_name:'部门名'};
+	if( !validateInputField(tbfields)){
+		return false;
+	}
+
 	var properties = {name:'部门名'};
 	var vr = validateJsonObj('createDepartment', data, properties);
 	if( vr === true ){

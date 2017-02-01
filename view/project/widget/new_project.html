@@ -1,7 +1,7 @@
 <div id="win_new_project" style="display:none">
 	<div id="wnpj_panel" class="" data-options="fit:true" style="padding:20px 20px;">
 		<div style="margin-bottom:20px">
-			<input class="" id="wnpj_name" name="wnpj_name" style="width:95%" data-options="label:'项目名称:',required:true,prompt:'请填写项目名称,3-50字符'">
+			<input class="" id="wnpj_name" name="wnpj_name" style="width:95%" data-options="label:'项目名称:',required:true,validType:'length[3,50]',prompt:'请填写项目名称,3-50字符'">
 		</div>
 		<div style="margin-bottom:20px">
 			<input class="" id="wnpj_master" name="wnpj_master" style="width:95%" data-options="label:'项目负责人:',required:true">
@@ -72,19 +72,29 @@ function new_project(){
 }
 
 function wnpj_submitForm(){
+	var end_time = $('#wnpj_end_time').datebox('getValue' );
 	var data = {
 		name: $("#wnpj_name").textbox('getValue'),
 		start_time: parser_DateMonth($('#wnpj_start_time').datebox('getValue' )).getTime(),
-		end_time: parser_DateMonth($('#wnpj_end_time').datebox('getValue' )).getTime(),
+		end_time: parser_DateMonth(end_time).getTime(),
 		master_id: $("#wnpj_master").combobox('getValue'),
 		details: $("#wnpj_details").textbox('getValue')
 	};
+
+	var tbfields = {wnpj_name:'项目名称', wnpj_details:'项目说明', wnpj_end_time:'计划结束时间'};
+	if( !validateInputField(tbfields)){
+		return false;
+	}
 
 	var properties = {name:'项目名称',start_time:'计划开始时间', end_time:'计划结束时间', master_id:'项目负责人', details:'项目说明'};
 	var vr = validateJsonObj('createProject', data, properties);
 	if( vr === true ){
 		if(data.start_time >= data.end_time){
 			showErrorInfo( "计划结束时间应该要晚于开始时间！" );
+			return;
+		}
+		if( end_time == ''){
+			showErrorInfo( "请填写结束时间！" );
 			return;
 		}
 

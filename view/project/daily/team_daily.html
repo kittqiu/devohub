@@ -1,7 +1,7 @@
 <div class="easyui-layout" data-options="fit:true">
 	<div data-options="region:'west',split:true,href:'/team/structure/tree'" title="成员列表" style="width:200px;"></div>
 	<div data-options="region:'center',title:'工作日志'" style="padding:5px">
-		<div class="easyui-layout" data-options="fit:true,border:false">
+		<div id="teamdaily-center" class="" data-options="fit:true,border:false" style="display:none">
 			<div data-options="region:'north',border:false">
 				<h2 class="uk-text-center" style="margin-bottom:20px"><span id="teamdaily_user_name"></span>的工作日志</h2>
 				<div class="easyui-layout" data-options="border:false,height:40" style="width:100%;height:40px;">
@@ -50,7 +50,7 @@ function teamdaily_loadUserData(user){
 			}
 			$('#teamdaily-dg').datagrid({});
 			if(data.length==0){
-				data = [{ name:'无'}];
+				data = [{ name:'无记录'}];
 			}
 			$('#teamdaily-dg').datagrid('loadData', data);
 		}
@@ -62,6 +62,7 @@ $(function(){
 	$('#teamdaily-date').datebox({
 		formatter:formatter_Date,
 		parser:parser_DateMonth,
+		editable:false,
 		onSelect: function(date){
 			teamdaily_date = date;
 			teamdaily_loadUserData(teamdaily_user);
@@ -78,21 +79,21 @@ function teamdaily_formatter_pre(value,row,index){
 	if( !!value ){
 		return '<pre class="dv-pre-clear" style="font-size:12px">' + value + '</pre>';
 	}else{
-		return teamdaily_isValidData(row) ?'未填写':'无';
+		return teamdaily_isValidData(row) ?'未填写':'';
 	}
 }
 function teamdaily_formatter_pre_report(value,row,index){
 	if( !!value ){
 		return '<pre class="dv-pre-clear" style="font-size:12px">' + value + '</pre>'+ (row.daily.duration?'<span>用时:'+row.daily.duration+'小时</span>':'');
 	}else{
-		return teamdaily_isValidData(row) ?'未填写':'无';
+		return teamdaily_isValidData(row) ?'未填写':'';
 	}
 }
 function teamdaily_formatter_task_info(value,row,index){
 	if( teamdaily_isValidData(row) )
 		return '<div>项目：' + row.project_name + '</div><div>审核人：'+ row.manager_name +'</div>';
 	else
-		return '无';
+		return '';
 }
 
 function teamdaily_toWorkday( day, offset ){
@@ -134,7 +135,17 @@ function teamdaily_reload(){
 	teamdaily_loadData(day.getTime());
 }
 
+var teamdaily_init = false;
+function teamdaily_initView(){
+	if( !teamdaily_init ){
+		teamdaily_init = true;
+		$('#teamdaily-center').show();
+		$('#teamdaily-center').layout({});
+	}
+}
+
 function onStructureTreeSelectUser( user, node ){
+	teamdaily_initView();
 	teamdaily_user = user;
 	teamdaily_loadUserData(user);	
 }

@@ -1,7 +1,7 @@
 <div id="win_edit_project" style="display:none">
 	<div id="wepj_panel" class="" data-options="fit:true" style="padding:20px 20px;">
 		<div style="margin-bottom:20px">
-			<input class="" id="wepj_name" name="wepj_name" style="width:95%" data-options="label:'项目名称:',required:true,prompt:'请填写项目名称,3-50字符'">
+			<input class="" id="wepj_name" name="wepj_name" style="width:95%" data-options="label:'项目名称:',required:true,validType:'length[3,50]',prompt:'请填写项目名称,3-50字符'">
 		</div>
 		<div style="margin-bottom:20px">
 			<input class="" id="wepj_master" name="wepj_master" style="width:95%" data-options="label:'项目负责人:',required:true">
@@ -71,6 +71,7 @@ function edit_project(p){
 	$("#wepj_name").textbox('setValue', p.name );
 	$("#wepj_details").textbox('setValue', p.details);
 	$('#wepj_status').combobox('select', p.status);
+	$('#wepj_master').combobox('select', gp_project.master_id);
 
 	$('#win_edit_project').window({
 		title: "修改项目",
@@ -94,6 +95,11 @@ function wepj_submitForm(){
 		details: $("#wepj_details").textbox('getValue'),
 		status: $("#wepj_status").combobox('getValue')
 	};
+
+	var tbfields = {wepj_name:'项目名称', wepj_details:'项目说明'};
+	if( !validateInputField(tbfields)){
+		return false;
+	}
 
 	var properties = {name:'项目名称',start_time:'计划开始时间', end_time:'计划结束时间', master_id:'项目负责人', details:'项目说明', status:'项目状态'};
 	var vr = validateJsonObj('createProject', data, properties);

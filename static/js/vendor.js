@@ -101,6 +101,23 @@ function jumpToURL(url, timeout){
 	}, timeout );		
 }
 
+function validateInputField(o){
+	var isValid = true;
+	var errorinfo = '<ul>';
+	$.each(o, function(k, v){
+		if( $("#" + k ).textbox('isValid')== false){
+			isValid = false;
+			errorinfo += '<li>未正确填写'+ v +'</li>'
+		}
+	});
+	errorinfo += '</ul>';
+	if( !isValid ){
+		showErrorInfo( '填写错误', errorinfo );
+		return false;
+	}
+	return true;
+}
+
 var one_day_time = 86400000;
 
 function formatDate(second, withTime ){

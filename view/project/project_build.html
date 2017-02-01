@@ -3,6 +3,8 @@
 		<div data-options="region:'north',border:false" style="padding:5px">
 			<div class="easyui-panel" style="padding:5px;height:40px;">
 				<div style="float:right">
+					<a href="#" id="pb_btn_toggle_milestone" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_onToggleMilestone()"><span id="pb_span_toggle_milestone">设置为里程碑</span></a>
+					<a href="#" id="pb_btn_set_member" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_onSetProjectMember()">设置团队</a>
 					<a href="#" id="pb_btn_task_up" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_task_move('up')">上移</a>
 					<a href="#" id="pb_btn_task_down" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_task_move('down')">下移</a>
 					<a href="#" id="pb_btn_set_parent_as_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_set_task_parent_root()">置为项级</a>
@@ -35,15 +37,15 @@
 						<th data-options="field:'status',formatter:pb_formatter_status" width="80">状态</th>
 						<th data-options="field:'executor_id',formatter:pb_formatter_executor" width="80" >负责人</th>
 						<th data-options="field:'manager_id',formatter:pb_formatter_manager" width="80" >工作审核人</th>
-						<th data-options="field:'planmode',formatter:pb_formatter_automode" width="80">计划模式</th>
+						<th data-options="field:'planmode',formatter:pb_formatter_automode" width="70">计划模式</th>
 						<th data-options="field:'rely',formatter:pb_formatter_rely" width="80" >前置任务</th>
-						<th data-options="field:'plan_start_time',formatter:formatter_second_dg" width="80">计划开始时间</th>
-						<th data-options="field:'plan_end_time',formatter:formatter_second_dg" width="80">计划结束时间</th>
-						<th data-options="field:'start_time',formatter:pb_formatter_start_time" width="80">实际开始时间</th>
-						<th data-options="field:'end_time',formatter:pb_formatter_end_time" width="80">实际结束时间</th>
-						<th data-options="field:'plan_duration'" width="80">计划工时</th>
-						<th data-options="field:'duration'" width="80">实际工时</th>
-						<th data-options="field:'difficulty',formatter:pb_formatter_difficulty" width="80">难度</th>
+						<th data-options="field:'plan_start_time',formatter:formatter_second_dg" width="90">计划开始时间</th>
+						<th data-options="field:'plan_end_time',formatter:formatter_second_dg" width="90">计划结束时间</th>
+						<th data-options="field:'start_time',formatter:pb_formatter_start_time" width="90">实际开始时间</th>
+						<th data-options="field:'end_time',formatter:pb_formatter_end_time" width="90">实际结束时间</th>
+						<th data-options="field:'plan_duration'" width="70">计划工时</th>
+						<th data-options="field:'duration'" width="70">实际工时</th>
+						<th data-options="field:'difficulty',formatter:pb_formatter_difficulty" width="70">难度</th>
 					</tr>
 				</thead>
 			</table>
@@ -71,7 +73,8 @@ function pb_init_btn_status(){
 	$('#pb_btn_edit_task').linkbutton('disable');
 	$('#pb_btn_task_up').linkbutton('disable');
 	$('#pb_btn_task_down').linkbutton('disable');
-	$('#pb_btn_set_parent_as_root').linkbutton('disable');
+	$('#pb_btn_set_parent_as_root').linkbutton('disable');	
+	$('#pb_btn_toggle_milestone').linkbutton('disable');	
 }
 
 function pb_load_rely_data(){
@@ -109,7 +112,7 @@ function pb_load_data(){
 	pb_init_btn_status();
 }
 
-$(function(){	
+$(function(){
 	getJSON( '/api/project/p/'+gpb_project_id, function(err, data){
 		if(!err){
 			gpb_project = data;
@@ -117,6 +120,9 @@ $(function(){
 			for(var i = 0; i < ms.length; i++ ){
 				var m = ms[i];
 				gpb_userMap[m.user_id] = m;
+				if( m.user_id === ENV.user.id){
+					$('#pb_btn_set_member').linkbutton( m.role == 'master' || m.role == 'leader' ? 'enable' : 'disable');
+				}
 			}
 		}
 		$(gpb_tg_id).treegrid('loading');
@@ -226,8 +232,29 @@ function pb_tg_onSelect(row){
 		}else{
 			$('#pb_btn_set_parent_as_root').linkbutton('disable');
 		}
-		
+
+		if( gpb_project.master_id === ENV.user.id ){
+			var children = $(gpb_tg_id).treegrid('getChildren', row.id);
+			if( children.length == 0 ){
+				$('#pb_btn_toggle_milestone').linkbutton('enable');
+				$('#pb_span_toggle_milestone').text(row.milestone?'取消里程碑设置':'设置为里程碑');
+			}
+		}	
 	}
+}
+
+function pb_onToggleMilestone(){
+	var t = gpb_select_node;
+	
+	postJSON( '/api/project/task/'+ t.id + '/milestone/toggle', {}, function(err, result){
+		if( !err ){
+			showInfo( '任务修改成功。');
+			gpb_updateTask(t.id);
+			$('#pb_span_toggle_milestone').text(t.milestone?'设置为里程碑':'取消里程碑设置');			
+		}else{
+			showErrorInfo( "任务修改失败", err.message );
+		}
+	});
 }
 
 function pb_tg_onDrop(targetRow,sourceRow,point){
@@ -256,6 +283,28 @@ function pb_tg_onDragOver(targetRow, sourceRow){
 
 function pb_tg_onDblClick(row){
 	pb_view_task(row.id);
+}
+
+function pb_onMemberChanged(){
+	getJSON( '/api/project/p/'+gpb_project_id, function(err, data){
+		if(!err){
+			gpb_project = data;
+			gpb_userMap = {};
+			var ms = data.members;
+			for(var i = 0; i < ms.length; i++ ){
+				var m = ms[i];
+				gpb_userMap[m.user_id] = m;
+				if( m.user_id === ENV.user.id){
+					$('#pb_btn_set_member').linkbutton( m.role == 'executor' ? 'disable' : 'enable');
+				}
+			}
+		}
+	});	
+}
+
+function pb_onSetProjectMember(){
+	gpb_project.onMemberChanged = pb_onMemberChanged;
+	edit_project_member(gpb_project);
 }
 
 function pb_task_move(action){
@@ -374,6 +423,7 @@ function gpb_resetReliedTaskTime(tid){
 	}
 
 	for( i = 0; i < nts.length; i++ ){
+		gpb_resetParentTaskTime(gpb_taskMap[nts[i]])
 		gpb_resetReliedTaskTime(nts[i]);
 	}
 }
@@ -406,6 +456,9 @@ function gpb_updateTask(tid, callback){
 			task.status = data.status;
 			task.plan_start_time = data.plan_start_time;
 			task.plan_end_time = data.plan_end_time;
+			task.start_time = data.start_time;
+			task.end_time = data.end_time;
+			task.duration = data.duration;
 			task.automode = data.automode;
 			task.plan_duration = data.plan_duration;
 			task.difficulty = data.difficulty;

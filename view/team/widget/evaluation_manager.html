@@ -64,6 +64,11 @@ function wemn_submit(){
 			badjobeval: $("#wemn_badjobeval").textbox('getValue'), 
 			kpi: $("#wemn_kpi").textbox('getValue')
 		};
+
+	var tbfields = {wemn_outputeval:'成果评价',wemn_kpi:'考评分'};
+	if( !validateInputField(tbfields)){
+		return false;
+	}
 	
 	postJSON( url, data, function(err, result){
 			if( !err ){

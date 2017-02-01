@@ -89,7 +89,9 @@
 
 				//默认选择用户自己
 				var node = $('#_structure_tree_').tree('find', ENV.user.id);
-				$('#_structure_tree_').tree('select', node.target);
+				if( node ){
+					$('#_structure_tree_').tree('select', node.target);
+				}				
 			}
 		})	
 	}

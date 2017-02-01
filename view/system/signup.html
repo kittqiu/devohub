@@ -13,10 +13,10 @@
 	<div class="easyui-panel" data-options="fit:true">		
        <form id="ff" method="post" class="easyui-form" style="padding:40px 40px;" data-options="" >
             <div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="username" name="username" style="width:100%" data-options="label:'用户名:',required:true, validType:'length[3,50]',prompt:'3-20字符，必须是小写字母、数字、-连字线或_下划线字符'">
+				<input class="easyui-textbox" id="username" name="username" style="width:100%" data-options="label:'用户名:',required:true, validType:'length[3,20]',validateOnBlur:true,prompt:'3-20字符，必须是小写字母、数字、-连字线或_下划线字符'">
 			</div>
 			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="cnname" name="cnname" style="width:100%" data-options="label:'中文名:',required:true, validType:'length[2,50]',prompt:'2-20字符'">
+				<input class="easyui-textbox" id="name" name="name" style="width:100%" data-options="label:'中文名:',required:true, validType:'length[2,20]',prompt:'2-20字符'">
 			</div>
 			<div style="margin-bottom:20px">
 				<input class="easyui-passwordbox" id="password" name="password" style="width:100%" data-options="label:'密码:',required:true, validType:'length[6,20]',prompt:'6-20位，允许小写字母、大写字母和数字'">
@@ -56,13 +56,17 @@ function submitForm(){
 $('#ff').form('submit',{
     onSubmit: function(){
     	var data = {
-			name: $("#cnname").textbox('getValue'),
+			name: $("#name").textbox('getValue'),
 			username: $("#username").textbox('getValue'),
 			password: $("#password").textbox('getValue'),
 			verifypassword: $("#verifypassword").textbox('getValue'),
 			email: $("#email").textbox('getValue')
 		};
+
 		var properties = {name:'中文名',username:'用户名',password:'密码',verifypassword:'确认密码',email:'邮箱'};
+		if( !validateInputField(properties) ){
+			return false;
+		}
 		var vr = validateJsonObj('signup', data, properties);
 		if( vr === true ){
 			if( data.password !== data.verifypassword ){

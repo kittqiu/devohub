@@ -2,14 +2,15 @@
 <body>
 	<div class="easyui-layout" data-options="fit:true">
 		<div data-options="region:'west',split:true,href:'/team/structure/tree'" title="成员列表" style="width:200px;"></div>
-		<div data-options="region:'center',title:'月成果评价'" style="padding:5px">
+		<div data-options="region:'center',title:'月成果评价'" style="padding:5px;">
+			<div id="eva_region_center" style="display:none">
 			<h2 class="uk-text-center" style="margin-bottom:20px"><span id="user_name"></span>的月工作评价</h2>
-			<div class="easyui-layout" data-options="border:false,height:40" style="width:100%;height:40px;">
+			<div id="eva_center_toolbar" class="" data-options="border:false,height:40" style="width:100%;height:40px;">
 				<div data-options="region:'east', border:false" style="width:120px;padding:0 20px" class="uk-text-center">
-					<a href="#" class="easyui-linkbutton" data-options="" onclick="nextMonth()"><i class="uk-icon-angle-double-right"></i>下个月</a>
+					<a href="#" class="easyui-linkbutton" style="width:80px" data-options="" onclick="nextMonth()"><i class="uk-icon-angle-double-right"></i>下个月</a>
 				</div>
 				<div data-options="region:'west', border:false" style="width:120px;padding:0px 20px">
-					<a href="#" class="easyui-linkbutton" data-options="" onclick="prevMonth()"><i class="uk-icon-angle-double-left"></i>上个月</a>
+					<a href="#" class="easyui-linkbutton" data-options="" style="width:80px" onclick="prevMonth()"><i class="uk-icon-angle-double-left"></i>上个月</a>
 				</div>
 				<div data-options="region:'center', border:false" class="uk-text-center">
 					<input id="eva_datebox" style="width:180px;"></input>
@@ -79,6 +80,7 @@
 				</table>
 			</div>
 		</div>
+		</div>
 	</div>
 	{% include './widget/member_month_work.html' %}
 	{% include './widget/evaluation_myself.html' %}
@@ -103,6 +105,8 @@
 			g_isInited = true;
 			$('#eva_datebox').datebox('enable');
 			$('#btn_view_month_work').linkbutton('enable');
+			$('#eva_region_center').show();
+			$('#eva_center_toolbar').layout({});
 		}
 	}
 
@@ -141,6 +145,7 @@
 					$('#emng_badjobeval').text( !!o.badjobeval?o.badjobeval:'未填写' );
 					$('#emng_kpi').text(!!o.kpi?o.kpi:'未填写' );
 
+					$('#btn_edit_manager_eva').linkbutton('disable');
 					if( !!data.manager_id ){
 						ev_loadManager( data.manager_id );
 						$('#btn_edit_my_eva').linkbutton('disable');//负责人已填写，自评就不能修改了

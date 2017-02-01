@@ -14,7 +14,7 @@
 	</div>
 	<div data-options="region:'center',border:false">
 		<div class="easyui-panel" data-options="fit:true,border:false">
-			<table id="mydaily-dg" class="" 
+			<table id="mydaily-dg" class="easyui-datagrid" 
 					data-options="fit:true,singleSelect:true,fitColumns:true,onDblClickRow:mydaily_dg_onDblClick, onBeforeSelect:mydaily_onBeforeSelectRow">
 				<thead>
 					<tr>
@@ -40,8 +40,9 @@ function mydaily_loadData( dateTime ){
 					r.report = r.daily.report;
 					r.plan = r.daily.plan;
 				}
-				$('#mydaily-dg').datagrid({
-				});
+				if(data.length == 0 ){
+					data.push({name:'无记录',org_plan:' ', report:' ', plan: ' '});
+				}
 				$('#mydaily-dg').datagrid('loadData', data);
 			}
 		}
@@ -54,6 +55,7 @@ $(function(){
 	$('#mydaily-date').datebox({
 		formatter:formatter_Date,
 		parser:parser_DateMonth,
+		editable:false,
 		onSelect: function(date){
 			mydaily_loadData(date.getTime());
 			$('#mydaily-date').datebox('setValue',formatter_Date(date));
@@ -71,7 +73,10 @@ function mydaily_formatter_pre(value,row,index){
 	}
 }
 function mydaily_formatter_pre_report(value,row,index){
-	if( !!value ){
+	if( value == ' '){
+		return '';
+	}
+	else if( !!value ){
 		return '<pre class="dv-pre-clear" style="font-size:12px">' + value + '</pre>'+ (row.daily.duration?'<span>用时:'+row.daily.duration+'小时</span>':'');
 	}else{
 		return '未填写';
@@ -109,7 +114,9 @@ function mydaily_onNext(){
 function mydaily_dg_onDblClick(index,row){
 	var d = $('#mydaily-date').datebox('getValue');
 	var day = parser_DateMonth(d);
-	mydaily_edit_daily(row,day);
+	if( row.name !== '无记录'){
+		mydaily_edit_daily(row,day);
+	}	
 }
 function mydaily_onBeforeSelectRow(index,row){
 	return false;

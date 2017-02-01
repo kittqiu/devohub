@@ -4,10 +4,10 @@
 			<input class="" id="wem_corework" name="wem_corework" style="width:90%" data-options="label:'核心工作项：',labelWidth:150,required:true, prompt:'填写最重要的一项工作'">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="" id="wem_output" name="wem_output" style="width:90%;height:60px" data-options="label:'成果小结（重点）：',labelWidth:150,multiline:true,prompt:'用1-2句话量化地描述你的成果，例如：共完成整体计划50%，共分解为15个任务，提交XXX文档'">
+			<input class="" id="wem_output" name="wem_output" style="width:90%;height:60px" data-options="label:'成果小结（重点）：',labelWidth:150,required:true,multiline:true,prompt:'用1-2句话量化地描述你的成果，例如：共完成整体计划50%，共分解为15个任务，提交XXX文档'">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="" id="wem_process" name="wem_process" style="width:90%;height:60px" data-options="label:'过程小结：',labelWidth:150,multiline:true,prompt:'简要量化描述过程是否有序，包含是否有制订计划，分解为多少个任务，xxx%的任务按时完成'">
+			<input class="" id="wem_process" name="wem_process" style="width:90%;height:60px" data-options="label:'过程小结：',labelWidth:150,required:true,multiline:true,prompt:'简要量化描述过程是否有序，包含是否有制订计划，分解为多少个任务，xxx%的任务按时完成'">
 		</div>
 		<div style="margin-bottom:20px">
 			<input class="" id="wem_goodjob" name="wem_goodjob" style="width:90%;height:60px" data-options="label:'为自己点赞的地方(重点)：',labelWidth:150,multiline:true,prompt:'填写在整个过程中1-2个突出的并值得表扬的行为。如果放空，表示没有'">
@@ -79,6 +79,11 @@ function wem_submit(){
 		};
 	if( !!wemy_data.id ){
 		url = '/api/team/evaluation/' + wemy_data.id + '/edit';
+	}
+
+	var tbfields = {wem_corework:'核心工作项', wem_output:'成果小结', wem_process:'过程小结'};
+	if( !validateInputField(tbfields)){
+		return false;
 	}
 	
 	postJSON( url, data, function(err, result){

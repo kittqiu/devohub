@@ -1,28 +1,28 @@
 <div id="win_edit_task" style="display:none">
 	<div class="easyui-panel" data-options="fit:true" style="padding:20px 20px">
 		<div style="margin-bottom:20px">
-			<input class="easyui-textbox" id="wetsk_name" name="wetsk_name" style="width:95%" data-options="label:'任务名称:',required:true,validType:'length[3,50]',prompt:'3-50字符'">
+			<input class="easyui-textbox" id="wetsk_name" name="wetsk_name" style="width:95%" data-options="label:'任务名称:',required:true,validType:'length[2,50]',prompt:'2-50字符'">
 		</div>
 		<div style="margin-bottom:20px">
 			<input class="easyui-textbox" id="wetsk_parent" name="wetsk_parent" style="width:95%" data-options="label:'父任务:',disabled:true">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="easyui-combobox" id="wetsk_executor" name="wetsk_executor" style="width:95%" data-options="label:'执行人:',required:true,valueField:'user_id',textField:'name'">
+			<input class="easyui-combobox" id="wetsk_executor" name="wetsk_executor" style="width:95%" data-options="label:'执行人:',editable:false,required:true,valueField:'user_id',textField:'name'">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="easyui-combobox" id="wetsk_manager" name="wetsk_manager" style="width:95%" data-options="label:'工作审核人:',required:true,valueField:'user_id',textField:'name'">
+			<input class="easyui-combobox" id="wetsk_manager" name="wetsk_manager" style="width:95%" data-options="label:'工作审核人:',editable:false,required:true,valueField:'user_id',textField:'name'">
 		</div>
-		<div style="margin-bottom:20px">
+		<!--div style="margin-bottom:20px">
 			<select id="wetsk_milestone" name="wetsk_milestone" class="easyui-combobox" style="width:95%" data-options="label:'是否为里程碑:',required:true,value:'0',onChange:wetsk_onChangeMilestone">
 				<option value="0">否，任务时间可能受到依赖任务自动调整</option>
 				<option value="1">是，任务时间只能手工修改</option>
 			</select>
-		</div>
+		</div-->
 		<div style="margin-bottom:20px">
 			<input class="easyui-numberspinner" id="wetsk_duration" name="wetsk_duration" style="width:95%" data-options="label:'计划工时:',required:true,min:0,max:240,value:0">
 		</div>
 		<div style="margin-bottom:20px">
-			<select id="wetsk_automode" name="wetsk_automode" class="easyui-combobox" style="width:95%" data-options="label:'计划模式:',required:true,value:'1',onChange:wetsk_onChangeAutoMode">
+			<select id="wetsk_automode" name="wetsk_automode" class="easyui-combobox" style="width:95%" data-options="label:'计划模式:',editable:false,required:true,value:'1',onChange:wetsk_onChangeAutoMode">
 				<option value="0">自动</option>
 				<option value="1">手动</option>
 			</select>
@@ -37,7 +37,7 @@
 			<input class="easyui-textbox" id="wetsk_rely_to" name="wetsk_rely_to" style="width:95%" data-options="label:'前置任务:',required:true,prompt:'填写标识，用英文逗号分隔，例如1,2'">
 		</div>
 		<div style="margin-bottom:20px">
-			<select id="wetsk_difficulty" name="wetsk_difficulty" class="easyui-combobox" style="width:95%" data-options="label:'任务难度:',required:true,value:'1'">
+			<select id="wetsk_difficulty" name="wetsk_difficulty" class="easyui-combobox" style="width:95%" data-options="label:'任务难度:',editable:false,required:true,value:'1'">
 				<option value="0">简单</option>
 				<option value="1">普通</option>
 				<option value="2">困难</option>
@@ -79,7 +79,7 @@ function pb_edit_task(taskId){
 	$('#wetsk_manager').combobox('select', task.manager_id);
 	$("#wetsk_duration").numberspinner('setValue', task.plan_duration);
 	$('#wetsk_automode').combobox('select', task.automode);
-	$('#wetsk_milestone').combobox('select', task.milestone);	
+	/*$('#wetsk_milestone').combobox('select', task.milestone);	*/
 	$('#wetsk_difficulty').combobox('select', task.difficulty);
 	$('#wetsk_details').textbox('setValue', task.details);
 	$('#wetsk_rely_to').textbox(task.automode==1?'disable':'enable');
@@ -90,7 +90,7 @@ function pb_edit_task(taskId){
 	$('#win_edit_task').window({
 		title: "修改任务",
 		width:600,
-		height:670,
+		height:630,
 		modal:true,
 		minimizable:false,
 		maximizable:false,
@@ -141,6 +141,10 @@ function wetsk_getReliedTasks(tid){
 function wetsk_calcRelyTask(){
 	var relied_tasks = wetsk_getReliedTasks(wetsk_taskId);
 	var rely = $("#wetsk_rely_to").textbox('getValue');
+	var reg = /^[0-9,\,]+$/;
+	if(!reg.test(rely)){
+		return false;
+	}
 	var duration = parseInt($("#wetsk_duration").numberspinner('getValue'));
 	var rs = rely.split(',');
 	var ro = {start_time:0,end_time:0, rs:[]};
@@ -184,6 +188,7 @@ function wetsk_submit(){
 		}
 	}
 	
+	var task = gpb_taskMap[wetsk_taskId];
 	var data = {
 			name: $("#wetsk_name").textbox('getValue'),
 			executor_id: $("#wetsk_executor").combobox('getValue'),
@@ -194,9 +199,14 @@ function wetsk_submit(){
 			plan_end_time: end_time,
 			difficulty: parseInt($("#wetsk_difficulty").combobox('getValue')),
 			details: $("#wetsk_details").textbox('getValue'),
-			milestone:parseInt($("#wetsk_milestone").combobox('getValue')),
+			milestone:task.milestone/*parseInt($("#wetsk_milestone").combobox('getValue'))*/,
 			relyTo: rs
 		};
+
+	var tbfields = {wetsk_name:'任务名称'};
+	if( !validateInputField(tbfields)){
+		return false;
+	}
 	
 	var properties = {name:'任务名称',plan_start_time:'计划开始时间', plan_end_time:'计划结束时间', executor_id:'任务执行人', manager_id:'任务审核人',plan_duration:'计划工时', automode:'计划模式',difficulty:'任务难度', details:'任务说明',relyTo:'前置任务',milestone:'置为里程碑'};
 	var vr = validateJsonObj('editTask', data, properties);
