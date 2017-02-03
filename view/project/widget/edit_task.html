@@ -164,8 +164,8 @@ function wetsk_calcRelyTask(){
 					return false;
 				}
 
-				var start_time = task.plan_end_time + one_day_time;
-				var end_time = start_time + (Math.ceil(duration/8)-1)*one_day_time;
+				var start_time = gpb_getNextWorkDay(task.plan_end_time,1);
+				var end_time = gpb_getNextWorkDay(start_time, (Math.ceil(duration/8)-1));
 				ro.start_time = Math.max(ro.start_time, start_time);
 				ro.end_time = Math.max(ro.end_time, end_time);
 				ro.rs.push( task.id );
