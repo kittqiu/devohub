@@ -400,6 +400,21 @@ function gpb_resetParentTaskTime(task){
 	}
 }
 
+function gpb_getNextWorkDay(start_time, days){
+	var d = new Date(start_time);
+	var day = d.getDay();
+	var weeks = Math.floor(days/5);
+	var wds = days%5;
+	var total_ds = weeks * 7;
+	if( day + wds > 5 ){
+		total_ds += day + wds - 5 + 2;		
+	}else{
+		total_ds += wds;
+	}
+	d.setDate( d.getDate() + total_ds );
+	return d.getTime();
+}
+
 function _gpb_resetParentTaskTime(tid, updatedata, uddmap){
 	var task =  gpb_taskMap[tid];
 	while( task.parent != 'root'){
@@ -432,7 +447,7 @@ function _gpb_resetParentTaskTime(tid, updatedata, uddmap){
 function _gpb_resetReliedTaskTime(tid, updatedata, uddmap){
 	var ts = [];
 	var task = gpb_taskMap[tid];
-	var i, record;
+	var i, j, record;
 	var nts = [];
 	for( i = 0; i < gpb_relies.length; i++ ){
 		var r = gpb_relies[i];
@@ -442,22 +457,34 @@ function _gpb_resetReliedTaskTime(tid, updatedata, uddmap){
 	}
 	for( i = 0; i < ts.length; i++ ){
 		var t = gpb_taskMap[ts[i]];
-		if( !!t.milestone ) continue;//里程碑任务的时间是不能修改的
+		if( !!t.milestone ){
+			continue;//里程碑任务的时间是不能修改的
+		}
 
 		var start_time = task.plan_end_time + one_day_time;
 		var end_time = start_time + (Math.ceil(t.plan_duration/8)-1)*one_day_time;
-		if( t.plan_start_time != start_time || t.plan_end_time != end_time){
-			t.plan_start_time = start_time;
-			t.plan_end_time = end_time;
-			
+		if( t.plan_start_time != start_time || t.plan_end_time != end_time){			
 			if( uddmap.hasOwnProperty(t.id)){
+				t.plan_start_time = Math.max(start_time,t.plan_start_time);
+				t.plan_end_time = Math.max(end_time,t.plan_end_time);
 				record = uddmap[t.id];
 				record.plan_start_time = t.plan_start_time;
 				record.plan_end_time = t.plan_end_time;
 			}else{
-				record = {id:t.id,plan_start_time:t.plan_start_time, plan_end_time:t.plan_end_time};
-				updatedata.push(record);
-				uddmap[t.id] = record;
+				var needChanged = true;
+				for( j = 0; j < t.rely.length; j++ ){
+					var r_task = gpb_taskMap[t.rely[j]];
+					if( r_task.plan_end_time + one_day_time > start_time ){
+						needChanged = false;
+					}
+				}
+				if( needChanged ){
+					t.plan_start_time = start_time;
+					t.plan_end_time = end_time;
+					record = {id:t.id,plan_start_time:t.plan_start_time, plan_end_time:t.plan_end_time};
+					updatedata.push(record);
+					uddmap[t.id] = record;
+				}				
 			}
 			nts.push(ts[i]);
 		}
@@ -483,6 +510,64 @@ function gpb_resetReliedTaskTime(tid){
 				}
 			}
 		});
+	}
+}
+
+function gpb_getChangedTaskTime(task, updatedata, uddmap){
+	var ts = [];
+	var i, j,record;
+	var nts = [];
+	for( i = 0; i < gpb_relies.length; i++ ){
+		var r = gpb_relies[i];
+		if( r.rely_task_id === task.id){
+			ts.push( r.task_id );
+		}
+	}
+	for( i = 0; i < ts.length; i++ ){
+		var tid = ts[i];
+		var t = gpb_taskMap[tid];
+		var org_plan_start_time = t.plan_start_time;
+		var org_plan_end_time = t.plan_end_time;
+		if( uddmap.hasOwnProperty(tid)){//若计划更新，则使用更新的记录
+			var tr = uddmap[tid];
+			org_plan_start_time = tr.plan_start_time;
+			org_plan_end_time = tr.plan_end_time;
+		}
+
+		var start_time = task.plan_end_time + one_day_time;
+		if( uddmap.hasOwnProperty(task.id) ){
+			start_time = uddmap[task.id].plan_end_time + one_day_time;
+		}
+		var end_time = start_time + (Math.ceil(t.plan_duration/8)-1)*one_day_time;
+		if( org_plan_start_time != start_time || org_plan_end_time != end_time){		
+			if( uddmap.hasOwnProperty(tid)){
+				record = uddmap[tid];
+				record.plan_start_time = Math.max(start_time,org_plan_start_time);
+				record.plan_end_time = Math.max(end_time,org_plan_end_time);
+			}else{
+				var needChanged = true;
+				for( j = 0; j < t.rely.length; j++ ){
+					var r_task = gpb_taskMap[t.rely[j]];
+					var r_task_plan_end_time = r_task.plan_end_time;
+					if( uddmap.hasOwnProperty(r_task.id)){
+						r_task_plan_end_time = uddmap[r_task.id].plan_end_time;
+					}
+					if( r_task_plan_end_time + one_day_time > start_time ){
+						needChanged = false;
+					}
+				}
+				if( needChanged ){
+					record = {id:tid,plan_start_time:start_time, plan_end_time:end_time};
+					updatedata.push(record);
+					uddmap[tid] = record;
+				}
+			}
+			nts.push(tid);
+		}
+	}
+
+	for( i = 0; i < nts.length; i++ ){
+		gpb_getChangedTaskTime( gpb_taskMap[nts[i]], updatedata, uddmap );
 	}
 }
 

@@ -175,26 +175,31 @@ function wetsk_calcRelyTask(){
 	return ro;
 }
 
-function wetsk_validateTime( end_time ){
+function wetsk_validateTime( start_time, end_time ){
 	//如果任务完成时间提前了，则无需要校验
 	var task = gpb_taskMap[wetsk_taskId];
 	if( is_same_day( end_time, task.plan_end_time ) || task.plan_end_time >= end_time ){
 		return true;	
 	}
 
-	var relied_tasks = wetsk_getReliedTasks(wetsk_taskId);
-	for( var i = 0; i < relied_tasks.length; i++){
-		var tid =  relied_tasks[i];
-		var t = gpb_taskMap[tid];
-		if( !!t.milestone ){
-			/*if( t.rely.length > 0 ){
-				for( var j = 0; j < t.rely.length; j++ ){
-					var rtid = t.rely[j];
-					var rt = gpb_taskMap[rtid];
-					if( rt.plan_end_time )
-				}
-			}*/			
-			return tid;
+	var old_plan_start_time  = task.plan_start_time;
+	var old_plan_end_time = task.plan_end_time;
+	var updatedata = [];
+	var uddmap = {};
+
+	task.plan_start_time = start_time;
+	task.plan_end_time = end_time;
+	gpb_getChangedTaskTime( task, updatedata, uddmap );
+	task.plan_start_time = old_plan_start_time;
+	task.plan_end_time = old_plan_end_time;
+
+	if( updatedata.length > 0 ){
+		for( var i = 0; i < updatedata.length; i++ ){
+			var r = updatedata[i];
+			var t = gpb_taskMap[r.id];
+			if( t.milestone && t.plan_end_time < r.plan_end_time ){
+				return r.id;
+			}
 		}
 	}
 	return true;
@@ -227,7 +232,7 @@ function wetsk_submit(){
 	}
 
 	//如果修改后的时间改变了里程碑任务，是不允许的
-	var milestone_task_id = wetsk_validateTime(end_time);
+	var milestone_task_id = wetsk_validateTime(start_time,end_time);
 	if( milestone_task_id !== true ){
 		showErrorInfo( "不能修改该任务的时间，因为它将改变里程碑任务(" + gpb_taskMap[milestone_task_id].name + ")的时间！如果你确实需要修改，请先撤消它的里程碑属性。" );
 		return;
