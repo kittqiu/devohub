@@ -85,7 +85,10 @@ function pb_edit_task(taskId){
 	$('#wetsk_rely_to').textbox(task.automode==1?'disable':'enable');
 	$('#wetsk_rely_to').textbox('setValue', pb_getTaskRelyMark(taskId).toString());
 	
-	
+	if( task.automode == 0 ){
+		$('#wetsk_plan_start_time').datebox('disable');
+		$('#wetsk_plan_end_time').datebox('disable');
+	}	
 
 	$('#win_edit_task').window({
 		title: "修改任务",
@@ -140,18 +143,20 @@ function wetsk_getReliedTasks(tid){
 
 function wetsk_calcRelyTask(){
 	var relied_tasks = wetsk_getReliedTasks(wetsk_taskId);
+
 	var rely = $("#wetsk_rely_to").textbox('getValue');
 	var reg = /^[0-9,\,]+$/;
 	if(!reg.test(rely)){
 		return false;
 	}
+
 	var duration = parseInt($("#wetsk_duration").numberspinner('getValue'));
 	var rs = rely.split(',');
 	var ro = {start_time:0,end_time:0, rs:[]};
 	for( var i = 0; i < rs.length; i++ ){
 		var r = parseInt(rs[i]);
 		if( r ){
-			if( r > gpb_sortTasks.length || r < 1 ){
+			if( r > gpb_sortTasks.length || r < 1 ){//超过标识范围
 				return false;
 			}else{
 				var task = gpb_sortTasks[r];
@@ -170,13 +175,39 @@ function wetsk_calcRelyTask(){
 	return ro;
 }
 
+function wetsk_validateTime( end_time ){
+	//如果任务完成时间提前了，则无需要校验
+	var task = gpb_taskMap[wetsk_taskId];
+	if( is_same_day( end_time, task.plan_end_time ) || task.plan_end_time >= end_time ){
+		return true;	
+	}
+
+	var relied_tasks = wetsk_getReliedTasks(wetsk_taskId);
+	for( var i = 0; i < relied_tasks.length; i++){
+		var tid =  relied_tasks[i];
+		var t = gpb_taskMap[tid];
+		if( !!t.milestone ){
+			/*if( t.rely.length > 0 ){
+				for( var j = 0; j < t.rely.length; j++ ){
+					var rtid = t.rely[j];
+					var rt = gpb_taskMap[rtid];
+					if( rt.plan_end_time )
+				}
+			}*/			
+			return tid;
+		}
+	}
+	return true;
+}
+
 function wetsk_submit(){
 	var rs = [];
 	var automode = parseInt($("#wetsk_automode").combobox('getValue'));
 	var start_time = parser_DateMonth($('#wetsk_plan_start_time').datebox('getValue' )).getTime();
 	var end_time = parser_DateMonth($('#wetsk_plan_end_time').datebox('getValue' )).getTime();
-	if( automode == 0 ){
+	var task = gpb_taskMap[wetsk_taskId];
 
+	if( automode == 0 ){
 		var o = wetsk_calcRelyTask();
 		if( !o ){
 			showErrorInfo( "依赖的任务填写有误！可能不是有效的标识，或者有循环依赖情况发生。" );
@@ -186,9 +217,22 @@ function wetsk_submit(){
 			end_time = o.end_time;
 			rs = o.rs;
 		}
+
+		for( var i = 0; i < rs.length; i++ ){
+			if(gpb_isParentTask( rs[i], task )){
+				showErrorInfo( "依赖的任务填写有误！不能设定祖先任务为依赖的任务。" );
+				return;
+			}
+		}
 	}
+
+	//如果修改后的时间改变了里程碑任务，是不允许的
+	var milestone_task_id = wetsk_validateTime(end_time);
+	if( milestone_task_id !== true ){
+		showErrorInfo( "不能修改该任务的时间，因为它将改变里程碑任务(" + gpb_taskMap[milestone_task_id].name + ")的时间！如果你确实需要修改，请先撤消它的里程碑属性。" );
+		return;
+	}	
 	
-	var task = gpb_taskMap[wetsk_taskId];
 	var data = {
 			name: $("#wetsk_name").textbox('getValue'),
 			executor_id: $("#wetsk_executor").combobox('getValue'),

@@ -359,6 +359,17 @@ function gpb_resetTaskTime(task){
 	}	
 }
 
+function gpb_isParentTask(tid, task){
+	while( task.parent != 'root'){
+		var parent = gpb_taskMap[task.parent];
+		if( tid == parent.id ){
+			return true;
+		}
+		task = parent;
+	}
+	return false;
+}
+
 function gpb_resetParentTaskTime(task){
 	var updatedata = [];
 	while( task.parent != 'root'){
@@ -383,18 +394,46 @@ function gpb_resetParentTaskTime(task){
 			if( !err ){
 				//showInfo( '更新任务成功。');
 			}else{
-				showErrorInfo( "自动更新父任务时间失败", err.message );
+				showErrorInfo( "自动更新祖先任务时间失败", err.message );
 			}
 		});
 	}
 }
 
-function gpb_resetReliedTaskTime(tid){
+function _gpb_resetParentTaskTime(tid, updatedata, uddmap){
+	var task =  gpb_taskMap[tid];
+	while( task.parent != 'root'){
+		var parent = gpb_taskMap[task.parent];
+		var isChanged = false;
+		if( parent.plan_start_time > task.plan_start_time){
+			parent.plan_start_time = task.plan_start_time;
+			isChanged = true;
+		}
+		if( parent.plan_end_time < task.plan_end_time){
+			parent.plan_end_time = task.plan_end_time;
+			isChanged = true;
+		}
+		if( isChanged ){
+			var record;
+			if( uddmap.hasOwnProperty(parent.id)){
+				record = uddmap[parent.id];
+				record.plan_start_time = parent.plan_start_time;
+				record.plan_end_time = parent.plan_end_time;
+			}else{
+				record = {id:parent.id,plan_start_time:parent.plan_start_time, plan_end_time:parent.plan_end_time};
+				updatedata.push(record);
+				uddmap[parent.id] = record;
+			}
+		}
+		task = parent;
+	}
+}
+
+function _gpb_resetReliedTaskTime(tid, updatedata, uddmap){
 	var ts = [];
 	var task = gpb_taskMap[tid];
-	var i;
+	var i, record;
 	var nts = [];
-	var updatedata = [];
 	for( i = 0; i < gpb_relies.length; i++ ){
 		var r = gpb_relies[i];
 		if( r.rely_task_id === tid){
@@ -403,28 +442,47 @@ function gpb_resetReliedTaskTime(tid){
 	}
 	for( i = 0; i < ts.length; i++ ){
 		var t = gpb_taskMap[ts[i]];
+		if( !!t.milestone ) continue;//里程碑任务的时间是不能修改的
+
 		var start_time = task.plan_end_time + one_day_time;
 		var end_time = start_time + (Math.ceil(t.plan_duration/8)-1)*one_day_time;
 		if( t.plan_start_time != start_time || t.plan_end_time != end_time){
 			t.plan_start_time = start_time;
 			t.plan_end_time = end_time;
 			
-			updatedata.push({id:t.id,plan_start_time:t.plan_start_time, plan_end_time:t.plan_end_time});
-			$(gpb_tg_id).treegrid('refresh',t.id);
+			if( uddmap.hasOwnProperty(t.id)){
+				record = uddmap[t.id];
+				record.plan_start_time = t.plan_start_time;
+				record.plan_end_time = t.plan_end_time;
+			}else{
+				record = {id:t.id,plan_start_time:t.plan_start_time, plan_end_time:t.plan_end_time};
+				updatedata.push(record);
+				uddmap[t.id] = record;
+			}
 			nts.push(ts[i]);
 		}
 	}
+
+	for( i = 0; i < nts.length; i++ ){
+		_gpb_resetParentTaskTime( nts[i], updatedata, uddmap );
+		_gpb_resetReliedTaskTime( nts[i], updatedata, uddmap );
+	}
+}
+
+function gpb_resetReliedTaskTime(tid){
+	var updatedata = [];
+	var uddmap = {};
+	_gpb_resetReliedTaskTime( tid, updatedata, uddmap );
 	if( updatedata.length > 0 ){
 		postJSON( '/api/project/tasklist/updateplan', updatedata, function(err, result){
 			if( err ){
 				showErrorInfo( "自动更新父任务时间失败", err.message );
+			}else{
+				for( var i = 0; i < updatedata.length; i++ ){
+					$(gpb_tg_id).treegrid('refresh',updatedata[i].id);
+				}
 			}
 		});
-	}
-
-	for( i = 0; i < nts.length; i++ ){
-		gpb_resetParentTaskTime(gpb_taskMap[nts[i]])
-		gpb_resetReliedTaskTime(nts[i]);
 	}
 }
 

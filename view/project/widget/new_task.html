@@ -114,6 +114,26 @@ function wntsk_onChangeAutoMode(newValue,oldValue){
 	}
 }
 
+function wntsk_isParentTask(tid){
+	if( wntsk_pid == 'root'){
+		return false;
+	}
+
+	var task = gpb_taskMap[wntsk_pid];
+	if( task.id == tid ){
+		return true;
+	}
+
+	while( task.parent != 'root'){
+		var parent = gpb_taskMap[task.parent];
+		if( tid == parent.id ){
+			return true;
+		}
+		task = parent;
+	}
+	return false;
+}
+
 function wntsk_calcRelyTask(){
 	var rely = $("#wntsk_rely_to").textbox('getValue');
 	var reg = /^[0-9,\,]+$/;
@@ -155,6 +175,13 @@ function wntsk_submit(){
 			start_time = o.start_time;
 			end_time = o.end_time;
 			rs = o.rs;
+		}
+
+		for( var i = 0; i < rs.length; i++ ){
+			if(wntsk_isParentTask( rs[i] )){
+				showErrorInfo( "依赖的任务填写有误！不能设定祖先任务为依赖的任务。" );
+				return;
+			}
 		}
 	}
 	

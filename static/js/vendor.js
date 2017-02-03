@@ -120,6 +120,20 @@ function validateInputField(o){
 
 var one_day_time = 86400000;
 
+function is_same_day( a, b ){
+	if( Math.abs(a-b) >= one_day_time){
+		return false;
+	}
+
+	var d1 = new Date(a);
+	var d2 = new Date(b);
+	if( d1.getFullYear() != d2.getFullYear() || d1.getMonth() != d2.getMonth() 
+		|| d1.getDate() != d2.getDate()){
+		return false;
+	}
+	return true;
+}
+
 function formatDate(second, withTime ){
 	var date = new Date(second);
 	if( withTime ){
