@@ -217,6 +217,7 @@ function pb_tg_onLoadSuccess(row){
 		$(gpb_tg_id).treegrid('select', gpb_select_node.id);
 	}
 }
+
 function pb_tg_onSelect(row){
 	gpb_select_node = row;
 	if( gpb_has_perm_edit ){
@@ -234,8 +235,7 @@ function pb_tg_onSelect(row){
 		}
 
 		if( gpb_project.master_id === ENV.user.id ){
-			var children = $(gpb_tg_id).treegrid('getChildren', row.id);
-			if( children.length == 0 ){
+			if( gpb_isLeaf( row.id ) ){
 				$('#pb_btn_toggle_milestone').linkbutton('enable');
 				$('#pb_span_toggle_milestone').text(row.milestone?'取消里程碑设置':'设置为里程碑');
 			}
@@ -333,6 +333,13 @@ function pb_set_task_parent_root(){
 	});
 }
 
+function gpb_isLeaf( tid ){
+	var children = $(gpb_tg_id).treegrid('getChildren', tid);
+	if( children && children.length > 0 ){
+		return false;
+	}
+	return true;
+}
 
 function gpb_resetTaskTime(task){
 	var children = $(gpb_tg_id).treegrid("getChildren");

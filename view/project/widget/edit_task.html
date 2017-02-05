@@ -88,7 +88,14 @@ function pb_edit_task(taskId){
 	if( task.automode == 0 ){
 		$('#wetsk_plan_start_time').datebox('disable');
 		$('#wetsk_plan_end_time').datebox('disable');
-	}	
+	}
+
+	//父任务的时间是由子任务决定的
+	if( !gpb_isLeaf( taskId ) ){
+		$('#wetsk_automode').combobox('disable');
+		$('#wetsk_plan_start_time').datebox('disable');
+		$('#wetsk_plan_end_time').datebox('disable');
+	}
 
 	$('#win_edit_task').window({
 		title: "修改任务",
