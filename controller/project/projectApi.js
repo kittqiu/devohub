@@ -118,18 +118,20 @@ module.exports = {
 	'GET /api/project/p/allDoing': function*(){
 		var index = this.request.query.page || '1',
 			index = parseInt(index),
+			uid = this.request.user.id,
 			page_size = this.request.query.rows ? parseInt(this.request.query.rows) :base.config.PAGE_SIZE,
-			rs = yield yield base.project.$listAllOnRun( page_size*(index-1), page_size),
-			total = yield base.project.$countAllOnRun();
+			rs = yield yield base.project.$listAllOnRun( page_size*(index-1), page_size, uid),
+			total = yield base.project.$countAllOnRun(uid);
 		this.body = { total:total, rows: rs};
 	},
 
 	'GET /api/project/p/allHistory': function*(){
 		var	index = this.request.query.page || '1',
 			index = parseInt(index),
+			uid = this.request.user.id,
 			page_size = this.request.query.rows ? parseInt(this.request.query.rows) :base.config.PAGE_SIZE,
-			rs = yield yield base.project.$listAllOnEnd( page_size*(index-1), page_size),
-			total = yield base.project.$countAllOnEnd();
+			rs = yield yield base.project.$listAllOnEnd( page_size*(index-1), page_size, uid),
+			total = yield base.project.$countAllOnEnd(uid);
 		this.body = { total:total, rows: rs};
 	},
 

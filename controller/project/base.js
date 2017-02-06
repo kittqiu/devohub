@@ -105,7 +105,20 @@ function _project_combine(rs1, rs2){
 	}
 }
 
-function*  $project_listAllOnRun(offset, limit){
+function* $__project_filter_scope( projects, uid ){
+	var ws = yield team_base.member.$getCoworkers( uid );
+	var rs_org = projects;
+	var rs = [];
+	for( var i = 0; i < rs_org.length; i++ ){
+		var r = rs_org[i];
+		if( ws.indexOf( r.master_id) !== -1 ){
+			rs.push( r );
+		}
+	}
+	return rs;
+}
+
+function*  $project_listAllOnRun(offset, limit, uid ){
 	var sql = 'select p.*, u.name as master_name from project as p left join users as u on u.id=p.master_id '
 		+ ' where p.status=? or p.status=? order by p.created_at desc ',
 		rs;
@@ -119,13 +132,18 @@ function*  $project_listAllOnRun(offset, limit){
 	}else{
 		rs = yield warp.$query(sql, ['running', 'ready']);	
 	}
+
+	//过滤自己无权访问的项目
+	if( config.project.scope_limit ){
+		rs = yield $__project_filter_scope( rs, uid );
+	}
 	return rs;
 }
 
 function* $project_count(){
 	return yield modelProject.$findNumber( {
-				select: 'count(*)'
-			});
+		select: 'count(*)'
+	});
 }
 
 function* $project_delete(pid){
@@ -138,15 +156,22 @@ function* $project_delete(pid){
 	yield warp.$query( 'delete from project where id=?', [pid] );
 }
 
-function* $project_countAllOnRun(){
-	return yield modelProject.$findNumber( {
-				select: 'count(*)',
-				where: '`status`=? or `status`=?',
-				params: ['running', 'ready']
-			});
+function* $project_countAllOnRun(uid){
+	if( config.project.scope_limit ){
+		var ws = yield team_base.member.$getCoworkers( uid );
+		var sql = "select count(*) from project where (`status`='running' or `status`='ready') and  master_id in ('"
+			+ ws.join("','") + "')";
+		return yield  warp.$query( sql );
+	}else{
+		return yield modelProject.$findNumber( {
+			select: 'count(*)',
+			where: '`status`=? or `status`=?',
+			params: ['running', 'ready']
+		});
+	}	
 }
 
-function*  $project_listAllOnEnd(offset, limit){
+function*  $project_listAllOnEnd(offset, limit, uid ){
 	var sql = 'select p.*, u.name as master_name from project as p left join users as u on u.id=p.master_id '
 		+ ' where p.status=? order by p.created_at desc ',
 		rs;
@@ -160,15 +185,27 @@ function*  $project_listAllOnEnd(offset, limit){
 	}else{
 		rs = yield warp.$query(sql, ['end']);	
 	}
+
+	//过滤自己无权访问的项目
+	if( config.project.scope_limit ){
+		rs = yield $__project_filter_scope( rs, uid );
+	}
 	return rs;
 }
 
-function* $project_countAllOnEnd(){
-	return yield modelProject.$findNumber( {
-				select: 'count(*)',
-				where: '`status`=? ',
-				params: ['end']
-			});
+function* $project_countAllOnEnd(uid){
+	if( config.project.scope_limit ){
+		var ws = yield team_base.member.$getCoworkers( uid );
+		var sql = "select count(*) from project where `status`='end' and  master_id in ('"
+			+ ws.join("','") + "')";
+		return yield  warp.$query( sql );
+	}else{
+		return yield modelProject.$findNumber( {
+			select: 'count(*)',
+			where: '`status`=? ',
+			params: ['end']
+		});
+	}
 }
 
 function* $project_listUserJoinOnRun(uid, offset, limit){

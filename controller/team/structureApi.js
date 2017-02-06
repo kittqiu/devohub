@@ -5,14 +5,15 @@ var
 	api = require( __base + 'lib/api'),
 	home = require( __base + 'controller/home'), 
 	json_schema = require( __base + 'lib/json_schema'),
-	base = require('./base');
+	base = require('./base'),
+	cache = require('./team_cache');
 
 var 
 	modelDep = db.team_department,
 	modelUser = db.user;
 
 function* $_render( context, model, view ){
-    context.render( 'team/' + view, yield home.$getModel.apply(context, [model]) );
+	context.render( 'team/' + view, yield home.$getModel.apply(context, [model]) );
 }
 
 /**************
@@ -20,9 +21,9 @@ GET METHOD:
 /team/structure/
 /team/structure/tree
 
-/api/team/department/list
+/api/team/department/list?scopelimit=true or onlyroot=true
 /api/team/department/:id
-/api/team/department/users
+/api/team/department/users?scopelimit=true
 /api/team/department/freeusers
 
 POST METHOD:
@@ -52,11 +53,25 @@ module.exports = {
 	},
 
 	'GET /api/team/department/list': function* (){
-		this.body = yield base.department.$list();
+		var 
+			param = this.query || {};
+		if( param.scopelimit ){
+			this.body = yield base.department.$list_scope_limit(this.request.user.id);
+		}else if( param.onlyroot ){
+			this.body = yield base.department.$list_root();
+		}else{
+			this.body = yield base.department.$list();
+		}		
 	},
 
 	'GET /api/team/department/users': function* (){
-		this.body = yield base.department.$listUsers();
+		var 
+			param = this.query || {};
+		if( param.scopelimit ){
+			this.body = yield base.department.$listUsers_scope_limit(this.request.user.id);
+		}else{
+			this.body = yield base.department.$listUsers();
+		}
 	},
 
 	'GET /api/team/department/:id': function* (id){
@@ -77,6 +92,7 @@ module.exports = {
 			duty: ''
 		};
 		yield modelDep.$create( r );
+		yield cache.$reinit();
 		this.body = {
 			result: 'ok',
 			redirect: base.getHistoryUrl(this)
@@ -114,9 +130,10 @@ module.exports = {
 			yield base.department.$deleteOrder( orgParentId, orgOrder );
 		}
 
+		yield cache.$reinit();
 		this.body = {
-            redirect: base.getHistoryUrl(this)
-        };
+			redirect: base.getHistoryUrl(this)
+		};
 	}, 
 	'POST /api/team/department/:id/delete':function* (id){
 		yield base.$testPerm(this, base.PERM_EDIT_STRUCTURE);
@@ -130,6 +147,8 @@ module.exports = {
 		}
 		yield base.department.$deleteOrder(r.parent, r.order);
 		yield r.$destroy();
+
+		yield cache.$reinit();
 		this.body = {
 			result:'ok'
 		}
@@ -146,6 +165,7 @@ module.exports = {
 		}else if( action === 'down' ){
 			yield base.department.$changeOrder(id, 1 );
 		}
+		yield cache.$reinit();
 		this.body = {
 			result:'ok'
 		}
@@ -170,6 +190,7 @@ module.exports = {
 				yield m.$update(cols);
 			}			
 		}
+		yield cache.$reinit();
 		this.body = { result: 'ok' }
 	},
 
@@ -192,6 +213,7 @@ module.exports = {
 				}
 			}
 		}
+		yield cache.$reinit();
 		this.body = { result: 'ok'};
 	}
 

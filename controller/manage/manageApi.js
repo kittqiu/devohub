@@ -9,10 +9,10 @@ var
 	perm = require( __base + 'controller/system/permission');;
 
 var 
-    modelUser = db.user;
+	modelUser = db.user;
 
 function* $_render( context, model, view ){
-    context.render( 'manage/' + view, yield home.$getModel.apply(context, [model]) );
+	context.render( 'manage/' + view, yield home.$getModel.apply(context, [model]) );
 }
 
 /**************
@@ -26,6 +26,7 @@ GET METHOD:
 
 POST METHOD:
 /api/manage/user/:id/roles
+/api/manager/user/:uid/departmentsCanAccess
 
 *************/
 
@@ -56,16 +57,27 @@ module.exports = {
 		base.setHistoryUrl(this);
 	},
 
-	'POST /api/manage/user/:id/roles': function* (uid){
-        var u = yield modelUser.$find(uid),
-            data = this.request.body;
+	'POST /api/manage/user/:uid/roles': function* (uid){
+		var u = yield modelUser.$find(uid),
+			data = this.request.body;
 
-        if( u === null ){
-            throw api.notFound('user', this.translate('Record not found'));
-        }
-        yield perm.user.$setRoles(uid, data);
-        this.body = { result: 'ok' };
-    },
+		if( u === null ){
+			throw api.notFound('user', this.translate('Record not found'));
+		}
+		yield perm.user.$setRoles(uid, data);
+		this.body = { result: 'ok' };
+	},
+
+	'POST /api/manager/user/:uid/departmentsCanAccess': function* (uid){
+		var u = yield modelUser.$find(uid),
+			data = this.request.body;
+		if( u === null ){
+			throw api.notFound('user', this.translate('Record not found'));
+		}
+
+		yield perm.user.$setPermDepartments( uid, data );
+		this.body = { result: 'ok' }
+	},
 
 	'LoginRequired': [ /^\/manage[\s\S]*/, /^\/api\/manage[\s\S]*/]
 };

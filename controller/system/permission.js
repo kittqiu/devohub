@@ -9,6 +9,7 @@ var
 	modelPerm = db.permission,
 	modelRolePerm = db.map_role_permission,
 	modelUserRole = db.map_user_role,
+	modelDepPerm = db.team_department_perm,
 	next_id = db.next_id,
 	warp = db.warp;
 
@@ -123,6 +124,21 @@ function* $user_havePerm(uid, perm_name){
 	return ps.hasOwnProperty(perm_name);
 }
 
+function* $user_setPermDepartments( uid, deps ){
+	var sql = 'delete from team_department_perm where `user`=?';
+	yield warp.$query(sql, [uid]);
+
+	for( var i = 0; i < deps.length; i++ ){
+		var o = {
+			user: uid,
+			department: deps[i]
+		};
+		yield modelDepPerm.$create(o);
+	}
+	var team_base = require( __base + 'controller/team/base');
+	yield team_base.$reinit_cache();
+}
+
 module.exports = {
 	perm: {
 		$register: $perm_register
@@ -136,6 +152,7 @@ module.exports = {
 		$listPerms: $user_listPerms,
 		$listRoles: $user_listRoles,
 		$setRoles: $user_setRoles,
-		$havePerm: $user_havePerm
+		$havePerm: $user_havePerm,
+		$setPermDepartments: $user_setPermDepartments
 	}
 };

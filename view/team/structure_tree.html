@@ -71,7 +71,7 @@
 		return data;
 	}
 	function loadUsers(){
-		getJSON( '/api/team/department/users', function(err, result) {
+		getJSON( '/api/team/department/users', {scopelimit:true}, function(err, result) {
 			if( !err ){
 				g_users = result;
 				g_treedata = buildTreeData();
@@ -97,7 +97,7 @@
 	}
 
 	function loadDeparments(){
-		getJSON( '/api/team/department/list', function(err, result) {
+		getJSON( '/api/team/department/list', {scopelimit:true}, function(err, result) {
 			if( !err ){
 				loadUsers();
 				g_departments = result;

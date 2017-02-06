@@ -6,7 +6,8 @@ var
 	log = require( __base + 'lib/logger'),
 	co = require('co'),
     perm = require( __base + 'controller/system/permission'),
-    api = require( __base + 'lib/api');
+    api = require( __base + 'lib/api'),
+    cache = require( './team_cache');
 
 var 
 	warp = db.warp,
@@ -15,6 +16,7 @@ var
 	modelDep = db.team_department,
 	modelMember = db.team_member,
 	modelEvaluation = db.team_evaluation,
+	modelDepPerm = db.team_department_perm,
 	DEP_ROOT = 'root',
 	DEFAULT_EXPIRES_IN_MS = 1000 * config.session.expires,
 	PERM_EDIT_STRUCTURE = 'team.structure.edit',
@@ -33,9 +35,13 @@ function* co_module_init(){
 
 function MODULE_init(){
 	co( co_module_init ).then( function (val) {
-		 }, function (err) {
-		  log.error(err.stack);
-		});
+		}, function (err) {
+		log.error(err.stack);
+	});
+
+	co( cache.$init ).then( function(val){}, function(err){
+		log.error( err.stack );
+	});
 }
 MODULE_init();
 
@@ -104,6 +110,58 @@ function* $department_list(){
 	});
 }
 
+function* $department_list_root(){
+	return yield modelDep.$findAll({
+		select: ['id', 'name', 'parent', 'order'],
+		where: '`parent`=?',
+		params: ['root']
+	});
+}
+
+function* $__member_getPermDeps(uid){
+	var dep_perms = yield modelDepPerm.$findAll({
+			select: '*',
+			where: '`user`=?',
+			params: [uid]
+	});
+	var rs = [];
+	for( var i = 0; i < dep_perms.length; i++ ){
+		rs.push( dep_perms[i].department );
+	}
+	return rs;
+}
+
+
+function* $_department_list_scope_limit( userId ){
+	var rs = yield modelDep.$findAll({
+			select: ['id', 'name', 'parent', 'order']
+		});
+
+	if( config.project.scope_limit ){
+		var user = yield $member_getUser( userId );
+		var ds = yield cache.$getCodepartments( user.department );
+		var i;
+		var dep_perms = yield $__member_getPermDeps( userId );
+		for( i = 0; i < dep_perms.length; i++ ){
+			var depId = dep_perms[i];
+			if( depId !== user.department ){
+				var ds_others = yield cache.$getCodepartments( depId );
+				ds = ds.concat( ds_others );
+			}
+		}
+		var rs_org = rs;
+		rs = [];
+
+		for( i = 0; i < rs_org.length; i++ ){
+			var r = rs_org[i];
+			if( ds.indexOf( r.id ) !== -1 ){
+				rs.push( r );
+			}
+		}
+	}
+	return rs;
+}
+
 /***** member*******/
 function* $member_getFree(){
 	var sql = "select u.id,u.name from users as u LEFT JOIN team_member as m on u.id=m.user_id where u.actived=1 and u.verified=1 and m.department is null or m.department =''";
@@ -133,9 +191,35 @@ function* $member_isAdmin(uid){
 	return false;
 }
 
+function* $member_getDepsCanAccess(uid){
+	return yield modelDepPerm.$findAll({
+			select: '*',
+			where: '`user`=?',
+			params: [uid]
+		});
+}
+
 function* $department_listUsers(){
 	var sql = "select u.id, u.name, m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''";
 	return yield warp.$query(sql);
+}
+
+function* $_department_listUsers_scope_limit( userId ){
+	var sql = "select u.id, u.name, m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''";
+	var rs = yield warp.$query(sql);
+
+	if( config.project.scope_limit ){
+		var ws = yield cache.$getCoworkers( userId );
+		var rs_org = rs;
+		rs = [];
+		for( var i = 0; i < rs_org.length; i++ ){
+			var r = rs_org[i];
+			if( ws.indexOf( r.id ) !== -1 ){
+				rs.push( r );
+			}
+		}
+	}
+	return rs;
 }
 
 function* $_member_create(uid, dep){
@@ -216,7 +300,10 @@ module.exports = {
 
 	department: {
 		$list: $department_list,
+		$list_root: $department_list_root,
+		$list_scope_limit: $_department_list_scope_limit,
 		$listUsers: $department_listUsers,
+		$listUsers_scope_limit: $_department_listUsers_scope_limit,
 		$changeOrder: $department_changeOrder,
 		$getMaxOrder: $department_getMaxOrder,
 		$deleteOrder: $department_deleteOrder,
@@ -230,7 +317,9 @@ module.exports = {
 		$listRoles: perm.user.$listRoles,
 		$havePerm: perm.user.$havePerm,
 		$collectUser: $member_collectUser,
-		$isAdmin: $member_isAdmin
+		$isAdmin: $member_isAdmin,
+		$getCoworkers: cache.$getCoworkers,
+		$getDepsCanAccess: $member_getDepsCanAccess,
 	},
 
 	evaluation: {
@@ -242,6 +331,8 @@ module.exports = {
 
 	$havePerm: $_havePerm,
 	$testPerm: $_testPerm,
+
+	$reinit_cache: cache.$reinit,
 
 	setHistoryUrl: setHistoryUrl,
 	getHistoryUrl: getHistoryUrl,

@@ -1,0 +1,87 @@
+<div id="win_change_user_manage_dep" style="display:none;padding:20px">
+	<div style="margin-bottom:20px">
+		<input class="" id="wcudm_user" name="wcudm_user" style="width:95%" data-options="label:'选择用户:',required:true,valueField:'id',textField:'name',onChange:wcudm_onChangeUser">
+	</div>
+	<div style="margin-bottom:20px">
+		<div class="" id="wcudm_dep" name="wcudm_dep" title="选择分管的部门" style="width:95%;height:160px" data-options="url:'/api/team/department/list?onlyroot=true',method:'get',singleSelect:false, valueField:'id',textField:'name'">
+		</div>
+	</div>
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" id="wcudm_btn_submit" class="easyui-linkbutton" onclick="wcudm_submit()" style="width:120px">保存</a>
+	</div>
+</div>
+<script type="text/javascript">
+var wcudm_init = false;
+function wcudm_initView(){
+	if( !wcudm_init ){
+		wcudm_init = true;
+		$('#wcudm_user').combobox({});
+		$('#wcudm_dep').datalist({});
+		$('#wcudm_btn_submit').linkbutton({});
+	}
+}
+
+var wcudm_user_id;
+function wcudm_loadUserPermDep(uid){
+	getJSON( '/api/team/member/'+uid+'/departmentsCanAccess', function(err, rs ){				
+			if(!err){
+				var data = $('#wcudm_dep').datalist('getData');
+				$('#wcudm_dep').datalist('clearSelections');
+
+				for(var i = 0; i < rs.length; i++ ){
+					for( var j = 0; j < data.total; j++ ){
+						if( data.rows[j].id == rs[i].department ){
+							$('#wcudm_dep').datalist('selectRow', j );
+						}
+					}
+				}
+			}
+		}
+	);
+}
+
+function wcudm_loadData( ){
+	getJSON( '/api/team/member/list', function(err, us ){
+		if(!err){
+			var uid = us[0].id;		
+			wcudm_user_id = uid;
+			$('#wcudm_user').combobox('loadData', us);
+			$('#wcudm_user').combobox('select', uid);
+		}
+	});
+}
+
+function wcudm_open_win(){
+	wcudm_initView();
+	$('#win_change_user_manage_dep').window({
+		title: "修改用户的分管部门",
+		width:400,
+		height:340,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	wcudm_loadData();
+}
+
+function wcudm_onChangeUser(newValue,oldValue){
+	wcudm_user_id = newValue;
+	wcudm_loadUserPermDep(newValue);
+}
+
+function wcudm_submit(){
+	var rows = $('#wcudm_dep').datalist('getSelections');
+	var deps = [];
+	for(var i = 0; i < rows.length; i++ ){
+		deps.push( rows[i].id );
+	}
+	postJSON( '/api/manager/user/'+wcudm_user_id+'/departmentsCanAccess', deps, function(err, result){
+		if( !err ){
+			showInfo("保存成功！");
+		}
+	});
+}
+</script>
