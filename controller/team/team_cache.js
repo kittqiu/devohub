@@ -95,9 +95,15 @@ function* $_getCodepartments(depId){
 	return d.subdeps;
 }
 
+function* $_getUserInDeps(uid){
+	var u = user_map.get(uid);
+	return u.in_deps;
+}
+
 module.exports = {
 	$init: $_MODULE_init,
 	$reinit: $_MODULE_init,
 	$getCoworkers: $_getCoworkers,
-	$getCodepartments: $_getCodepartments
+	$getCodepartments: $_getCodepartments,
+	$getUserInDeps: $_getUserInDeps
 }

@@ -139,15 +139,13 @@ function* $_department_list_scope_limit( userId ){
 
 	if( config.project.scope_limit ){
 		var user = yield $member_getUser( userId );
-		var ds = yield cache.$getCodepartments( user.department );
+		var ds = [];
 		var i;
-		var dep_perms = yield $__member_getPermDeps( userId );
+		var dep_perms = yield cache.$getUserInDeps( userId );
 		for( i = 0; i < dep_perms.length; i++ ){
 			var depId = dep_perms[i];
-			if( depId !== user.department ){
-				var ds_others = yield cache.$getCodepartments( depId );
-				ds = ds.concat( ds_others );
-			}
+			var ds_others = yield cache.$getCodepartments( depId );
+			ds = ds.concat( ds_others );
 		}
 		var rs_org = rs;
 		rs = [];
