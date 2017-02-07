@@ -67,7 +67,15 @@ var gpb_sortTasks = [];
 
 var gpb_has_perm_edit = {{ __perm_Edit_ }};
 
+function pb_project_is_close(){
+	return gpb_project.status === 'end';
+}
+
 function pb_init_btn_status(){
+	if( pb_project_is_close() ){
+		$('#project_btn_new_task_root').linkbutton( 'disable');
+		$('#pb_btn_set_member').linkbutton( 'disable');
+	}
 	$('#project_btn_new_subtask').linkbutton( 'disable');//里程碑任务必须是叶结点
 	$('#project_btn_new_brother_task').linkbutton( 'disable');
 	$('#pb_btn_edit_task').linkbutton('disable');
@@ -220,7 +228,7 @@ function pb_tg_onLoadSuccess(row){
 
 function pb_tg_onSelect(row){
 	gpb_select_node = row;
-	if( gpb_has_perm_edit ){
+	if( gpb_has_perm_edit && !pb_project_is_close() ){
 		$('#project_btn_new_subtask').linkbutton( row.milestone ?'disable': 'enable');//里程碑任务必须是叶结点
 		$('#project_btn_new_brother_task').linkbutton( row.milestone ?'disable': 'enable');
 		

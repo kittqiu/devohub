@@ -103,16 +103,19 @@ function wvtsk_initFlowCombo(){
 	var task = gpb_taskMap[wvtsk_taskId];
 	var actions = [];
 	var i;
-	if( task.executor_id === ENV.user.id ){
+
+	if( !pb_project_is_close()){
+		if( task.executor_id === ENV.user.id ){
 		actions = actions.concat( ActionOnStatus[task.status].executor );
-	}
-	if( task.manager_id === ENV.user.id ){
-		var list = ActionOnStatus[task.status].manager;
-		for( i = 0; i < list.length; i++){
-			if( actions.indexOf(list[i])===-1){
-				actions.push(list[i]);
-			}
 		}
+		if( task.manager_id === ENV.user.id ){
+			var list = ActionOnStatus[task.status].manager;
+			for( i = 0; i < list.length; i++){
+				if( actions.indexOf(list[i])===-1){
+					actions.push(list[i]);
+				}
+			}
+		}		
 	}
 	if(actions.length === 0){
 		actions.push( 'reply' );
