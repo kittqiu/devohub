@@ -133,6 +133,7 @@ function* $__member_getPermDeps(uid){
 
 
 function* $_department_list_scope_limit( userId ){
+	/*
 	var rs = yield modelDep.$findAll({
 			select: ['id', 'name', 'parent', 'order']
 		});
@@ -156,6 +157,14 @@ function* $_department_list_scope_limit( userId ){
 				rs.push( r );
 			}
 		}
+	}
+	return rs;*/
+	var rs = [];
+	var deps = yield cache.$getUserInDeps( userId );
+	for( var i = 0; i < deps.length; i++ ){
+		var depId = deps[i];
+		var us = yield cache.$getCodepartmentObj(depId);
+		rs = rs.concat( us );
 	}
 	return rs;
 }
@@ -203,6 +212,7 @@ function* $department_listUsers(){
 }
 
 function* $_department_listUsers_scope_limit( userId ){
+	/*
 	var sql = "select u.id, u.name, m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''";
 	var rs = yield warp.$query(sql);
 
@@ -217,11 +227,18 @@ function* $_department_listUsers_scope_limit( userId ){
 			}
 		}
 	}
-	return rs;
+	return rs;*/
+	var rs = [];
+	var deps = yield cache.$getUserInDeps( userId );
+	for( var i = 0; i < deps.length; i++ ){
+		var depId = deps[i];
+		var us = yield cache.$getUsersOfDep(depId);
+		rs = rs.concat( us );
+	}
+	return rs;	
 }
 
 function* $_member_create(uid, dep){
-
 	var m = {
 		id: next_id(),
 		user_id: uid,

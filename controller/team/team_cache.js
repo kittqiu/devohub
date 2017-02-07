@@ -26,6 +26,41 @@ function __getRootDepartment( depId ){
 	return dep;
 }
 
+function* $__cacheDepUsers(){
+	for( var mr of dep_map ){
+		var dep = mr[1];
+		if( dep.parent == DEP_ROOT ){
+			var sql = "select u.id, u.name, m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''";
+			var rs = yield warp.$query(sql);
+			var rs_org = rs;
+			var ws = dep.users;
+			var i, r;
+			rs = [];
+			for( i = 0; i < rs_org.length; i++ ){
+				r = rs_org[i];
+				if( ws.indexOf( r.id ) !== -1 ){
+					rs.push( r );
+				}
+			}
+			dep.user_objs = rs;
+
+			var subdeps = dep.subdeps;
+			rs = yield modelDep.$findAll({
+				select: ['id', 'name', 'parent', 'order']
+			});
+			rs_org = rs;
+			rs = [];
+			for( i = 0; i < rs_org.length; i++ ){
+				r = rs_org[i];
+				if( subdeps.indexOf( r.id ) !== -1 ){
+					rs.push( r );
+				}
+			}
+			dep.subdep_objs = rs;
+		}
+	}
+}
+
 function* $_buildTeamMap(){
 	var 
 		i,
@@ -71,6 +106,8 @@ function* $_buildTeamMap(){
 		user_map.set( u.id, user_obj );
 		dep_root.users.push( u.id );
 	}
+
+	yield $__cacheDepUsers();
 }
 
 function* $_MODULE_init(){
@@ -100,10 +137,22 @@ function* $_getUserInDeps(uid){
 	return u.in_deps;
 }
 
+function* $_getUsersOfDep(depId){
+	var d = __getRootDepartment(depId);
+	return d.user_objs;
+}
+
+function* $_getCodepartmentObj(depId){
+	var d = __getRootDepartment(depId);
+	return d.subdep_objs;
+}
+
 module.exports = {
 	$init: $_MODULE_init,
 	$reinit: $_MODULE_init,
 	$getCoworkers: $_getCoworkers,
 	$getCodepartments: $_getCodepartments,
-	$getUserInDeps: $_getUserInDeps
+	$getUserInDeps: $_getUserInDeps,
+	$getUsersOfDep: $_getUsersOfDep,
+	$getCodepartmentObj: $_getCodepartmentObj
 }
