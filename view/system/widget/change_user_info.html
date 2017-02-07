@@ -43,6 +43,7 @@ function changeMyInfo(){
 	$('#wcui_username').textbox('setValue', ENV.user.username);
 	$('#wcui_name').textbox('setValue', ENV.user.name);
 	$('#wcui_email').textbox('setValue', ENV.user.email);
+	easyui_focus_input('wcui_name');
 }
 
 function wcui_submitForm(){

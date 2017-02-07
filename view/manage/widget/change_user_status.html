@@ -1,12 +1,12 @@
 <div id="win_change_user_status" style="display:none;padding:20px">
 	<div style="margin-bottom:20px">
-		<input class="easyui-combobox" id="wcus_user" name="wcus_user" style="width:90%" data-options="label:'选择用户:',required:true,valueField:'id',textField:'name',onChange:wcus_onChangeUser">
+		<input class="" id="wcus_user" name="wcus_user" style="width:90%" data-options="label:'选择用户:',required:true,valueField:'id',textField:'name',onChange:wcus_onChangeUser">
 	</div>
 	<div style="margin-bottom:20px">
 		是否为激活状态：<input id="wcus_actived" type="checkbox" checked>激活
 	</div>
 	<div class="uk-text-center">
-		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wcus_submit()" style="width:120px">保存</a>
+		<a href="javascript:void(0)" id="wcus_btn_submit" class="" onclick="wcus_submit()" style="width:120px">保存</a>
 	</div>
 </div>
 <script type="text/javascript">
@@ -31,7 +31,18 @@ function wcus_loadData( ){
 	});
 }
 
+var wcus_init = false;
+function wcus_initView(){
+	if( !wcus_init ){
+		wcus_init = true;
+		$('#wcus_user').combobox({});
+		$('#wcus_btn_submit').linkbutton({});
+	}
+}
+
+
 function wcus_open_win(){
+	wcus_initView();
 	$('#win_change_user_status').window({
 		title: "用户状态管理",
 		width:320,

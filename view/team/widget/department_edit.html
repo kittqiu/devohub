@@ -43,7 +43,8 @@ function editDepartment(dep){
 	$('#wed_dep_name').textbox('setValue',dep.name);
 	$('#wed_parent_name').textbox('setValue', parent.id);
 	$('#wed_parent_name').textbox('setText', parent.name);
-	$('#win_edit_department').window( 'open');
+
+	easyui_focus_input('wed_dep_name');
 }
 
 function wed_submitForm(){

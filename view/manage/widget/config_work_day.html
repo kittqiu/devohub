@@ -1,11 +1,11 @@
 <div id="win_config_work_day" style="display:none;padding:10px">
 	<h2 class="uk-text-center" style="margin-bottom:10px"><span id="wcwd_year"></span>工作日设置</h2>
-	<div class="easyui-layout" data-options="border:false,height:40" style="width:100%;height:40px;">
+	<div id="wcwd_layout" class="" data-options="border:false,height:40" style="width:100%;height:40px;">
 		<div data-options="region:'east', border:false" style="width:60px;">
-			<a href="#" id="" class="easyui-linkbutton" data-options="" onclick="wcwd_onNext()"><i class="uk-icon-angle-double-right"></i>后一年</a>
+			<a href="#" id="wcwd_btn_nextYear" class="" data-options="" onclick="wcwd_onNext()"><i class="uk-icon-angle-double-right"></i>后一年</a>
 		</div>
 		<div data-options="region:'west', border:false" style="width:60px;">
-			<a href="#" id="" class="easyui-linkbutton" data-options="" onclick="wcwd_onPrevious()"><i class="uk-icon-angle-double-left"></i>前一年</a>
+			<a href="#" id="wcwd_btn_prevYear" class="" data-options="" onclick="wcwd_onPrevious()"><i class="uk-icon-angle-double-left"></i>前一年</a>
 		</div>
 		<div data-options="region:'center', border:false" class="uk-text-center">				
 		</div>
@@ -19,19 +19,19 @@
 		</thead>
 	</table>
 	<div id="wcwd_dg_tb">
-		<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="wcwd_open_add_win()">新增</a>
-		<a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true" onclick="wcwd_edit_record()">修改</a>
+		<a href="#" id="wcwd_btn_add" class="" data-options="iconCls:'icon-add',plain:true" onclick="wcwd_open_add_win()">新增</a>
+		<a href="#" id="wcwd_btn_edit" class="" data-options="iconCls:'icon-edit',plain:true" onclick="wcwd_edit_record()">修改</a>
 	</div>
 </div>
 <div id="win_config_add_work_day" style="display:none;padding:20px">
 	<div style="margin-bottom:20px">
-		<input id="wcwd_add_date" class="easyui-datebox" data-options="label:'选择日期：', width:200, required:true">
+		<input id="wcwd_add_date" class="" data-options="label:'选择日期：', width:200, required:true">
 	</div>
 	<div style="margin-bottom:20px">
 		<input id="wcwd_add_is_work_day" type="checkbox" checked>是否为工作日
 	</div>
 	<div class="uk-text-center">
-		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="wcwd_add_submit()" style="width:120px">提交</a>
+		<a href="javascript:void(0)" id="wcwd_btn_submit" class="" onclick="wcwd_add_submit()" style="width:120px">提交</a>
 	</div>
 </div>
 <script type="text/javascript">
@@ -51,10 +51,26 @@ function wcwd_loadData( year ){
 	);
 }
 
+var wcwd_init = false;
+function wcwd_initView(){
+	if( !wcwd_init ){
+		wcwd_init = true;
+		$('#wcwd_layout').layout({});
+		$('#wcwd_add_date').datebox({});
+		$('#wcwd_btn_submit').linkbutton({});
+		$('#wcwd_btn_add').linkbutton({});
+		$('#wcwd_btn_edit').linkbutton({});
+		$('#wcwd_btn_nextYear').linkbutton({});
+		$('#wcwd_btn_prevYear').linkbutton({});
+	}
+}
+
+
 function wcwd_open_win(){
 	var date = new Date();
 	wcwd_year = date.getFullYear();
 
+	wcwd_initView();
 	$('#win_config_work_day').window({
 		title: "工作日配置",
 		width:600,
@@ -67,6 +83,7 @@ function wcwd_open_win(){
 		resizable: false
 	});
 	wcwd_loadData(wcwd_year);
+	wcwd_row = null;
 }
 
 function wcwd_onPrevious(){
@@ -81,12 +98,14 @@ function wcwd_dg_onSelect(index,row){
 	wcwd_row = row;
 }
 function wcwd_edit_record(){
-	postJSON( '/api/date/workday/'+ wcwd_row.id +'/switch', function(err, r){
-		if( r.result === 'ok' ){
-			showInfo( '修改成功。');
-			wcwd_loadData(wcwd_year);
-		}
-	});
+	if( wcwd_row ){
+		postJSON( '/api/date/workday/'+ wcwd_row.id +'/switch', function(err, r){
+			if( r.result === 'ok' ){
+				showInfo( '修改成功。');
+				wcwd_loadData(wcwd_year);
+			}
+		});
+	}
 }
 
 

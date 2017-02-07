@@ -39,7 +39,6 @@
 
 {% block readyscript %}
 <script type="text/javascript">
-$('#signup_win').show();
 $('#signup_win').window({
 	title: "新用户注册",
 	width:600,
@@ -52,6 +51,11 @@ $('#signup_win').window({
 	draggable: false,
 	resizable: false
 });
+
+$(function(){
+	easyui_focus_input('username');
+});
+
 function submitForm(){
 $('#ff').form('submit',{
     onSubmit: function(){

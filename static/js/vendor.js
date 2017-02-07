@@ -206,6 +206,16 @@ function formatter_pre( value, row, index){
 function formatter_percent(value, row, index){
 	return value + '%';
 }
+function easyui_focus_input(id){
+	$('#' +id).next("span").find("input,textarea").focus();
+}
+function easyui_enter_default_action(field_id, fn){
+	$('#'+field_id).next("span").find('input,textarea').bind('keydown', function(e){
+		if(e.keyCode == 13){
+			fn();
+		}
+	});	
+}
 
 
 /*********project subsystem*************/

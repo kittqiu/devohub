@@ -63,6 +63,7 @@ function openWin_EditMyEvaluation(data){
 	$('#wem_goodjob').textbox('setValue', !!o.goodjob?o.goodjob:'' );
 	$('#wem_badjob').textbox('setValue', !!o.badjob?o.badjob:'' );
 	$('#wem_other').textbox('setValue', !!o.other?o.other:'' );
+	easyui_focus_input('wem_corework');
 }
 
 function wem_submit(){

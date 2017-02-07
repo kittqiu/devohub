@@ -53,6 +53,7 @@ function openWin_EditEvaluationByManager(data){
 	$('#wemn_goodjobeval').textbox('setValue', !!o.goodjobeval?o.goodjobeval:'' );
 	$('#wemn_badjobeval').textbox('setValue', !!o.badjobeval?o.badjobeval:'' );
 	$('#wemn_kpi').textbox('setValue', !!o.kpi?o.kpi:'' );
+	easyui_focus_input('wemn_outputeval');
 }
 
 function wemn_submit(){

@@ -207,7 +207,8 @@ function wpsm_add_group(){
 		draggable: false,
 		resizable: false
 	});
-	$("#wpsm_ng_name").textbox('setValue',"");	
+	$("#wpsm_ng_name").textbox('setValue',"");
+	easyui_focus_input('wpsm_ng_name');
 }
 function wpsm_ng_submit(){	
 	var data = {
@@ -249,6 +250,7 @@ function wpsm_edit_group(){
 		resizable: false
 	});
 	$('#wpsm_eg_name').textbox('setValue', gpsm_select_node.name );
+	easyui_focus_input('wpsm_eg_name');
 }
 function wpsm_eg_submit(){	
 	var data = {
@@ -303,6 +305,7 @@ function wpsm_add_member(){
 				$('#wpsm_nm_member').combobox('setValue', fd[0].id );
 				$('#wpsm_nm_member_role').combobox('setValue', 'executor' );
 				$('#wpsm_nm_member_responsibility').textbox('setValue',"");
+				easyui_focus_input('wpsm_nm_member_responsibility');
 			}else{
 				showInfo('无成员可添加！')
 			}
@@ -351,7 +354,8 @@ function wpsm_edit_member(){
 	});
 	$('#wpsm_em_member').textbox('setValue', gpsm_select_node.name );
 	$('#wpsm_em_member_role').combobox('setValue', gpsm_select_node.role );
-	$('#wpsm_em_member_responsibility').textbox('setValue', gpsm_select_node.responsibility );	
+	$('#wpsm_em_member_responsibility').textbox('setValue', gpsm_select_node.responsibility );
+	easyui_focus_input('wpsm_em_member_responsibility');
 }
 
 function wpsm_em_submit(){

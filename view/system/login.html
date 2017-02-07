@@ -13,7 +13,7 @@
 	<div class="easyui-panel" data-options="fit:true">		
        <form id="ff" method="post" style="padding:30px 40px;" >
             <div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="username" name="username" style="width:95%" data-options="label:'用户名:',required:true">
+				<input class="easyui-textbox" id="username" name="username" style="width:95%" data-options="label:'用户名:',required:true" autofocus>
 			</div>
 			<div style="margin-bottom:20px">
 				<input class="easyui-passwordbox" id="password" name="password" style="width:95%" data-options="label:'密码:',required:true">
@@ -31,7 +31,6 @@
 
 {% block readyscript %}
 <script type="text/javascript">
-$('#login_win').show();
 $('#login_win').window({
 	title: "登录",
 	width:500,
@@ -44,6 +43,12 @@ $('#login_win').window({
 	draggable: false,
 	resizable: false
 });
+
+$(function(){
+	easyui_focus_input('username');
+	easyui_enter_default_action('password', submitForm);
+});
+
 function submitForm(){
 $('#ff').form('submit',{
     onSubmit: function(){
