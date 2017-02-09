@@ -69,7 +69,7 @@ if( process.productionMode ){
 	app.on( 'error', function(err){
 		log.error( '[Unhandled ERR] ', err);
 	});
-	//serveStatic();
+	serveStatic();
 }else{
 	serveStatic();
 }
