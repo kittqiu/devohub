@@ -13,7 +13,7 @@
 	<link rel="stylesheet" type="text/css" href="/static/css/easyui/icon.css">	
 	{% block headcss %}<!-- css -->{% endblock %}
 	{% if __production__ %}
-	<script src="/static/js/all.js"></script>
+	<script src="/static/js/all.js?v=2.0"></script>
 	{% else %}
 	<!-- BEGIN JAVASCRIPT COMPRESS -->
 	<script src="/static/js/jquery.js"></script>
@@ -24,7 +24,7 @@
 	<script src="/static/js/sha1.min.js"></script>
 	<!-- END JAVASCRIPT COMPRESS -->	
 	{% endif %}
-	<script src="/static/js/vendor.js"></script>
+	<script src="/static/js/vendor.js?v=2.0"></script>
 	{% block headscript %}<!-- head  -->{% endblock %}
 	<script type="text/javascript">
 		var ENV = {
