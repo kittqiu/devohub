@@ -31,20 +31,19 @@
 
 {% block readyscript %}
 <script type="text/javascript">
-$('#login_win').window({
-	title: "登录",
-	width:500,
-	height:250,
-	modal:false,
-	minimizable:false,
-	maximizable:false,
-	closable:false,
-	collapsible:false,
-	draggable: false,
-	resizable: false
-});
-
 $(function(){
+	$('#login_win').window({
+		title: "登录",
+		width:500,
+		height:250,
+		modal:false,
+		minimizable:false,
+		maximizable:false,
+		closable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
 	easyui_focus_input('username');
 	easyui_enter_default_action('password', submitForm);
 });

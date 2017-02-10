@@ -16,7 +16,7 @@ module.exports = function(warp){
 		base.column_bigint('duration', {defaultValue:0}),//hour
 		base.column_bigint('plan_start_time', {defaultValue:0}),//validate on automode is false
 		base.column_bigint('plan_end_time', {defaultValue:0}),//validate on automode is false
-		base.column_bigint('difficulty', {defaultValue:0}),//0:simple, 1:general, 2: difficulte
+		base.column_bigint('difficulty', {defaultValue:0}),//0:simple, 1:general, 2: difficulte,99:none
 		base.column_boolean('closed', {defaultValue:false}),		
 		base.column_text('details'),
 		/*executor*/

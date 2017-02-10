@@ -636,7 +636,7 @@ function* $task_sendNoticeEmail( task_id, title, recipient_list, other ){
 	m.executor_name = t.executor_name;
 	m.status = _taskStatusMap[t.status];
 	m.plan_duration = t.plan_duration + '小时';
-	m.difficulty = _difficulties[t.difficulty];
+	m.difficulty = t.difficulty === 99 ? '无需执行': _difficulties[t.difficulty];
 	m.plan_start_time = helper.formatDate( t.plan_start_time );
 	m.plan_end_time = helper.formatDate( t.plan_end_time );;
 	m.details = t.details;
