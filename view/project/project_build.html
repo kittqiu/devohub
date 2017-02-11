@@ -27,8 +27,10 @@
 					fit:true,
 					onSelect:pb_tg_onSelect,
 					onLoadSuccess: pb_tg_onLoadSuccess,
+					{% if __perm_Edit_ %}
 					onDrop:pb_tg_onDrop,
 					onDragOver:pb_tg_onDragOver,
+					{% endif %}
 					onDblClickRow:pb_tg_onDblClick
 				">
 				<thead>
@@ -53,8 +55,10 @@
 	</div>
 </div>
 
+{% if __perm_Edit_ %}
 {% include './widget/new_task.html' %}
 {% include './widget/edit_task.html' %}
+{% endif %}
 {% include './widget/task_detail.html' %}
 
 <script type="text/javascript">
@@ -251,6 +255,7 @@ function pb_tg_onSelect(row){
 	}
 }
 
+{% if __perm_Edit_ %}
 function pb_onToggleMilestone(){
 	var t = gpb_select_node;
 	
@@ -285,6 +290,8 @@ function pb_tg_onDrop(targetRow,sourceRow,point){
 		}
 	});
 }
+{% endif %}
+
 function pb_tg_onDragOver(targetRow, sourceRow){
 	return !targetRow.milestone;
 }
@@ -310,6 +317,7 @@ function pb_onMemberChanged(){
 	});	
 }
 
+{% if __perm_Edit_ %}
 function pb_onSetProjectMember(){
 	gpb_project.onMemberChanged = pb_onMemberChanged;
 	edit_project_member(gpb_project);
@@ -340,6 +348,7 @@ function pb_set_task_parent_root(){
 			}
 	});
 }
+{% endif %}
 
 function gpb_isLeaf( tid ){
 	var children = $(gpb_tg_id).treegrid('getChildren', tid);
@@ -349,6 +358,7 @@ function gpb_isLeaf( tid ){
 	return true;
 }
 
+{% if __perm_Edit_ %}
 function gpb_resetTaskTime(task){
 	var children = $(gpb_tg_id).treegrid("getChildren");
 	if( children && children.length > 0 ){
@@ -373,6 +383,7 @@ function gpb_resetTaskTime(task){
 		}
 	}	
 }
+{% endif %}
 
 function gpb_isParentTask(tid, task){
 	while( task.parent != 'root'){
@@ -385,6 +396,7 @@ function gpb_isParentTask(tid, task){
 	return false;
 }
 
+{% if __perm_Edit_ %}
 function gpb_resetParentTaskTime(task){
 	var updatedata = [];
 	while( task.parent != 'root'){
@@ -429,6 +441,7 @@ function gpb_resetParentTaskTime(task){
 		});
 	}
 }
+{% endif %}
 
 function gpb_getNextWorkDay(start_time, days){
 	var d = new Date(start_time);
@@ -538,6 +551,7 @@ function _gpb_resetReliedTaskTime(tid, updatedata, uddmap){
 	}
 }
 
+{% if __perm_Edit_ %}
 function gpb_resetReliedTaskTime(tid){
 	var updatedata = [];
 	var uddmap = {};
@@ -554,6 +568,7 @@ function gpb_resetReliedTaskTime(tid){
 		});
 	}
 }
+{% endif %}
 
 function gpb_getChangedTaskTime(task, updatedata, uddmap){
 	var ts = [];

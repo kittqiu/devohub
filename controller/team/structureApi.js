@@ -183,6 +183,11 @@ module.exports = {
 			yield base.$member_create(uid,data.department);
 		}else{
 			if( data.hasOwnProperty('department')){
+				//只有管理员才能把自己从组织树中删除
+				if( this.request.user.id === uid &&data.department === '' 
+					&& !(yield base.member.$isAdminRole(uid)) ){
+					throw api.notAllowed( "不允许将删除本人！" )
+				}
 				m.department = data.department;
 				cols.push('department');
 			}

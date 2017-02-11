@@ -198,6 +198,14 @@ function* $member_isAdmin(uid){
 	return false;
 }
 
+function* $member_isAdminRole(uid){
+	var u = yield modelUser.$find(uid);
+	if( u !== null ){
+		return u.role===0;
+	}
+	return false;
+}
+
 function* $member_getDepsCanAccess(uid){
 	return yield modelDepPerm.$findAll({
 			select: '*',
@@ -333,6 +341,7 @@ module.exports = {
 		$havePerm: perm.user.$havePerm,
 		$collectUser: $member_collectUser,
 		$isAdmin: $member_isAdmin,
+		$isAdminRole: $member_isAdminRole,
 		$getCoworkers: cache.$getCoworkers,
 		$getDepsCanAccess: $member_getDepsCanAccess,
 	},

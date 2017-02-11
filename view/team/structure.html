@@ -22,10 +22,11 @@
 
 {% block inline_main %}
 <ul id="structure_tree"></ul>
-
+{% if __perm_Edit__ %}
 {% include './widget/department_add.html' %}
 {% include './widget/department_edit.html' %}
 {% include './widget/member_add.html' %}
+{% endif %}
 {% endblock %}
 
 {% block readyscript %}
@@ -38,6 +39,24 @@ var canEdit = {{ __perm_Edit__ }};
 function isDepartment(id){
 	return g_depMap[id] !== undefined;
 }
+
+function team_tree_getAncestor(nid){
+	if( !isDepartment(nid) ){
+		nid = g_userMap[nid].department;
+	}
+	var dep = g_depMap[nid];
+	while( dep.parent !== 'root'){
+		dep = g_depMap[ dep.parent];
+	}
+	return dep;
+}
+
+function team_tree_isAncestorChanged(nid, target_id){
+	var old_ancestor = team_tree_getAncestor( nid );
+	var new_ancestor = team_tree_getAncestor( target_id );
+	return old_ancestor.id !== new_ancestor.id;
+}
+
 function resetButtonState(){
 	$('#btn_add_sub_dep').linkbutton('disable');
 	$('#btn_add_member').linkbutton('disable');
@@ -54,7 +73,7 @@ function _buildDep(data, dep, depNodeMap){
 	var j;
 	var n = {id:dep.id, text:dep.name, children:[]};
 	depNodeMap[dep.id] = n;
-	if( dep.parent == 'root'){
+	if( dep.parent === 'root'){//排序
 		for( j = 0; j < data.length; j++ ){
 			var d = g_depMap[data[j].id];
 			if( dep.order < d.order){
@@ -64,6 +83,7 @@ function _buildDep(data, dep, depNodeMap){
 		}			
 		if( j == data.length)data.push(n);
 	}else{
+		//如果父机构未创建出来，则先创建父机构
 		if( !depNodeMap.hasOwnProperty(dep.parent) ){
 			_buildDep( data, g_depMap[dep.parent],depNodeMap);
 		}
@@ -117,43 +137,22 @@ function loadUsers(){
 			$('#structure_tree').tree({
 				data:g_treedata,
 				dnd: canEdit,
-				onSelect:function(node){
-					g_selectedNodeId = node.id;
-					if( !canEdit ){
-						return;
-					}
-					if( isDepartment(node.id)){
-						$('#btn_add_sub_dep').linkbutton('enable');
-						$('#btn_add_member').linkbutton('enable');
-						$('#btn_edit_dep').linkbutton('enable');
-						var order = g_depMap[g_selectedNodeId].order;
-						if( order==1){
-							$('#btn_move_up').linkbutton('disable');
-						}else{
-							$('#btn_move_up').linkbutton('enable');
-						}
-						if( g_depMap[g_selectedNodeId].parent=='root'){
-							$('#btn_set_top_dep').linkbutton('disable');
-						}else{
-							$('#btn_set_top_dep').linkbutton('enable');
-						}
-					}else{
-						$('#btn_add_sub_dep').linkbutton('disable');
-						$('#btn_add_member').linkbutton('disable');
-						$('#btn_move_up').linkbutton('disable');
-						$('#btn_edit_dep').linkbutton('disable');
-						$('#btn_set_top_dep').linkbutton('disable');
-					}
-					if($('#structure_tree').tree('isLeaf', node.target)){
-						$('#btn_delete').linkbutton('enable');
-					}else{
-						$('#btn_delete').linkbutton('disable');
-					}
-				},
+				onSelect:team_tree_onSelect,
+				{% if __perm_Edit__ %}
 				onDragEnter:function(target,source){
 					//禁用拖到成员类型的结点
 					var node = $('#structure_tree').tree('getNode',target);
-					return isDepartment(node.id);
+					if(isDepartment(node.id)){
+						//不能跨大部门调整部门
+						if( team_tree_isAncestorChanged(source.id, node.id)){
+							if( ENV.user.username === 'Admin'){
+								return true;
+							}
+							return false;
+						}
+						return true;
+					}
+					return false;
 				},
 				onDrop: function(target,source,point){
 					var target_node = $('#structure_tree').tree('getNode',target);
@@ -177,6 +176,7 @@ function loadUsers(){
 						});
 					}
 				}
+				{% endif %}
 			});
 			//自动选中上一次结果
 			if( g_selectedNodeId !== 'root' ){
@@ -192,6 +192,40 @@ function loadUsers(){
 	})	
 }
 
+function team_tree_onSelect(node){
+	g_selectedNodeId = node.id;
+	if( !canEdit ){
+		return;
+	}
+	if( isDepartment(node.id)){
+		$('#btn_add_sub_dep').linkbutton('enable');
+		$('#btn_add_member').linkbutton('enable');
+		$('#btn_edit_dep').linkbutton('enable');
+		var order = g_depMap[g_selectedNodeId].order;
+		if( order==1){
+			$('#btn_move_up').linkbutton('disable');
+		}else{
+			$('#btn_move_up').linkbutton('enable');
+		}
+		if( g_depMap[g_selectedNodeId].parent=='root'){
+			$('#btn_set_top_dep').linkbutton('disable');
+		}else{
+			$('#btn_set_top_dep').linkbutton('enable');
+		}
+	}else{
+		$('#btn_add_sub_dep').linkbutton('disable');
+		$('#btn_add_member').linkbutton('disable');
+		$('#btn_move_up').linkbutton('disable');
+		$('#btn_edit_dep').linkbutton('disable');
+		$('#btn_set_top_dep').linkbutton('disable');
+	}
+	if($('#structure_tree').tree('isLeaf', node.target) && ( node.id !== ENV.user.id || ENV.user.username === 'Admin' )){
+		$('#btn_delete').linkbutton('enable');
+	}else{
+		$('#btn_delete').linkbutton('disable');
+	}
+}
+
 function loadDeparments(){
 	getJSON( '/api/team/department/list', function(err, result) {
 		if( !err ){
@@ -201,15 +235,16 @@ function loadDeparments(){
 	})	
 }
 
-function onInit(){
+function team_tree_onInit(){
 	loadDeparments();
 }
-$(onInit);
+$(team_tree_onInit);
 
 /*********Action***************/
 function onReload(){
-	onInit();
+	team_tree_onInit();
 }
+{% if __perm_Edit__ %}
 function addRootDepartment(){
 	addDepartment({id:'root', name:'无'});
 }
@@ -260,5 +295,6 @@ function setRootDepartment(id){
 		}
 	});
 }
+{% endif %}
 </script>
 {% endblock %}
