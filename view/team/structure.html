@@ -44,11 +44,15 @@ function team_tree_getAncestor(nid){
 	if( !isDepartment(nid) ){
 		nid = g_userMap[nid].department;
 	}
-	var dep = g_depMap[nid];
-	while( dep.parent !== 'root'){
-		dep = g_depMap[ dep.parent];
+	if( nid ){
+		var dep = g_depMap[nid];
+		while( dep.parent !== 'root'){
+			dep = g_depMap[ dep.parent];
+		}
+		return dep;
+	}else{
+		return {id:'root'};
 	}
-	return dep;
 }
 
 function team_tree_isAncestorChanged(nid, target_id){
@@ -186,6 +190,16 @@ function loadUsers(){
 				}else{
 					g_selectedNodeId = 'root';
 					resetButtonState();
+				}
+			}
+
+			//只显示本大部门
+			var adep = team_tree_getAncestor( ENV.user.id );
+			for( var i = 0; i < g_departments.length; i++ ){
+				var dep = g_departments[i];
+				if( dep.parent === 'root' && adep.id !== dep.id ){
+					var node = $('#structure_tree').tree('find', dep.id );
+					$('#structure_tree').tree('collapse', node.target );
 				}
 			}
 		}
