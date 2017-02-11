@@ -287,7 +287,7 @@ function* $project_get(id){
 			where: '`project_id`=?',
 			params: [id]
 		});
-		sql = 'select m.*, u.`name` from project_member as m, users as u where m.user_id = u.id and m.project_id=?';
+		sql = 'select m.*, u.`name`,u.`email` from project_member as m, users as u where m.user_id = u.id and m.project_id=?';
 		p.members = yield warp.$query(sql, [id]);
 	}
 	return p || {};
