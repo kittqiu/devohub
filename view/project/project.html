@@ -48,6 +48,11 @@ var project_tabs = [
 	{loaded:false}
 ];*/
 function project_onSelectTab(title,index){
+	if(title==='我的工作日志'){
+		if( window.hasOwnProperty('mydaily_reload')){
+			mydaily_reload();
+		}
+	}
 	/*var to = project_tabs[index];
 	if( !to.loaded ){
 		var tab = $('#tt').tabs('getTab', index );
