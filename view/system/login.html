@@ -10,8 +10,8 @@
 {% block main %}
 <div id="login_win" style="display:none" >
 	<div class="easyui-panel" data-options="fit:true">		
-       <form id="ff" method="post" style="padding:30px 40px;" >
-            <div style="margin-bottom:20px">
+	   <form id="ff" method="post" style="padding:30px 40px;" >
+			<div style="margin-bottom:20px">
 				<input class="easyui-textbox" id="username" name="username" style="width:95%" data-options="label:'用户名:',required:true" autofocus>
 			</div>
 			<div style="margin-bottom:20px">
@@ -22,7 +22,7 @@
 			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:120px">登录</a>
 		</div>
 		<div id="web_explorer_suggest" class="uk-text-center" style="display:none"><span class="uk-text-warning">建议使用谷歌Chrome浏览器</span></div>
-    </div>
+	</div>
 </div>
 {% endblock %}
 
@@ -49,8 +49,8 @@ $(function(){
 
 function submitForm(){
 $('#ff').form('submit',{
-    onSubmit: function(){
-    	var data = {
+	onSubmit: function(){
+		var data = {
 			username: $("#username").textbox('getValue'),
 			password: $("#password").textbox('getValue')
 		};
@@ -71,7 +71,7 @@ $('#ff').form('submit',{
 			showErrorInfo( '填写错误', vr );
 		}
 		return false;
-    }
+	}
 });
 }
 

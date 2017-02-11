@@ -66,6 +66,12 @@
 					{% else %}
 					<li><a href="/login" class="">{{ _('log in') }}</a></li>
 					<li><a href="/signup" class="">{{ _('sign up') }}</a></li>
+					<li>
+						<a href="#"  class="easyui-menubutton" data-options="menu:'#menu_login_other',hasDownArrow:false" style="width:100px;padding-top:26px;border-width:0;background:#000;"><span style="font-size:14px">其他</span><i class="uk-icon-caret-down"></i></a>
+						<div id="menu_login_other" style="width:150px;" data-options="onClick:menu_login_Handler">
+							<div id="btn_resetPassword" data-options="iconCls:'icon-edit'">重置密码</div>
+						</div>
+					</li>
 					{% endif %}
 				</ul>
 			</div>
@@ -83,8 +89,19 @@
 			</div>
 		</div>		
 	</div>
+	{% if __user__ %}
 	{% include './system/widget/change_password.html' %}
 	{% include './system/widget/change_user_info.html' %}
+	{% else %}
+	<script type="text/javascript">
+	function menu_login_Handler(item){
+		if( item.id == 'btn_resetPassword'){
+			var url = "/auth/user/ResetPassword";
+			window.location.assign(url);
+		}
+	}
+	</script>
+	{% endif %}
 	
 	{% block footerscript %}
 	<script type="text/javascript">

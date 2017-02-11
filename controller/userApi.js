@@ -14,6 +14,7 @@ var
 	i18n = require(__base +'lib/i18n'),
 	log = require(__base +'lib/logger'),
 	smtp = require('./system/email'),
+	crypto = require('crypto'),
 	swig = require('swig'),
 	requestIp = require('request-ip'),
 	home = require('./home');
@@ -107,7 +108,7 @@ GET:
 /auth/ConfirmEmail/:id
 /auth/ConfirmEmail
 /auth/signout
-
+/auth/user/ResetPassword
 /api/user/:id
 
 POST:
@@ -115,6 +116,7 @@ POST:
 /api/auth/ConfirmEmail
 /api/signup
 /api/user/changepwd
+/api/user/resetpwd
 /api/user/:id
 /api/user/:id/status?actived=true
 */
@@ -305,7 +307,11 @@ module.exports = {
 
 	'GET /auth/ConfirmEmail': function*(){
 		this.render( 'system/reconfirmemail.html', {} );
-	}, 
+	},
+
+	'GET /auth/user/ResetPassword': function* (){
+		this.render( 'system/reset_password.html', {});
+	},
 
 	'GET /auth/signout': function* () {
 		this.cookies.set(COOKIE_NAME, 'deleted', {
@@ -396,6 +402,45 @@ module.exports = {
 		this.body = {
 			id: user.id
 		};
+	},
+
+	'POST /api/user/resetpwd': function*(){
+		var 
+			user,
+			localuser,
+			password,
+			pwdhash,
+			renderHtml,
+			data = this.request.body;
+
+		//validate data
+		json_schema.validate('user_resetPWD', data);
+
+		user = yield $getUserByName(data.username);
+		if( user === null ){
+			throw api.notFound('user', "用户名可能不正确！");
+		}
+		if( user.email !== data.email ) {
+			throw api.notFound('user', "邮箱地址不匹配！");
+		}
+
+		localuser = yield LocalUser.$find({
+			where:'`user_id`=?',
+			params: [user.id]
+		})
+
+		//modify password
+		password = next_id();
+		password = crypto.createHash('sha1').update( password ).digest('hex');
+		password = password.substring( 0, 8 );
+		pwdhash = auth.generate_login_password( user.username, password, config.security.salt );
+		localuser.passwd = auth.generatePassword(user.email, pwdhash);
+		yield localuser.$update(['passwd']);
+
+		renderHtml = swig.renderFile( __base + 'view/system/email_reset_pwd.html', {name:user.name, password: password} );
+		smtp.sendHtml(null, user.email, "重置帐户密码", renderHtml );
+
+		this.body = { result: 'ok' };
 	},
 
 	'GET /api/user/:id': function*(id){
