@@ -36,7 +36,7 @@
 </div>
 <div id="wpsm_new_member" style="display:none;padding:10px 20px">
 	<div style="margin-bottom:20px">
-		<input class="" id="wpsm_nm_member" name="wpsm_nm_member" style="width:95%" data-options="label:'选择新成员:',valueField:'id',textField:'name'">
+		<input class="" id="wpsm_nm_member" name="wpsm_nm_member" style="width:60%" data-options="label:'选择新成员:',valueField:'id',textField:'name'"><input id="wpsm_nm_cb_showall" type="checkbox" onclick="wpsm_nm_onAllMemberSelected()">显示其他大部门人员
 	</div>
 	<div style="margin-bottom:20px">
 		<select id="wpsm_nm_member_role" name="wpsm_nm_member_role" class="" style="width:95%" data-options="label:'参与角色:',required:true,value:'executor'">
@@ -278,8 +278,29 @@ function wpsm_eg_submit(){
 	}
 }
 
-function wpsm_add_member(){
-	getJSON( '/api/team/member/list', function(err, data) {
+function wpsm_add_member(){	
+	$('#wpsm_new_member').window({
+		title: "添加新成员",
+		width:500,
+		height:240,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	wpsm_nm_loadMembers(false);
+	$('#wpsm_nm_cb_showall').prop('checked', false);
+	$('#wpsm_nm_member_role').combobox('setValue', 'executor' );
+	$('#wpsm_nm_member_responsibility').textbox('setValue',"");
+	easyui_focus_input('wpsm_nm_member_responsibility');
+			
+}
+
+function wpsm_nm_loadMembers(showAll){
+	var url = !!showAll ? '/api/team/member/list': '/api/team/department/users?scopelimit=true';
+	getJSON( url, function(err, data) {
 		if( !err ){
 			var fd = [];
 			for(var i = 0; i < data.length; i++){
@@ -288,30 +309,25 @@ function wpsm_add_member(){
 					fd.push( d );
 				}
 			}
-			//fd.sort(function(a,b){return a.email>b.email});
+			fd.sort(function(a,b){return a.email>b.email;});
 			
 			if( fd.length > 0 ){
-				$('#wpsm_new_member').window({
-					title: "添加新成员",
-					width:500,
-					height:240,
-					modal:true,
-					minimizable:false,
-					maximizable:false,
-					collapsible:false,
-					draggable: false,
-					resizable: false
-				});
 				$('#wpsm_nm_member').combobox('loadData', fd );
 				$('#wpsm_nm_member').combobox('setValue', fd[0].id );
-				$('#wpsm_nm_member_role').combobox('setValue', 'executor' );
-				$('#wpsm_nm_member_responsibility').textbox('setValue',"");
-				easyui_focus_input('wpsm_nm_member_responsibility');
+				$('#wpsm_btn_nm_submit').linkbutton('enable');
 			}else{
+				$('#wpsm_nm_member').combobox('loadData', [] );
+				$('#wpsm_nm_member').combobox('clear' );
+				$('#wpsm_btn_nm_submit').linkbutton('disable');
 				showInfo('无成员可添加！')
 			}
 		}
 	});
+}
+
+function wpsm_nm_onAllMemberSelected(){
+	var showAll = $('#wpsm_nm_cb_showall').is(':checked');
+	wpsm_nm_loadMembers( showAll );	
 }
 
 function wpsm_nm_submit(){

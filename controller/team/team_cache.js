@@ -30,7 +30,7 @@ function* $__cacheDepUsers(){
 	for( var mr of dep_map ){
 		var dep = mr[1];
 		if( dep.parent == DEP_ROOT ){
-			var sql = "select u.id, u.name, m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''";
+			var sql = "select u.id, u.name, u.email,m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''";
 			var rs = yield warp.$query(sql);
 			var rs_org = rs;
 			var ws = dep.users;
@@ -67,7 +67,7 @@ function* $_buildTeamMap(){
 		deps = yield modelDep.$findAll({
 			select: ['id', 'name', 'parent', 'order']
 		}),
-		users = yield warp.$query("select u.id, u.name, m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''");
+		users = yield warp.$query("select u.id, u.name, u.email, m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''");
 
 	//初始化部门的映射
 	dep_map.clear();

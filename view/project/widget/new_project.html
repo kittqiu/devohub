@@ -4,7 +4,7 @@
 			<input class="" id="wnpj_name" name="wnpj_name" style="width:95%" data-options="label:'项目名称:',required:true,validType:'length[3,50]',prompt:'请填写项目名称,3-50字符'">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="" id="wnpj_master" name="wnpj_master" style="width:95%" data-options="label:'项目负责人:',required:true">
+			<input class="" id="wnpj_master" name="wnpj_master" style="width:70%" data-options="label:'项目负责人:',required:true"><input id="wnpj_cb_showall" type="checkbox" onclick="wnpj_onAllMemberSelected()">显示其他大部门人员
 		</div>
 		<div style="margin-bottom:20px">
 			<input class="" id="wnpj_start_time" name="wnpj_start_time" style="width:95%" data-options="label:'计划开始时间:',required:true">
@@ -42,7 +42,7 @@ function wnpj_initView(){
 		});
 		$('#wnpj_master').combobox({
 			method:'get',
-			url:'/api/team/member/list',
+			//url:'/api/team/member/list',
 			valueField:'id',
 			textField:'name',
 			onLoadSuccess:function(){
@@ -52,16 +52,39 @@ function wnpj_initView(){
 	}
 }
 
+function wnpj_loadMembers(showAll){
+	var url = !!showAll ? '/api/team/member/list': '/api/team/department/users?scopelimit=true';
+	getJSON( url, function(err, data) {
+		if( !err ){
+			var fd = [];
+			for(var i = 0; i < data.length; i++){
+				var d = data[i];
+				if( d.name !== 'Admin' ){
+					fd.push( d );
+				}
+			}
+			fd.sort(function(a,b){return a.email>b.email;});
+
+			$('#wnpj_master').combobox('loadData', fd );
+		}
+	});
+}
+function wnpj_onAllMemberSelected(){
+	var showAll = $('#wnpj_cb_showall').is(':checked');
+	wnpj_loadMembers( showAll );	
+}
+
 function new_project(){
 	wnpj_initView();
 	$('#wnpj_start_time').datebox('setValue', formatNow());	
 	$("#wnpj_name").textbox('setValue', '');
 	$("#wnpj_details").textbox('setValue', '');
+	$('#wnpj_cb_showall').prop('checked', false);
 
 	$('#win_new_project').window({
 		title: "创建项目",
-		width:400,
-		height:360,
+		width:500,
+		height:380,
 		modal:true,
 		minimizable:false,
 		maximizable:false,
@@ -70,6 +93,7 @@ function new_project(){
 		resizable: false
 	});
 	easyui_focus_input('wnpj_name');
+	wnpj_loadMembers(false);
 }
 
 function wnpj_submitForm(){

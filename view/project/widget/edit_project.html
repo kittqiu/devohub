@@ -4,7 +4,7 @@
 			<input class="" id="wepj_name" name="wepj_name" style="width:95%" data-options="label:'项目名称:',required:true,validType:'length[3,50]',prompt:'请填写项目名称,3-50字符'">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="" id="wepj_master" name="wepj_master" style="width:95%" data-options="label:'项目负责人:',required:true">
+			<input class="" id="wepj_master" name="wepj_master" style="width:70%" data-options="label:'项目负责人:',required:true"><input id="wepj_cb_showall" type="checkbox" onclick="wepj_onAllMemberSelected()">显示其他大部门人员
 		</div>
 		<div style="margin-bottom:20px">
 			<select id="wepj_status" name="wepj_status" class="" style="width:95%" data-options="label:'项目状态:',required:true">
@@ -51,7 +51,7 @@ function wepj_initView(){
 		});
 		$('#wepj_master').combobox({
 			method:'get',
-			url:'/api/team/member/list',
+			//url:'/api/team/member/list',
 			valueField:'id',
 			textField:'name',
 			onLoadSuccess:function(){
@@ -59,6 +59,28 @@ function wepj_initView(){
 			}
 		});
 	}
+}
+
+function wepj_loadMembers(showAll){
+	var url = !!showAll ? '/api/team/member/list': '/api/team/department/users?scopelimit=true';
+	getJSON( url, function(err, data) {
+		if( !err ){
+			var fd = [];
+			for(var i = 0; i < data.length; i++){
+				var d = data[i];
+				if( d.name !== 'Admin' ){
+					fd.push( d );
+				}
+			}
+			fd.sort(function(a,b){return a.email>b.email;});
+
+			$('#wepj_master').combobox('loadData', fd );
+		}
+	});
+}
+function wepj_onAllMemberSelected(){
+	var showAll = $('#wepj_cb_showall').is(':checked');
+	wepj_loadMembers( showAll );	
 }
 
 var gp_project = {};
@@ -72,10 +94,11 @@ function edit_project(p){
 	$("#wepj_details").textbox('setValue', p.details);
 	$('#wepj_status').combobox('select', p.status);
 	$('#wepj_master').combobox('select', gp_project.master_id);
+	$('#wepj_cb_showall').prop('checked', false);
 
 	$('#win_edit_project').window({
 		title: "修改项目",
-		width:400,
+		width:500,
 		height:420,
 		modal:true,
 		minimizable:false,
@@ -85,6 +108,7 @@ function edit_project(p){
 		resizable: false
 	});
 	easyui_focus_input('wepj_name');
+	wepj_loadMembers(false);
 }
 
 function wepj_submitForm(){
