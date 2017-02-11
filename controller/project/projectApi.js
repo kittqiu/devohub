@@ -304,7 +304,8 @@ module.exports = {
 	'POST /api/project/p/:id/task': function* (id){
 		var t, order,
 			data = this.request.body || {},
-			pid = data.parent || 'root';
+			pid = data.parent || 'root',
+			user = this.request.user;
 		json_schema.validate('simpleTask', data);
 		
 		order = yield base.task.$maxOrder(id, pid);
@@ -324,14 +325,17 @@ module.exports = {
 			closed: 0,
 			details: data.details,
 			executor_id: data.executor,
-			manager_id: this.request.user.id,
+			manager_id: user.id,
 			start_time:0,
 			end_time:0,
 			status: 'created'
 		};
 		yield base.modelTask.$create(t);
 		yield base.task.$setRelies(t.id, t.project_id, data.relyTo);
-		yield base.task.$sendNoticeEmail( t.id, "您有一个新建的任务---来自项目管理系统" );
+		if( data.difficulty !== 99 ){
+			yield base.task.$sendNoticeEmail( t.id, user.name + "给你创建了新任务", [data.executor],
+				"待工作审核人确认完需求后，该任务才可开始执行。界时，系统将向你发送邮件通知。", [user.id] );
+		}
 		this.body = { result: 'ok', id: t.id };
 	},
 

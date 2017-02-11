@@ -27,15 +27,15 @@ var ACTIONMAP = {
 };
 
 var FLOWNOTICES = {
-	confirm:{ title: '您有一个可开始执行的任务---来自项目管理系统', recipient:'executor' },
-	accept:{ title: '您管理的一个任务已开始执行---来自项目管理系统', recipient:'manager' },
-	commit:{ title: '您管理的一个任务已提交，待审核---来自项目管理系统', recipient:'manager' },
-	complete:{ title: '您的任务已被审核通过---来自项目管理系统', recipient:'executor' },
-	cancel:{ title: '您的任务已被取消---来自项目管理系统', recipient:'executor' },
-	pause:{ title: '您有一个正在执行的任务已被暂停---来自项目管理系统', recipient:'executor' },
-	resume:{ title: '您有一个已暂停的任务被重新恢复执行---来自项目管理系统', recipient:'executor' },
-	reopen:{ title: '您的一个任务未被审核通过，需要继续执行---来自项目管理系统', recipient:'executor' },
-	reply: { title: '您的一个任务有了新的回复信息---来自项目管理系统', recipient:'all' }
+	confirm:{ title: '你有一个可开始执行的任务', recipient:'executor' },
+	accept:{ title: '你管理的一个任务已开始执行', recipient:'manager' },
+	commit:{ title: '你管理的一个任务已提交，等待你审核', recipient:'manager' },
+	complete:{ title: '你的任务成果已被审核通过', recipient:'executor' },
+	cancel:{ title: '你的一个任务已被取消', recipient:'executor' },
+	pause:{ title: '你有一个正在执行的任务已被暂停', recipient:'executor' },
+	resume:{ title: '你有一个已暂停的任务被重新恢复执行', recipient:'executor' },
+	reopen:{ title: '你的一个任务未被审核通过，需要继续执行', recipient:'executor' },
+	reply: { title: '你的一个任务有了新的回复信息', recipient:'all' }
 };
 
 
@@ -203,7 +203,8 @@ module.exports = {
 	'POST /api/project/t/:id/flow': function* (id){
 		var data = this.request.body,
 			task, flow,
-			action = data.action;
+			action = data.action,
+			user = this.request.user;
 
 		json_schema.validate('taskFlow', data);
 		task = yield base.modelTask.$find( id );
@@ -211,13 +212,7 @@ module.exports = {
 			throw api.notFound('task', this.translate('Record not found'));
 		}
 
-		flow = {
-			task_id: task.id,
-			user_name: this.request.user.name,
-			action: action,
-			reply: data.reply
-		}
-
+		//更新任务开始或结束时间
 		if( task.status === 'clear' && action === 'accept'){
 			task.start_time = Date.now();
 			yield task.$update(['start_time']);			
@@ -225,18 +220,26 @@ module.exports = {
 			task.end_time = Date.now();
 			yield task.$update(['end_time']);
 		}
+
+		//生成流
+		flow = {
+			task_id: task.id,
+			user_name: user.name,
+			action: action,
+			reply: data.reply
+		}
 		yield base.modelTaskFlow.$create(flow);
 		yield base.task.$nextFlow(task, data.action);
 
 		if( FLOWNOTICES.hasOwnProperty(action)){
 			var notice = FLOWNOTICES[action],
 				recipients = [],
-				uid = this.request.user.id;
+				uid = user.id;
 			if( notice.recipient === 'executor'){
 				recipients.push( task.executor_id );
 			}else if( notice.recipient === 'manager' ){
 				recipients.push( task.manager_id );
-			}else{//all
+			}else{//all，回复消息
 				if( uid !== task.executor_id ){
 					recipients.push( task.executor_id );
 				}
@@ -247,10 +250,8 @@ module.exports = {
 					recipients.push( task.executor_id );
 				}
 			}
-			yield base.task.$sendNoticeEmail( id, notice.title, recipients, data.reply );
+			yield base.task.$sendNoticeEmail( id, notice.title, recipients, '回复的内容:\n' + data.reply );
 		}
 		this.body = { result: 'ok'};		
-	},
-
-
+	}
 };

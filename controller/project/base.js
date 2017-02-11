@@ -625,12 +625,13 @@ var _taskStatusMap = {
 
 var _difficulties = [ '简单', '普通', '困难'];
 
-function* $task_sendNoticeEmail( task_id, title, recipient_list, other ){
+function* $task_sendNoticeEmail( task_id, title, recipient_list, other, cc_list ){
 	var t = yield $task_get( task_id ),
-		m = {},
-		renderHtml, i, addresses = '',
-		recipient = !!recipient_list ? recipient_list : [ t.executor_id ];
-	
+		m = {}, uid,
+		renderHtml, i, addresses = '', cc_address = '',
+		recipient = !!recipient_list ? recipient_list : [ t.executor_id ],
+		cc = !!cc_list ? cc_list : [];
+
 	m.name = t.name;
 	m.manager_name = t.manager_name;
 	m.executor_name = t.executor_name;
@@ -642,6 +643,7 @@ function* $task_sendNoticeEmail( task_id, title, recipient_list, other ){
 	m.details = t.details;
 	m.others = !!other ? other : '无';
 	
+	//生成收件人
 	for( i = 0; i < recipient.length; i++ ){
 		var u = yield modelUser.$find( recipient[i] );
 		if( i == 0 ){
@@ -650,8 +652,20 @@ function* $task_sendNoticeEmail( task_id, title, recipient_list, other ){
 			addresses += ',' + u.email;
 		}
 	}
+	//追加抄送人
+	for( i = 0; i < cc.length; i++ ){
+		uid = cc[i];
+		if( recipient.indexOf(uid) === -1 ){
+			var u = yield modelUser.$find( uid );
+			if( !cc_address ){
+				cc_address = u.email;
+			}else{
+				cc_address += ',' + u.email;
+			}
+		}		
+	}
 	renderHtml = swig.renderFile( __base + 'view/project/task/task_info.html', m );
-	smtp.sendHtml(null, addresses, title, renderHtml );
+	smtp.sendHtml(null, addresses, title, renderHtml, cc_address );
 }
 
 function* $group_getMembers(id){

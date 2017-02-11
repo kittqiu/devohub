@@ -2,7 +2,8 @@
 
 var nodemailer = require('nodemailer'),
 	config = require(__base +'lib/config'),
-	log = require(__base +'lib/logger');
+	log = require(__base +'lib/logger'),
+	thunkify = require('thunkify');
 
 
 var smtpConfig = {
@@ -15,14 +16,15 @@ var smtpConfig = {
 		pass:config.smtp.authpassword
 	}
 };
-var transporter = nodemailer.createTransport( smtpConfig ); 
+var transporter = nodemailer.createTransport( smtpConfig );
 
-function sendHtml(from, to, subject, html ){
+function sendHtml(from, to, subject, html, cc){
 	var mailData = {
 		from: from || '"Admin"<' + config.smtp.admin + '>',
 		to: to,
 		subject: subject || 'blank title',
-		html: html
+		html: html,
+		cc: !!cc ? cc: ''
 	};
 	if( config.smtp.enable ){
 		transporter.sendMail(mailData, function(err, info){
