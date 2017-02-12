@@ -637,9 +637,13 @@ function* $task_sendNoticeEmail( task_id, title, recipient_list, other, cc_list 
 	m.executor_name = t.executor_name;
 	m.status = _taskStatusMap[t.status];
 	m.plan_duration = t.plan_duration + '小时';
+	m.duration = t.duration + '小时';
 	m.difficulty = t.difficulty === 99 ? '无需执行': _difficulties[t.difficulty];
+	m.percent = t.percent + '%';
 	m.plan_start_time = helper.formatDate( t.plan_start_time );
-	m.plan_end_time = helper.formatDate( t.plan_end_time );;
+	m.plan_end_time = helper.formatDate( t.plan_end_time );
+	m.start_time = t.start_time !== 0 ? helper.formatDate( t.start_time ): '无';
+	m.end_time = t.end_time !== 0 ? helper.formatDate( t.end_time ): '无';
 	m.details = t.details;
 	m.others = !!other ? other : '无';
 	

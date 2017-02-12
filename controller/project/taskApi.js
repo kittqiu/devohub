@@ -97,21 +97,39 @@ module.exports = {
 	},
 
 	'GET /api/project/t/listExecuting': function* (){
-		var uid = this.request.query.uid || this.request.user.id;
-		var data = yield base.task.$listExecutingOfUser(uid);
-		this.body = {total:data.length, rows:data};
+		var query = this.request.query,
+			index = query.page || '1',
+			index = parseInt(index),
+			uid = query.uid || this.request.user.id,
+			page_size = query.rows ? parseInt(query.rows) :base.config.PAGE_SIZE,
+			from = page_size*(index-1),
+			rs = yield base.task.$listExecutingOfUser(uid);
+
+		this.body = { total:rs.length, rows: rs.slice(from, from + page_size)};
 	},
 
 	'GET /api/project/t/listManage': function* (){
-		var uid = this.request.query.uid || this.request.user.id;
-		var data = yield base.task.$listManageOfUser(uid);
-		this.body = {total:data.length, rows:data};
+		var query = this.request.query,
+			index = query.page || '1',
+			index = parseInt(index),
+			uid = query.uid || this.request.user.id,
+			page_size = query.rows ? parseInt(query.rows) :base.config.PAGE_SIZE,
+			from = page_size*(index-1),
+			rs = yield base.task.$listManageOfUser(uid);
+
+		this.body = { total:rs.length, rows: rs.slice(from, from + page_size)};
 	},
 
 	'GET /api/project/t/listQueue': function* (){
-		var uid = this.request.query.uid || this.request.user.id;
-		var data = yield base.task.$listQueueOfUser(uid);
-		this.body = {total:data.length, rows:data};
+		var query = this.request.query,
+			index = query.page || '1',
+			index = parseInt(index),
+			uid = query.uid || this.request.user.id,
+			page_size = query.rows ? parseInt(query.rows) :base.config.PAGE_SIZE,
+			from = page_size*(index-1),
+			rs = yield base.task.$listQueueOfUser(uid);
+
+		this.body = { total:rs.length, rows: rs.slice(from, from + page_size)};
 	},
 
 	'GET /api/project/t/history/listCompleted': function* (){

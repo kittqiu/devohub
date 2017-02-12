@@ -110,7 +110,7 @@ module.exports = {
 			index = parseInt(index),
 			page_size = base.config.PAGE_SIZE,
 			page = new Page(index, page_size), 
-			rs = yield yield base.project.$list( page_size*(index-1), page_size);
+			rs = yield base.project.$list( page_size*(index-1), page_size);
 		page.total = yield base.project.$count();
 		this.body = { page:page, projects: rs};
 	},
@@ -120,7 +120,7 @@ module.exports = {
 			index = parseInt(index),
 			uid = this.request.user.id,
 			page_size = this.request.query.rows ? parseInt(this.request.query.rows) :base.config.PAGE_SIZE,
-			rs = yield yield base.project.$listAllOnRun( page_size*(index-1), page_size, uid),
+			rs = yield base.project.$listAllOnRun( page_size*(index-1), page_size, uid),
 			total = yield base.project.$countAllOnRun(uid);
 		this.body = { total:total, rows: rs};
 	},
@@ -130,7 +130,7 @@ module.exports = {
 			index = parseInt(index),
 			uid = this.request.user.id,
 			page_size = this.request.query.rows ? parseInt(this.request.query.rows) :base.config.PAGE_SIZE,
-			rs = yield yield base.project.$listAllOnEnd( page_size*(index-1), page_size, uid),
+			rs = yield base.project.$listAllOnEnd( page_size*(index-1), page_size, uid),
 			total = yield base.project.$countAllOnEnd(uid);
 		this.body = { total:total, rows: rs};
 	},
@@ -140,7 +140,7 @@ module.exports = {
 			index = this.request.query.page || '1',
 			index = parseInt(index),
 			page_size = this.request.query.rows ? parseInt(this.request.query.rows) : base.config.PAGE_SIZE,
-			rs = yield yield base.project.$listUserJoinOnRun( uid, page_size*(index-1), page_size),
+			rs = yield base.project.$listUserJoinOnRun( uid, page_size*(index-1), page_size),
 			total = yield base.project.$countUserJoinOnRun(uid);
 		this.body = { total:total, rows: rs};
 	},
@@ -150,7 +150,7 @@ module.exports = {
 			index = this.request.query.page || '1',
 			index = parseInt(index),
 			page_size = this.request.query.rows ? parseInt(this.request.query.rows) : base.config.PAGE_SIZE,
-			rs = yield yield base.project.$listUserJoinOnEnd( uid, page_size*(index-1), page_size),
+			rs = yield base.project.$listUserJoinOnEnd( uid, page_size*(index-1), page_size),
 			total = yield base.project.$countUserJoinOnEnd(uid);
 		this.body = { total:total, rows: rs};
 	},
