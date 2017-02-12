@@ -20,12 +20,13 @@ var
 	DEP_ROOT = 'root',
 	DEFAULT_EXPIRES_IN_MS = 1000 * config.session.expires,
 	PERM_EDIT_STRUCTURE = 'team.structure.edit',
-	PERM_CREATE_PROJECT = 'project.create';
+	PERM_CREATE_PROJECT = 'project.create',
+	MANAGER_ROLE = '团队规划师';
 
 
 function* co_module_init(){
 	var pid = yield perm.perm.$register(PERM_EDIT_STRUCTURE, '有权修改部门架构树');
-	var rid = yield perm.role.$register('团队规划师', '规划团队结构');
+	var rid = yield perm.role.$register( MANAGER_ROLE, '规划团队结构');
 	yield perm.role.$registerPerm(rid, pid);
 
 	pid = yield perm.perm.$register(PERM_CREATE_PROJECT, '有权创建项目');
@@ -271,6 +272,10 @@ function* $_member_getUsers(contain_unactived){
 	return rs;
 }
 
+function* $member_isManager(uid){
+	return yield perm.user.$isRole(uid, MANAGER_ROLE );
+}
+
 function* $_evaluation_get(uid, year, month){
 	var day = new Date( year, month, 15 );
 	var r = yield modelEvaluation.$find({
@@ -348,6 +353,7 @@ module.exports = {
 		$isAdminRole: $member_isAdminRole,
 		$getCoworkers: cache.$getCoworkers,
 		$getDepsCanAccess: $member_getDepsCanAccess,
+		$isManager: $member_isManager
 	},
 
 	evaluation: {

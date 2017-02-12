@@ -31,7 +31,6 @@ function MODULE_Main(){
 		log.debug("runjobAt8 is running...");
 		co( runjobAt8 ).catch(onerror);
 	});
-	co( runjobAt8 ).catch(onerror);
 }
 
 MODULE_Main();

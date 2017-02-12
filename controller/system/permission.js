@@ -77,6 +77,16 @@ function* $user_listRoles(uid){
 	return yield warp.$query(sql, [uid]);
 }
 
+function* $user_isRole(uid, role_name){
+	var roles = yield $user_listRoles(uid);
+	for( var i = 0; i < roles.length; i++ ){
+		if( roles[i].name === role_name ){
+			return true;
+		}
+	}
+	return false;
+}
+
 function* $_user_removeRole(uid, rid){
 	var r = yield modelUserRole.$find({
 		select: '*',
@@ -152,6 +162,7 @@ module.exports = {
 		$listPerms: $user_listPerms,
 		$listRoles: $user_listRoles,
 		$setRoles: $user_setRoles,
+		$isRole: $user_isRole,
 		$havePerm: $user_havePerm,
 		$setPermDepartments: $user_setPermDepartments
 	}
