@@ -6,7 +6,8 @@ var
 	log = require(__base+'lib/logger');
 
 var tasks_at_8 = [
-	'./job/task_team'
+	'./job/task_team',
+	'./job/task_project'
 	];
 
 function onerror(err) {  
@@ -16,8 +17,13 @@ function onerror(err) {
 function* runJobs( tasks ){
 	var i, task;
 	for( i = 0; i < tasks.length; i++ ){
-		task = require(tasks[i]);
-		yield task.$execute();
+		try{
+			task = require(tasks[i]);
+			yield task.$execute();
+		}catch(err){
+			log.error(err.stack);
+		}
+		
 	}
 }
 
