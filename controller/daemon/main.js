@@ -6,18 +6,18 @@ var
 	log = require(__base+'lib/logger');
 
 var tasks_at_8 = [
-	//'./job/task_team'
+	'./job/task_team'
 	];
 
 function onerror(err) {  
-  console.error(err.stack);
+	log.error(err.stack);
 }
 
 function* runJobs( tasks ){
 	var i, task;
 	for( i = 0; i < tasks.length; i++ ){
 		task = require(tasks[i]);
-		yield task.$execute()
+		yield task.$execute();
 	}
 }
 
@@ -28,10 +28,10 @@ function* runjobAt8(){
 function MODULE_Main(){
 	
 	var j8 = schedule.scheduleJob( "runjobAt8", {hour:8, minute:1}, function(){
-		log.debug("runjobAt8 ")
-		log.debug( new Date());
+		log.debug("runjobAt8 is running...");
 		co( runjobAt8 ).catch(onerror);
 	});
+	co( runjobAt8 ).catch(onerror);
 }
 
 MODULE_Main();
