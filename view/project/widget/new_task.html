@@ -70,6 +70,7 @@ function new_task(parentId){
 	});
 	$('#wntsk_end_time').datebox('setValue', formatNow());
 	$('#wntsk_executor').combobox('loadData', gpb_project.members);
+	$("#wntsk_executor").combobox('setValue', '');
 	$('#wntsk_executor').combobox('select', ENV.user.id);
 	$("#wntsk_duration").numberspinner('setValue', 0);
 	$('#wntsk_automode').combobox('select', "1");
