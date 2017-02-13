@@ -243,27 +243,29 @@ function pb_tg_onLoadSuccess(row){
 }
 
 function pb_tg_onSelect(row){
-	gpb_select_node = row;
-	if( gpb_has_perm_edit && !pb_project_is_close() ){
-		$('#project_btn_new_subtask').linkbutton( row.milestone ?'disable': 'enable');//里程碑任务必须是叶结点
-		$('#project_btn_new_brother_task').linkbutton( row.milestone ?'disable': 'enable');
-		
-		$('#pb_btn_edit_task').linkbutton( (row.status === 'completed' || row.status === 'cancel')?'disable':'enable');
-		$('#pb_btn_task_up').linkbutton('enable');
-		$('#pb_btn_task_down').linkbutton('enable');
-		
-		if( row.hasOwnProperty('_parentId')){
-			$('#pb_btn_set_parent_as_root').linkbutton('enable');
-		}else{
-			$('#pb_btn_set_parent_as_root').linkbutton('disable');
-		}
-
-		if( gpb_project.master_id === ENV.user.id ){
-			if( gpb_isLeaf( row.id ) ){
-				$('#pb_btn_toggle_milestone').linkbutton('enable');
-				$('#pb_span_toggle_milestone').text(row.milestone?'取消里程碑设置':'设置为里程碑');
+	if( row ){
+		gpb_select_node = row;
+		if( gpb_has_perm_edit && !pb_project_is_close() ){
+			$('#project_btn_new_subtask').linkbutton( row.milestone ?'disable': 'enable');//里程碑任务必须是叶结点
+			$('#project_btn_new_brother_task').linkbutton( row.milestone ?'disable': 'enable');
+			
+			$('#pb_btn_edit_task').linkbutton( (row.status === 'completed' || row.status === 'cancel')?'disable':'enable');
+			$('#pb_btn_task_up').linkbutton('enable');
+			$('#pb_btn_task_down').linkbutton('enable');
+			
+			if( row.hasOwnProperty('_parentId')){
+				$('#pb_btn_set_parent_as_root').linkbutton('enable');
+			}else{
+				$('#pb_btn_set_parent_as_root').linkbutton('disable');
 			}
-		}	
+
+			if( gpb_project.master_id === ENV.user.id ){
+				if( gpb_isLeaf( row.id ) ){
+					$('#pb_btn_toggle_milestone').linkbutton('enable');
+					$('#pb_span_toggle_milestone').text(row.milestone?'取消里程碑设置':'设置为里程碑');
+				}
+			}	
+		}
 	}
 }
 
