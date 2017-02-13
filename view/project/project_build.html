@@ -124,7 +124,18 @@ function pb_load_data(){
 	pb_init_btn_status();
 }
 
+function pb_init_data(){
+	gpb_project = undefined;
+	gpb_select_node = undefined;
+	gpb_tasks = undefined;
+	gpb_relies = undefined;
+ 	gpb_userMap = {};
+	gpb_taskMap = {'root':{id:'root',name:'无', mark:0}};
+	gpb_sortTasks = [];
+}
+
 $(function(){
+	pb_init_data();
 	getJSON( '/api/project/p/'+gpb_project_id, function(err, data){
 		if(!err){
 			gpb_project = data;
