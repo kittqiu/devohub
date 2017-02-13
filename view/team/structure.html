@@ -42,7 +42,15 @@ function isDepartment(id){
 
 function team_tree_getAncestor(nid){
 	if( !isDepartment(nid) ){
-		nid = g_userMap[nid].department;
+		var user = g_userMap[nid];
+		if( user ){
+			nid = user.department;
+			if( !nid ){
+				return {id:'root'};
+			}
+		}else{
+			return {id:'root'};
+		}	
 	}
 	if( nid ){
 		var dep = g_depMap[nid];

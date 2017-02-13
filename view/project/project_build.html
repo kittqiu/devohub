@@ -1,57 +1,56 @@
 <script src="/static/js/treegrid-dnd.js"></script>
 <div class="easyui-layout" data-options="fit:true,border:false">
-		<div data-options="region:'north',border:false" style="padding:5px">
-			<div class="easyui-panel" style="padding:5px;height:40px;">
-				<div style="float:right">
-					<a href="#" id="pb_btn_toggle_milestone" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_onToggleMilestone()"><span id="pb_span_toggle_milestone">设置为里程碑</span></a>
-					<a href="#" id="pb_btn_set_member" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_onSetProjectMember()">设置团队</a>
-					<a href="#" id="pb_btn_task_up" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_task_move('up')">上移</a>
-					<a href="#" id="pb_btn_task_down" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_task_move('down')">下移</a>
-					<a href="#" id="pb_btn_set_parent_as_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_set_task_parent_root()">置为项级</a>
-				</div>
-				<div>
-					<a href="#" id="project_btn_new_task_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Edit_ }}" onclick="new_task('root')">顶级任务</a>
-					<a href="#" id="project_btn_new_brother_task" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:true" onclick="new_task(gpb_select_node.parent)">同级任务</a>
-					<a href="#" id="project_btn_new_subtask" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:true" onclick="new_task(gpb_select_node.id)">下属任务</a>
-					<a href="#" id="pb_btn_edit_task" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_edit_task(gpb_select_node.id)">修改任务</a>
-				</div>
+	<div data-options="region:'north',border:false" style="padding:5px">
+		<div class="easyui-panel" style="padding:5px;height:40px;">
+			<div style="float:right">
+				<a href="#" id="pb_btn_toggle_milestone" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_onToggleMilestone()"><span id="pb_span_toggle_milestone">设置为里程碑</span></a>
+				<a href="#" id="pb_btn_set_member" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_onSetProjectMember()">设置团队</a>
+				<a href="#" id="pb_btn_task_up" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_task_move('up')">上移</a>
+				<a href="#" id="pb_btn_task_down" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_task_move('down')">下移</a>
+				<a href="#" id="pb_btn_set_parent_as_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_set_task_parent_root()">置为项级</a>
+			</div>
+			<div>
+				<a href="#" id="project_btn_new_task_root" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:{{ !__perm_Edit_ }}" onclick="new_task('root')">顶级任务</a>
+				<a href="#" id="project_btn_new_brother_task" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:true" onclick="new_task(gpb_select_node.parent)">同级任务</a>
+				<a href="#" id="project_btn_new_subtask" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add',disabled:true" onclick="new_task(gpb_select_node.id)">下属任务</a>
+				<a href="#" id="pb_btn_edit_task" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="pb_edit_task(gpb_select_node.id)">修改任务</a>
 			</div>
 		</div>
-		<div data-options="region:'center',border:false" style="padding:5px" >
-			<table id="pb_tg" class="easyui-treegrid" 
-				data-options="
-					rownumbers: true,
-					fitColumns:true,
-					idField: 'id',
-					treeField: 'name',
-					fit:true,
-					onSelect:pb_tg_onSelect,
-					onLoadSuccess: pb_tg_onLoadSuccess,
-					{% if __perm_Edit_ %}
-					onDrop:pb_tg_onDrop,
-					onDragOver:pb_tg_onDragOver,
-					{% endif %}
-					onDblClickRow:pb_tg_onDblClick
-				">
-				<thead>
-					<tr>
-						<th data-options="field:'name',formatter:pb_formatter_name" width="400">任务名称</th>
-						<th data-options="field:'status',formatter:pb_formatter_status" width="80">状态</th>
-						<th data-options="field:'executor_id',formatter:pb_formatter_executor" width="80" >负责人</th>
-						<th data-options="field:'manager_id',formatter:pb_formatter_manager" width="80" >工作审核人</th>
-						<th data-options="field:'planmode',formatter:pb_formatter_automode" width="70">计划模式</th>
-						<th data-options="field:'rely',formatter:pb_formatter_rely" width="80" >前置任务</th>
-						<th data-options="field:'plan_start_time',formatter:formatter_second_dg" width="90">计划开始时间</th>
-						<th data-options="field:'plan_end_time',formatter:formatter_second_dg" width="90">计划结束时间</th>
-						<th data-options="field:'start_time',formatter:pb_formatter_start_time" width="90">实际开始时间</th>
-						<th data-options="field:'end_time',formatter:pb_formatter_end_time" width="90">实际结束时间</th>
-						<th data-options="field:'plan_duration'" width="70">计划工时</th>
-						<th data-options="field:'duration'" width="70">实际工时</th>
-						<th data-options="field:'difficulty',formatter:pb_formatter_difficulty" width="70">难度</th>
-					</tr>
-				</thead>
-			</table>
-		</div>
+	</div>
+	<div data-options="region:'center',border:false" style="padding:5px" >
+		<table id="pb_tg" class="easyui-treegrid" 
+			data-options="
+				rownumbers: true,
+				fitColumns:true,
+				idField: 'id',
+				treeField: 'name',
+				fit:true,
+				onSelect:pb_tg_onSelect,
+				onLoadSuccess: pb_tg_onLoadSuccess,
+				{% if __perm_Edit_ %}
+				onDrop:pb_tg_onDrop,
+				onDragOver:pb_tg_onDragOver,
+				{% endif %}
+				onDblClickRow:pb_tg_onDblClick
+			">
+			<thead>
+				<tr>
+					<th data-options="field:'name',formatter:pb_formatter_name" width="400">任务名称</th>
+					<th data-options="field:'status',formatter:pb_formatter_status" width="80">状态</th>
+					<th data-options="field:'executor_id',formatter:pb_formatter_executor" width="80" >负责人</th>
+					<th data-options="field:'manager_id',formatter:pb_formatter_manager" width="80" >工作审核人</th>
+					<th data-options="field:'planmode',formatter:pb_formatter_automode" width="70">计划模式</th>
+					<th data-options="field:'rely',formatter:pb_formatter_rely" width="80" >前置任务</th>
+					<th data-options="field:'plan_start_time',formatter:formatter_second_dg" width="90">计划开始时间</th>
+					<th data-options="field:'plan_end_time',formatter:formatter_second_dg" width="90">计划结束时间</th>
+					<th data-options="field:'start_time',formatter:pb_formatter_start_time" width="90">实际开始时间</th>
+					<th data-options="field:'end_time',formatter:pb_formatter_end_time" width="90">实际结束时间</th>
+					<th data-options="field:'plan_duration'" width="70">计划工时</th>
+					<th data-options="field:'duration'" width="70">实际工时</th>
+					<th data-options="field:'difficulty',formatter:pb_formatter_difficulty" width="70">难度</th>
+				</tr>
+			</thead>
+		</table>
 	</div>
 </div>
 
@@ -134,7 +133,11 @@ function pb_init_data(){
 	gpb_sortTasks = [];
 }
 
-$(function(){
+function gpb_set_project_id(id){
+	gpb_project_id = id;
+}
+
+function gpb_page_init(){
 	pb_init_data();
 	getJSON( '/api/project/p/'+gpb_project_id, function(err, data){
 		if(!err){
@@ -151,8 +154,10 @@ $(function(){
 		}
 		$(gpb_tg_id).treegrid('loading');
 		pb_load_data();
-	});	
-});
+	});
+}
+
+$(gpb_page_init);
 
 function pb_formatter_name(value,row,index){
 	return row.milestone === 1 ? '<span style="color:#e28327">' + value + '</span>' : value;
@@ -695,3 +700,4 @@ function gpb_updateTask(tid, callback){
 }
 
 </script>
+

@@ -122,7 +122,7 @@ function*  $project_listAllOnRun(offset, limit, uid ){
 	var sql = 'select p.*, u.name as master_name from project as p left join users as u on u.id=p.master_id '
 		+ ' where p.status=? or p.status=? order by p.created_at desc ',
 		rs;
-	if( offset !== undefined ){
+	if( offset !== undefined && !config.project.scope_limit ){
 		sql += ' limit ? offset ?';
 		offset = offset ? offset : 0;
 		limit = limit ? limit : 10;
@@ -136,6 +136,9 @@ function*  $project_listAllOnRun(offset, limit, uid ){
 	//过滤自己无权访问的项目
 	if( config.project.scope_limit ){
 		rs = yield $__project_filter_scope( rs, uid );
+		if( offset !== undefined && limit !== undefined ){
+			rs = rs.slice( offset, offset+limit);
+		}
 	}
 	return rs;
 }
@@ -159,9 +162,14 @@ function* $project_delete(pid){
 function* $project_countAllOnRun(uid){
 	if( config.project.scope_limit ){
 		var ws = yield team_base.member.$getCoworkers( uid );
-		var sql = "select count(*) from project where (`status`='running' or `status`='ready') and  master_id in ('"
+		/*var sql = "select count(*) from project where (`status`='running' or `status`='ready') and  master_id in ('"
 			+ ws.join("','") + "')";
-		return yield  warp.$query( sql );
+		return yield  warp.$query( sql );*/
+		return yield modelProject.$findNumber( {
+			select: 'count(*)',
+			where: "(`status`=? or `status`=?) and `master_id` in ('"+ ws.join("','") + "')",
+			params: ['running', 'ready']
+		});
 	}else{
 		return yield modelProject.$findNumber( {
 			select: 'count(*)',

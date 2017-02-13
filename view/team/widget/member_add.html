@@ -21,7 +21,14 @@ function addMember(department){
 	wam_initView();
 	getJSON( '/api/team/department/freeusers', function(err, fusers){
 		if(!err){
-			$('#wam_user_list').datalist('loadData', fusers);
+			var us = [];
+			for( var i = 0; i < fusers.length; i++ ){
+				var r = fusers[i];
+				if( r.name !== 'Admin'){
+					us.push(r);
+				}
+			}
+			$('#wam_user_list').datalist('loadData', us);
 			if( fusers.length === 0 ){
 				showInfo('所有用户都已分配完毕，没有可供选择的用户！');
 				$('#win_add_member').window( 'close');

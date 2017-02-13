@@ -15,8 +15,26 @@ var project_opened;
 
 function view_project(p){
 	if( !!project_opened ){
-		$('#tt').tabs('close', '项目：'+ project_opened.name );
-		project_opened = null;
+		var tab_title = '项目：'+ project_opened.name;
+		var new_title = '项目：' + p.name;
+		var tab = $('#tt').tabs('getTab',tab_title);
+		$('#tt').tabs('update', {
+			tab: tab,
+			options: {
+				title: new_title,
+				href: ''
+			}
+		});
+		$('#tt').tabs('select', new_title );
+		console.log("1111")
+		//$('#tt').tabs('close',tab_title);
+		//tab.panel('destroy', true);
+		//$('#project_build_block').panel('destroy', true);
+		//$('#project_build_block').remove();
+		gpb_set_project_id(p.id);
+		gpb_page_init();
+		project_opened = p;
+		return;
 	}
 
 	var title = '项目：'+ p.name;
