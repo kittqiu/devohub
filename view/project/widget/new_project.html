@@ -63,7 +63,7 @@ function wnpj_loadMembers(showAll){
 					fd.push( d );
 				}
 			}
-			fd.sort(function(a,b){return a.email>b.email;});
+			fd.sort(sort_email);
 
 			$('#wnpj_master').combobox('loadData', fd );
 		}

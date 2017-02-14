@@ -309,7 +309,7 @@ function wpsm_nm_loadMembers(showAll){
 					fd.push( d );
 				}
 			}
-			fd.sort(function(a,b){return a.email>b.email;});
+			fd.sort(sort_email);
 			
 			if( fd.length > 0 ){
 				$('#wpsm_nm_member').combobox('loadData', fd );

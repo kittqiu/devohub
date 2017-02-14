@@ -245,3 +245,7 @@ function pb_formatter_status(value,row,index){
 		return gpb_taskStatusMap[value];
 	}
 }
+
+function sort_email(a,b){
+	return ((a.email>b.email)?1:-1);
+}

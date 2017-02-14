@@ -143,7 +143,7 @@ function gpb_page_init(){
 			
 			gpb_project = data;
 			var ms = data.members;
-			ms.sort(function(a,b){return a.email>b.email;});
+			ms.sort(sort_email);
 			for(var i = 0; i < ms.length; i++ ){
 				var m = ms[i];
 				gpb_userMap[m.user_id] = m;

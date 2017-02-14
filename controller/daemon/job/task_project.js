@@ -27,8 +27,8 @@ var _taskStatusMap = {
 function* $__getMyTaskIsOutOfDate( uid ){
 	var sql = 'select t.*, u.`name` as manager_name, p.name as project_name from project_task as t '
 		+ 'left JOIN users as u on u.id=t.manager_id LEFT JOIN project as p on t.project_id=p.id '
-		+ 'where t.executor_id =? and t.closed<>? and ( t.status=? and t.status=? ) and t.difficulty<>? and t.plan_end_time<?';
-	var rs = yield warp.$query(sql, [uid, true, 'doing', 'commit',99, Date.now()]);
+		+ 'where t.executor_id =? and t.closed<>? and ( t.status=? and t.status=? ) and t.difficulty<>? and t.plan_end_time<=?';
+	var rs = yield warp.$query(sql, [uid, true, 'doing', 'commit',99, Date.now()-one_day_time]);
 	for( var i = 0; i < rs.length; i ++ ){
 		var r = rs[i];
 		r.status_text = _taskStatusMap[r.status];
@@ -40,8 +40,8 @@ function* $__getMyTaskIsOutOfDate( uid ){
 function* $__getManagedTaskIsOutOfDate( uid ){
 	var sql = 'select t.*, u.`name` as executor_name, p.name as project_name from project_task as t '
 		+ 'left JOIN users as u on u.id=t.executor_id LEFT JOIN project as p on t.project_id=p.id '
-		+ 'where t.manager_id =? and t.closed<>? and t.status<>? and t.difficulty<>? and t.plan_end_time<?';
-	var rs = yield warp.$query(sql, [uid, true, 'pending', 99, Date.now()]);
+		+ 'where t.manager_id =? and t.closed<>? and t.status<>? and t.difficulty<>? and t.plan_end_time<=?';
+	var rs = yield warp.$query(sql, [uid, true, 'pending', 99, Date.now()-one_day_time]);
 	for( var i = 0; i < rs.length; i ++ ){
 		var r = rs[i];
 		r.status_text = _taskStatusMap[r.status];
@@ -53,8 +53,8 @@ function* $__getManagedTaskIsOutOfDate( uid ){
 function* $__getMyTasksInTime( uid ){
 	var sql = 'select t.*, u.`name` as manager_name, p.name as project_name from project_task as t '
 		+ 'left JOIN users as u on u.id=t.manager_id LEFT JOIN project as p on t.project_id=p.id '
-		+ 'where t.executor_id =? and ( t.status=? or t.status=? ) and t.difficulty<>? and t.plan_start_time<?';
-	var rs = yield warp.$query(sql, [uid, 'created', 'clear', 99, Date.now()+one_day_time]);
+		+ 'where t.executor_id =? and ( t.status=? or t.status=? ) and t.difficulty<>? and t.plan_start_time<=?';
+	var rs = yield warp.$query(sql, [uid, 'created', 'clear', 99, Date.now()]);
 	for( var i = 0; i < rs.length; i ++ ){
 		var r = rs[i];
 		r.status_text = _taskStatusMap[r.status];
@@ -64,10 +64,10 @@ function* $__getMyTasksInTime( uid ){
 
 /* 当日需要执行管理的任务 - 管理者*/
 function* $__getManagedTasksInTime( uid ){
-	var tomorow = Date.now()+one_day_time;
+	var tomorow = Date.now();
 	var sql = 'select t.*, u.`name` as executor_name, p.name as project_name from project_task as t '
 		+ 'left JOIN users as u on u.id=t.executor_id LEFT JOIN project as p on t.project_id=p.id '
-		+ 'where t.manager_id =? and t.difficulty<>? and ( ( t.status=? and t.plan_start_time<? ) or ( t.plan_end_time<?'
+		+ 'where t.manager_id =? and t.difficulty<>? and ( ( t.status=? and t.plan_start_time<? ) or ( t.plan_end_time<=?'
 		+' and ( t.status=? or t.status=? or t.status=?) ) ) ';
 	var rs = yield warp.$query(sql, [uid, 99,'created', tomorow, tomorow, 'clear', 'doing', 'commit' ]);
 	for( var i = 0; i < rs.length; i ++ ){
