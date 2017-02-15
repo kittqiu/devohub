@@ -60,16 +60,18 @@
 							<div id="btn_changePassword" data-options="iconCls:'icon-edit'">{{ _('change password')}}</div>
 							<div id="btn_changeInfo" data-options="iconCls:'icon-edit'">修改个人信息</div>
 							<div class="menu-sep"></div>
+							<div id="btn_viewhelp_login" data-options="iconCls:'icon-search'">查看帮助</div>
 							<div id="btn_logout" data>{{ _('logout')}}</div>
 						</div>
 					</li>
 					{% else %}
 					<li><a href="/login" class="">{{ _('log in') }}</a></li>
-					<li><a href="/signup" class="">{{ _('sign up') }}</a></li>
+					<li><a href="/signup" class="">{{ _('sign up') }}</a></li>					
 					<li>
 						<a href="#"  class="easyui-menubutton" data-options="menu:'#menu_login_other',hasDownArrow:false" style="width:100px;padding-top:26px;border-width:0;background:#000;"><span style="font-size:14px">其他</span><i class="uk-icon-caret-down"></i></a>
 						<div id="menu_login_other" style="width:150px;" data-options="onClick:menu_login_Handler">
 							<div id="btn_resetPassword" data-options="iconCls:'icon-edit'">重置密码</div>
+							<div id="btn_viewhelp" data-options="iconCls:'icon-search'">查看帮助</div>
 						</div>
 					</li>
 					{% endif %}
@@ -95,9 +97,11 @@
 	{% else %}
 	<script type="text/javascript">
 	function menu_login_Handler(item){
-		if( item.id == 'btn_resetPassword'){
+		if( item.id === 'btn_resetPassword'){
 			var url = "/auth/user/ResetPassword";
 			window.location.assign(url);
+		}else if( item.id === 'btn_viewhelp'){
+			window.location.assign("/help?file=/static/other/help.pdf");
 		}
 	}
 	</script>
@@ -110,11 +114,13 @@
 		if( item.id == 'btn_logout'){
 			var url = "/auth/signout?referer={{__request__.url}}";
 			window.location.assign(url);
-		}else if( item.id == 'btn_changePassword'){
+		}else if( item.id === 'btn_changePassword'){
 			changeMyPassword();
-		}else if( item.id == 'btn_changeInfo'){
+		}else if( item.id === 'btn_changeInfo'){
 			changeMyInfo();
-		}		
+		}else if( item.id === 'btn_viewhelp_login'){
+			window.location.assign('/help?file=/static/other/help.pdf');
+		}
 	}
 
 	$(function(){

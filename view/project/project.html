@@ -41,7 +41,7 @@ function view_project(p){
 	$('#tt').tabs('add',{
 		title: '项目：'+ p.name,
 		href: '/project/p/'+ p.id +'/build',
-		closable: true,
+		closable: false,
 		collapsible:true,
 		/*onBeforeClose:function(title,index){
 			if( !!project_opened ){

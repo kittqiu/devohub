@@ -167,10 +167,17 @@ $(gpb_page_init);
 function pb_formatter_name(value,row,index){
 	return row.milestone === 1 ? '<span style="color:#e28327">' + value + '</span>' : value;
 }
-function pb_formatter_executor(value,row,index){	
-	return gpb_userMap[value].name;
+function pb_formatter_executor(value,row,index){
+	var u = gpb_userMap[value];
+	if( u ){
+		return u.name;
+	}
 }
-function pb_formatter_manager(value,row,index){	
+function pb_formatter_manager(value,row,index){
+	var u = gpb_userMap[value];
+	if( u ){
+		return u.name;
+	}
 	return gpb_userMap[value].name;
 }
 
