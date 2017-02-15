@@ -235,8 +235,12 @@ module.exports = {
 		if( r === null ){
 			throw api.notFound('group member', this.translate('Record not found'));
 		}
-		yield r.$destroy();
-		this.body = { result: 'ok' };
+		if( (yield base.project.$hasUserTask(r.project_id, r.user_id))){
+			throw api.notAllowed('项目中已有该成员相关任务。为了保证数据完整性，不能删除该成员！');
+		}else{
+			yield r.$destroy();
+			this.body = { result: 'ok' };
+		}
 	},
 
 	'POST /api/project/p': function* (){

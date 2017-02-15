@@ -383,6 +383,15 @@ function* $project_changeMaster(project_id, new_uid){
 	}
 }
 
+function* $project_hasUserTask( project_id, uid ){
+	var cnt = yield modelTask.$findNumber( {
+			select: 'count(*)',
+			where: '`project_id`=? and ( `manager_id`=? or `executor_id`=?)',
+			params: [project_id,uid, uid]
+		});
+	return cnt !== 0;
+}
+
 function* $task_maxOrder(project_id, parent_id){
 	var sql = 'select MAX(`order`) AS maxorder from project_task where project_id=? and parent=?',
 		rs = yield warp.$query( sql, [project_id, parent_id] ),
@@ -870,7 +879,8 @@ module.exports = {
 		$countAllOnEnd: $project_countAllOnEnd,
 		$countUserJoinOnRun: $project_countUserJoinOnRun,
 		$countUserJoinOnEnd: $project_countUserJoinOnEnd,
-		$changeMaster: $project_changeMaster
+		$changeMaster: $project_changeMaster,
+		$hasUserTask: $project_hasUserTask
 	},
 
 	group: {

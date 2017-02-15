@@ -7,7 +7,7 @@
 			<input class="easyui-textbox" id="wntsk_parent" name="wntsk_parent" style="width:95%" data-options="label:'父任务:',disabled:true">
 		</div>
 		<div style="margin-bottom:20px">
-			<input class="easyui-combobox" id="wntsk_executor" name="wntsk_executor" style="width:95%" data-options="label:'执行人:',editable:false,required:true,valueField:'user_id',textField:'name',">
+			<input class="easyui-combobox" id="wntsk_executor" name="wntsk_executor" style="width:70%" data-options="label:'执行人:',editable:false,required:true,valueField:'user_id',textField:'name'"><input id="wntsk_cb_showall" type="checkbox" onclick="wntsk_cb_onMultiUserSelected()">多人执行相同任务
 		</div>
 		<!--div style="margin-bottom:20px">
 			<select id="wntsk_milestone" name="wntsk_milestone" class="easyui-combobox" style="width:95%" data-options="label:'是否为里程碑:',required:true,value:'0',onChange:wntsk_onChangeMilestone">
@@ -69,6 +69,8 @@ function new_task(parentId){
 		editable:false
 	});
 	$('#wntsk_end_time').datebox('setValue', formatNow());
+	$('#wntsk_cb_showall').prop('checked', false);
+	$('#wntsk_executor').combobox({multiple:false});
 	$('#wntsk_executor').combobox('loadData', gpb_project.members);
 	$("#wntsk_executor").combobox('setValue', '');
 	$('#wntsk_executor').combobox('select', ENV.user.id);
@@ -84,7 +86,7 @@ function new_task(parentId){
 	$('#win_new_task').window({
 		title: "创建新任务",
 		width:600,
-		height:580,
+		height:600,
 		modal:true,
 		minimizable:false,
 		maximizable:false,
@@ -114,6 +116,14 @@ function wntsk_onChangeAutoMode(newValue,oldValue){
 		$('#wntsk_end_time').datebox('enable');
 		$('#wntsk_rely_to').textbox('disable');
 	}
+}
+
+function wntsk_cb_onMultiUserSelected(){
+	var selectMultiUsers = $('#wntsk_cb_showall').is(':checked');
+	var values = $("#wntsk_executor").combobox('getValues');
+	$('#wntsk_executor').combobox({multiple:selectMultiUsers});
+	$('#wntsk_executor').combobox('select', values[0]);
+	//wpsm_nm_loadMembers( showAll );	
 }
 
 function wntsk_isParentTask(tid){
@@ -163,6 +173,28 @@ function wntsk_calcRelyTask(){
 	return ro;
 }
 
+function wntsk_createMutliTasks(data, users, index ){
+	var name = data.name;
+	var uid = users[index];
+	var executor = gpb_userMap[uid];
+	data.name = name + '-'+ executor.name;
+	data.executor = uid;
+	postJSON( '/api/project/p/'+gpb_project_id+'/task', data, function(err, result){
+		if( !err ){
+			gpb_appendTask(result.id);
+			if( index === users.length - 1){
+				showInfo( '任务创建成功。');
+				$('#win_new_task').window( 'close');
+			}else{
+				data.name = name;
+				wntsk_createMutliTasks( data, users, index+1);
+			}
+		}else{
+			showErrorInfo( "任务创建失败", err.message );
+		}
+	});
+}
+
 function wntsk_submit(){
 	var rs = [];
 	var automode = parseInt($("#wntsk_automode").combobox('getValue'));
@@ -187,10 +219,11 @@ function wntsk_submit(){
 		}
 	}
 	
+	var executors = $("#wntsk_executor").combobox('getValues');
 	var data = {
 			name: $("#wntsk_name").textbox('getValue'),
 			parent:wntsk_pid,
-			executor: $("#wntsk_executor").combobox('getValue'),
+			executor: executors[0],
 			duration: parseInt($("#wntsk_duration").numberspinner('getValue')),
 			start_time: start_time,
 			automode: automode,
@@ -218,7 +251,8 @@ function wntsk_submit(){
 			return;
 		}
 
-		postJSON( '/api/project/p/'+gpb_project_id+'/task', data, function(err, result){
+		if( executors.length === 1 ){
+			postJSON( '/api/project/p/'+gpb_project_id+'/task', data, function(err, result){
 				if( !err ){
 					showInfo( '任务创建成功。');
 					$('#win_new_task').window( 'close');
@@ -226,7 +260,10 @@ function wntsk_submit(){
 				}else{
 					showErrorInfo( "任务创建失败", err.message );
 				}
-		});
+			});
+		}else{
+			wntsk_createMutliTasks( data, executors, 0 );
+		}		
 	}else{
 		showErrorInfo( '填写错误', vr );
 	}

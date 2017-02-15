@@ -400,7 +400,7 @@ function wpsm_em_submit(){
 
 function wpsm_remove_member(){
 	$.messager.confirm('注意', '请不要随意删除成员，以保证项目数据的一致性。真的要删除该成员吗?', function(r){
-		if (r){			
+		if (r){
 			postJSON( '/api/project/groupmember/'+gpsm_select_node.id+'/delete', function(err, result){
 				if( !err ){
 					showInfo( '删除成员成功。');					
