@@ -39,7 +39,9 @@ var
 var 
 	DEFAULT_EXPIRES_IN_MS = 1000 * config.session.expires,
 	PARENT_ROOT = 'root',
-	MASTER_GROUP = 'manager';
+	MASTER_GROUP = 'manager',
+	OPEN_SECURITY_LEVEL = 10,
+	NORMAL_SECURITY_LEVEL = 11;
 
 function* init_database(){
 	//perm.perm.$register('')
@@ -107,11 +109,11 @@ function _project_combine(rs1, rs2){
 
 function* $__project_filter_scope( projects, uid ){
 	var ws = yield team_base.member.$getCoworkers( uid );
-	var rs_org = projects;
 	var rs = [];
-	for( var i = 0; i < rs_org.length; i++ ){
-		var r = rs_org[i];
-		if( ws.indexOf( r.master_id) !== -1 ){
+	for( var i = 0; i < projects.length; i++ ){
+		var r = projects[i];
+
+		if( r.security_level <= OPEN_SECURITY_LEVEL && ws.indexOf( r.master_id) !== -1 ){
 			rs.push( r );
 		}
 	}
@@ -269,7 +271,7 @@ function* $project_countUserJoinOnEnd(uid){
 }
 
 /* get: project record, creator name, master name, groups, members*/
-function* $project_get(id){
+function* $project_get(id, context_uid){
 	var sql,
 		p = yield modelProject.$find(id);
 	if( p !== null ){
@@ -297,6 +299,16 @@ function* $project_get(id){
 		});
 		sql = 'select m.*, u.`name`,u.`email` from project_member as m, users as u where m.user_id = u.id and m.project_id=?';
 		p.members = yield warp.$query(sql, [id]);
+
+		if( p.security_level > OPEN_SECURITY_LEVEL ){
+			var context_is_member = false;
+			for( var i = 0; i < p.members.length; i++ ){
+				if( p.members[i].user_id === context_uid ){
+					context_is_member = true;
+				}
+			}
+			if( !context_is_member )return {};
+		}//else continue
 	}
 	return p || {};
 }
@@ -390,6 +402,20 @@ function* $project_hasUserTask( project_id, uid ){
 			params: [project_id,uid, uid]
 		});
 	return cnt !== 0;
+}
+
+function* $project_allowUserView( project_id, uid ){
+	var p = yield modelProject.$find(project_id);
+	if( p ){
+		if( p.security_level > OPEN_SECURITY_LEVEL ){
+			var in_project = yield $user_in_project( uid, project_id);
+			return in_project;
+		}else{
+			return true;
+		}
+	}else{
+		return false;
+	}
 }
 
 function* $task_maxOrder(project_id, parent_id){
@@ -524,6 +550,10 @@ function* $task_listManageOfUser(uid){
 		+ ' left JOIN users as u on u.id=t.manager_id left JOIN users as e on e.id=t.executor_id LEFT JOIN project as p on t.project_id=p.id '
 		+ ' where t.manager_id =? and t.closed=? and t.difficulty<>99 order by t.plan_end_time asc';
 	var rs = yield warp.$query(sql, [uid, false]);
+	var status_orders = ['commit', 'doing', 'clear', 'pending', 'created', 'cancel', 'completed'];
+	rs.sort( function(a,b){
+		return status_orders.indexOf(a.status) - status_orders.indexOf(b.status);
+	});
 	return rs;
 }
 
@@ -706,11 +736,11 @@ function* $group_get(id){
 	return g || {};
 }
 
-function* $daily_listUser(user_id, dateTime){
+function* $daily_listUser(user_id, dateTime, context_uid){
 	var begin_time = helper.getDateTimeAt0(dateTime),
 		end_time = helper.getNextDateTime(dateTime),
 		yes_time = helper.getPreviousDateTime(dateTime),
-		sql = 'select t.*, u.`name` as manager_name, e.name as executor_name, p.name as project_name from project_task as t '
+		sql = 'select t.*, u.`name` as manager_name, e.name as executor_name, p.name as project_name, p.security_level as security_level from project_task as t '
 			+ 'left JOIN users as u on u.id=t.manager_id left JOIN users as e on e.id=t.executor_id left JOIN project as p on p.id=t.project_id '
 			+ 'where t.executor_id=? and t.start_time<>0 and t.start_time<? and (t.end_time>=? or t.end_time=0)',
 		ts, ds, os, i, j, dls=[];
@@ -742,7 +772,7 @@ function* $daily_listUser(user_id, dateTime){
 		task.daily = {};
 		for( j = 0; j < ds.length; j++ ){
 			if( ds[j].task_id === task.id ){
-				task.daily = ds[j];
+				task.daily = ds[j];				
 				break;
 			}
 		}
@@ -752,6 +782,30 @@ function* $daily_listUser(user_id, dateTime){
 				break;
 			}
 		}
+		if( (task.executor_id !== context_uid) && (task.manager_id !== context_uid) 
+			&& task.security_level > OPEN_SECURITY_LEVEL ){
+			if( task.security_level > NORMAL_SECURITY_LEVEL )continue;
+			if( task.daily.hasOwnProperty('report')){
+				task.daily = {
+					project_id: '******',
+					task_id: '******',
+					report: '******',
+					plan: '******',
+					org_plan: '******',
+					user_id: task.daily.user_id,
+					duration: task.daily.duration,
+					time: task.daily.time
+				};
+			}
+			task.name = '******';
+			task.project_name = '******';
+			task.project_id = '******';
+			task.details = '******';
+			task.parent = '******';
+			task.manager_name = '******';
+			task.executor_id = '******';
+			task.manager_id ='******';
+		}
 		if( task.status === 'pending' && Object.keys(task.daily).length === 0 ){
 			continue;
 		}
@@ -760,14 +814,40 @@ function* $daily_listUser(user_id, dateTime){
 	return dls;
 }
 
-function* $daily_listUserByMonth( uid, year, month ){
+function* $daily_listUserByMonth( uid, year, month, context_uid ){
 	var begin_day = new Date( year, month, 1),
 	    begin_time = begin_day.getTime(),
 	    end_day = helper.getLastDayOfMonth( year, month ),
 		end_time = end_day.getTime(),
-		sql = 'select d.*, p.`name` as project_name, t.name as task_name from project_daily as d '
+		sql = 'select d.*, p.`name` as project_name, p.`security_level` as security_level, t.name as task_name, t.manager_id as manager_id from project_daily as d '
 			+ 'left JOIN project as p on p.id=d.project_id left JOIN project_task as t on t.id=d.task_id where d.user_id=? and d.time>=? and d.time<=? order by d.time asc';
-	return yield warp.$query(sql, [uid, begin_time, end_time]);
+	var rs = yield warp.$query(sql, [uid, begin_time, end_time]);
+	var nrs = [];
+	for( var i = 0; i < rs.length; i++ ){
+		var r = rs[i];
+		if( r.security_level <= OPEN_SECURITY_LEVEL ){
+			nrs.push( r );
+		}else{
+			if( r.security_level === NORMAL_SECURITY_LEVEL){
+				if( uid !== context_uid && r.manager_id !== context_uid ){
+					r.project_id = '******';
+					r.task_id = '******';
+					r.report = '******';
+					r.plan = '******';
+					r.org_plan = '******';
+					r.project_name = '******';
+					r.task_name = '******';
+					r.manager_id ='******';
+				}				
+				nrs.push(r);
+			}else{//high security level，只有任务管理员可以看到该日志项
+				if( uid === context_uid || r.manager_id === context_uid ){
+					nrs.push(r);
+				}
+			}
+		}
+	}
+	return nrs;
 }
 
 function* $daily_listProject(project_id, dateTime){
@@ -836,6 +916,18 @@ function* $user_havePermEditProject(context, project_id){
 	return false;
 }
 
+function* $user_in_project(uid, project_id){
+	var r = yield modelMember.$find({
+		select: '*',
+		where: '`user_id`=? and `project_id`=?',
+		params: [uid, project_id]
+	});
+	if( r && r.hasOwnProperty('role')){
+		return true;
+	}
+	return false;
+}
+
 
 
 
@@ -880,7 +972,8 @@ module.exports = {
 		$countUserJoinOnRun: $project_countUserJoinOnRun,
 		$countUserJoinOnEnd: $project_countUserJoinOnEnd,
 		$changeMaster: $project_changeMaster,
-		$hasUserTask: $project_hasUserTask
+		$hasUserTask: $project_hasUserTask,
+		$allowUserView: $project_allowUserView
 	},
 
 	group: {
@@ -921,7 +1014,8 @@ module.exports = {
 		$isProjectMaster: $user_isProjectMaster,
 		$havePerm: team_base.$havePerm,
 		$testPerm: team_base.$testPerm,
-		$isAdmin: team_base.member.$isAdmin
+		$isAdmin: team_base.member.$isAdmin,
+		$inProject: $user_in_project
 	}
 	
 };

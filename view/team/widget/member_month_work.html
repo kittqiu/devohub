@@ -27,6 +27,7 @@ var wmmw_Id = '#win_member_month_work';
 
 function showMemberMonthWork(user,date){
 	wmmw_initView();
+	$('#wmmw_dg').datagrid('loadData', []);
 	$(wmmw_Id).window({
 		title: user.name + "的月工作",
 		width:1000,

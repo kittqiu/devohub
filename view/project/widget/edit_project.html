@@ -13,7 +13,13 @@
 				<option value="end">已结束</option>
 			</select>
 		</div>
-		
+		<div style="margin-bottom:20px">
+			<select id="wepj_security" name="wepj_security" class="" style="width:95%" data-options="label:'密级:',required:true">
+				<option value="10">内部公开</option>
+				<option value="11">秘密 (隐藏项目，任务日志项可见，但内容不可视)</option>
+				<option value="12">机密 (隐藏项目并隐藏所有任务日志)</option>
+			</select>
+		</div>		
 		<div style="margin-bottom:20px">
 			<input class="" id="wepj_start_time" name="wepj_start_time" style="width:95%" data-options="label:'计划开始时间:',required:true">
 		</div>
@@ -37,6 +43,7 @@ function wepj_initView(){
 		$('#wepj_name').textbox({});
 		$('#wepj_details').textbox({});
 		$('#wepj_status').combobox({});
+		$('#wepj_security').combobox({});
 		$('#wepj_btn_submit').linkbutton({});
 
 		$('#wepj_start_time').datebox({
@@ -93,13 +100,14 @@ function edit_project(p){
 	$("#wepj_name").textbox('setValue', p.name );
 	$("#wepj_details").textbox('setValue', p.details);
 	$('#wepj_status').combobox('select', p.status);
+	$('#wepj_security').combobox('select', p.security_level);
 	$('#wepj_master').combobox('select', gp_project.master_id);
 	$('#wepj_cb_showall').prop('checked', false);
 
 	$('#win_edit_project').window({
 		title: "修改项目",
 		width:500,
-		height:420,
+		height:460,
 		modal:true,
 		minimizable:false,
 		maximizable:false,
@@ -118,7 +126,8 @@ function wepj_submitForm(){
 		end_time: parser_DateMonth($('#wepj_end_time').datebox('getValue' )).getTime(),
 		master_id: $("#wepj_master").combobox('getValue'),
 		details: $("#wepj_details").textbox('getValue'),
-		status: $("#wepj_status").combobox('getValue')
+		status: $("#wepj_status").combobox('getValue'),
+		security_level: parseInt($('#wepj_security').combobox('getValue'))
 	};
 
 	var tbfields = {wepj_name:'项目名称', wepj_details:'项目说明'};

@@ -93,7 +93,7 @@ module.exports = {
 	'GET /api/project/daily': function* (){
 		var uid = this.request.user.id || '',
 			date = parseInt(this.request.query.date||'0') || Date.now();
-		this.body = yield base.daily.$listUser(uid, date);
+		this.body = yield base.daily.$listUser(uid, date, uid);
 	},
 
 	'GET /api/project/t/listExecuting': function* (){
@@ -162,13 +162,13 @@ module.exports = {
 
 	'GET /api/project/u/:uid/daily': function* (uid){
 		var date = parseInt(this.request.query.date||'0') || Date.now();
-		this.body = yield base.daily.$listUser(uid, date);
+		this.body = yield base.daily.$listUser(uid, date, this.request.user.id);
 	},
 
 	'GET /api/project/u/:uid/monthwork': function* (uid){
 		var y = parseInt( this.request.query.year || '2016'),
 			m = parseInt(this.request.query.month || '0');
-		this.body = yield base.daily.$listUserByMonth( uid, y, m );
+		this.body = yield base.daily.$listUserByMonth( uid, y, m, this.request.user.id );
 	},
 
 	'POST /api/project/daily/creation': function* (){

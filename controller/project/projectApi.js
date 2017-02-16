@@ -70,7 +70,6 @@ module.exports = {
 
 	'GET /project/p/:id/build': function* (id){
 		var hasPerm = yield base.user.$havePermEditProject(this,id),
-			project = yield base.project.$get(id) || {},
 			model = {
 				__id: id,
 				__perm_Edit_: hasPerm
@@ -105,7 +104,7 @@ module.exports = {
 		yield $_render( this, model, 'p/project_view.html');
 	},
 
-	'GET /api/project/p/all': function*(){
+	/*'GET /api/project/p/all': function*(){
 		var index = this.request.query.page || '1',
 			index = parseInt(index),
 			page_size = base.config.PAGE_SIZE,
@@ -113,7 +112,7 @@ module.exports = {
 			rs = yield base.project.$list( page_size*(index-1), page_size);
 		page.total = yield base.project.$count();
 		this.body = { page:page, projects: rs};
-	},
+	},*/
 
 	'GET /api/project/p/allDoing': function*(){
 		var index = this.request.query.page || '1',
@@ -165,11 +164,19 @@ module.exports = {
 	},
 
 	'GET /api/project/p/:id/tasklist': function* (id){
-		this.body = yield base.project.$listTasks(id);
+		if( (yield base.project.$allowUserView(id, this.request.user.id))){
+			this.body = yield base.project.$listTasks(id);
+		}else{
+			this.body = {};
+		}		
 	},
 
 	'GET /api/project/p/:id/taskrelylist': function* (id){
-		this.body = yield base.project.$listTaskRelies(id);
+		if( (yield base.project.$allowUserView(id, this.request.user.id))){
+			this.body = yield base.project.$listTaskRelies(id);
+		}else{
+			this.body = {};
+		}
 	},
 
 	/**
@@ -179,7 +186,7 @@ module.exports = {
 	 * members是数组，每个元素不仅包含Member的model对象，还包含用户名name
 	 */
 	'GET /api/project/p/:id': function* (id){
-		this.body = yield base.project.$get(id) || [];
+		this.body = yield base.project.$get(id, this.request.user.id) || [];
 	},
 
 	'GET /api/project/task/:id/relylist': function*(id){
@@ -356,7 +363,7 @@ module.exports = {
 		if( r.master_id !== data.master_id ){
 			yield base.project.$changeMaster(id, data.master_id);
 		}
-		yield db.op.$update_record( r, data, ['name', 'start_time', 'end_time', 'details', 'master_id', 'status'])
+		yield db.op.$update_record( r, data, ['name', 'start_time', 'end_time', 'details', 'master_id', 'status', 'security_level'])
 		this.body = {
 			result: 'ok',
 			redirect: base.getHistoryUrl(this)
