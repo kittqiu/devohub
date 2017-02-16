@@ -19,7 +19,7 @@
 {% block inline_main %}
 <div class="easyui-panel" data-options="fit:true,border:false">
 	<table id="ptab-task-dg" class="easyui-datagrid" title="我正在执行的任务" 
-			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/t/listExecuting',method:'get',onDblClickRow:ptab_task_dg_onDblClick, onSelect:ptab_task_onSelectRow">
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,pageSize:20,url:'/api/project/t/listExecuting',method:'get',onDblClickRow:ptab_task_dg_onDblClick, onSelect:ptab_task_onSelectRow">
 		<thead>
 			<tr>
 				<th data-options="field:'name',width:160">任务名称</th>
@@ -27,7 +27,7 @@
 				<th data-options="field:'plan_start_time',width:80,formatter:formatter_second_dg">计划开始时间</th>
 				<th data-options="field:'plan_end_time',width:80,formatter:formatter_second_dg">计划结束时间</th>
 				<th data-options="field:'percent',width:80,formatter:formatter_percent">当前进度</th>
-				<th data-options="field:'manager_name',width:80">任务审核人</th>
+				<th data-options="field:'manager_name',width:80, formatter:ptab_formatter_user"><span id="ptab_column_user_title">任务审核人</span></th>
 				<th data-options="field:'plan_duration',width:80">计划用时(小时)</th>
 				<th data-options="field:'duration',width:80">已用时(小时)</th>
 				<th data-options="field:'project_name',width:80">所属的项目</th>
@@ -54,6 +54,13 @@ var gt_urls_history = {
 	'manage': '/api/project/t/history/listManage'
 };
 
+function ptab_formatter_user(value,row, index){
+	if( gt_filter === 'manage'){
+		return row.executor_name;
+	}else{
+		return row.manager_name;
+	}
+}
 
 function ptab_task_list_reload(){
 	$('#ptab-task-dg').datagrid('reload');
@@ -77,10 +84,15 @@ function ptab_task_onFilterChange(newValue,oldValue){
 	ptab_task_list_reset_url();
 	ptab_task_list_reload();
 	
-	if( newValue == 'planning' ){
+	if( newValue === 'planning' ){
 		$('#tasktab_div_toggle_history').hide();
 	}else{
 		$('#tasktab_div_toggle_history').show();
+	}
+	if( newValue === 'manage'){
+		$('#ptab_column_user_title').text('任务执行人');
+	}else{
+		$('#ptab_column_user_title').text('任务审核人');
 	}
 }
 

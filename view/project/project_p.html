@@ -22,7 +22,7 @@
 {% block inline_main %}
 <div class="easyui-panel" data-options="fit:true,border:false">
 	<table id="project-dg" class="easyui-datagrid" title="我正参与的项目" 
-			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',onSelect:project_dg_onSelect,onDblClickRow:project_dg_onDblClick, onLoadSuccess:project_dg_onLoadSuccess">
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',pageSize:20,onSelect:project_dg_onSelect,onDblClickRow:project_dg_onDblClick, onLoadSuccess:project_dg_onLoadSuccess">
 		<thead>
 			<tr>
 				<th data-options="field:'name',width:160">名称</th>

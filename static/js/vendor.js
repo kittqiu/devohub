@@ -239,6 +239,9 @@ var pb_status_colors = {
 	completed: '#659f13'
 };
 function pb_formatter_status(value,row,index){
+	if( row.difficulty === 99 ){
+		return "--";
+	}
 	if( pb_status_colors.hasOwnProperty(value)){
 		return '<span style="color:'+ pb_status_colors[value] +'">' + gpb_taskStatusMap[value] + '</span>';
 	}else{

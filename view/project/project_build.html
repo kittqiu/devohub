@@ -43,8 +43,8 @@
 					<th data-options="field:'plan_end_time',formatter:formatter_second_dg" width="90">计划结束时间</th>
 					<th data-options="field:'start_time',formatter:pb_formatter_start_time" width="90">实际开始时间</th>
 					<th data-options="field:'end_time',formatter:pb_formatter_end_time" width="90">实际结束时间</th>
-					<th data-options="field:'plan_duration'" width="70">计划工时</th>
-					<th data-options="field:'duration'" width="70">实际工时</th>
+					<th data-options="field:'plan_duration',formatter:pb_formatter_plan_duration" width="70">计划工时</th>
+					<th data-options="field:'duration', formatter:pb_formatter_duration" width="70">实际工时</th>
 					<th data-options="field:'difficulty',formatter:pb_formatter_difficulty" width="70">难度</th>
 				</tr>
 			</thead>
@@ -164,6 +164,9 @@ function gpb_page_init(){
 
 $(gpb_page_init);
 
+function pb_is_empty_task(t){
+	return t.difficulty===99;
+}
 function pb_formatter_name(value,row,index){
 	return row.milestone === 1 ? '<span style="color:#e28327">' + value + '</span>' : value;
 }
@@ -180,13 +183,12 @@ function pb_formatter_manager(value,row,index){
 	}
 	return gpb_userMap[value].name;
 }
-
+function pb_formatter_plan_duration(value, row){
+	return pb_is_empty_task(row)?'--':value;
+}
 function pb_formatter_duration(value,row){
-	if( row.status === 'completed' || row.status === 'cancel' ){
-		return row.duration;
-	}else{
-		return row.plan_duration;
-	}
+	if( pb_is_empty_task(row) ) return '--';
+	return row.duration;
 }
 function pb_formatter_rely(value,row){
 	if( value.length == 0 ){
@@ -204,10 +206,18 @@ function pb_formatter_rely(value,row){
 function pb_formatter_automode(value,row,index){
 	return row.automode === 0 ? '自动' : '手动';
 }
+function pb_formatter_plan_start_time(value,row,index){
+	return pb_is_empty_task(row)?'--': formatter_second_dg(value);
+}
+function pb_formatter_plan_end_time(value,row,index){
+	return pb_is_empty_task(row)?'--': formatter_second_dg(value);
+}
 function pb_formatter_start_time(value,row,index){
+	if( pb_is_empty_task(row) ) return '--';
 	return row.start_time === 0 ? '无' : formatter_second_dg(row.start_time);
 }
 function pb_formatter_end_time(value,row,index){
+	if( pb_is_empty_task(row) ) return '--';
 	return row.end_time === 0 ? '无' : formatter_second_dg(row.end_time);
 }
 function pb_formatter_difficulty(value,row,index){
@@ -267,7 +277,12 @@ function pb_tg_onSelect(row){
 			$('#project_btn_new_subtask').linkbutton( row.milestone ?'disable': 'enable');//里程碑任务必须是叶结点
 			$('#project_btn_new_brother_task').linkbutton( row.milestone ?'disable': 'enable');
 			
-			$('#pb_btn_edit_task').linkbutton( (row.status === 'completed' || row.status === 'cancel')?'disable':'enable');
+			if( row.manager_id === ENV.user.id){
+				$('#pb_btn_edit_task').linkbutton( (row.status === 'completed' || row.status === 'cancel')?'disable':'enable');
+			}else{
+				$('#pb_btn_edit_task').linkbutton( 'disable');
+			}
+			
 			$('#pb_btn_task_up').linkbutton('enable');
 			$('#pb_btn_task_down').linkbutton('enable');
 			

@@ -117,6 +117,9 @@ function wvtsk_initFlowCombo(){
 			}
 		}		
 	}
+	if( task.difficulty === 99 ){
+		actions = [];
+	}
 	if(actions.length === 0){
 		actions.push( 'reply' );
 	}
