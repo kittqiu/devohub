@@ -345,7 +345,7 @@ module.exports = {
 		yield base.task.$setRelies(t.id, t.project_id, data.relyTo);
 		if( data.difficulty !== 99 ){
 			yield base.task.$sendNoticeEmail( t.id, user.name + "给你创建了新任务", [data.executor],
-				"待工作审核人确认完需求后，该任务才可开始执行。界时，系统将向你发送邮件通知。", [user.id] );
+				"待工作审核人确认完需求后，该任务才可开始执行。届时，系统将向你发送邮件通知。", [user.id] );
 		}
 		this.body = { result: 'ok', id: t.id };
 	},

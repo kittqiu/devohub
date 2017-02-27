@@ -900,24 +900,31 @@ function* $user_isProjectMaster(uid, project_id){
 function* $user_havePermEditProject(context, project_id){
 	var managers = ['leader', 'manager'];
 	var uid = context.request.user.id, 
-		r = yield modelMember.$find({
-			select: '*',
-			where: '`user_id`=? and `project_id`=?',
-			params: [uid, project_id]
-		});
+		sql = 'select * from project_member where `user_id`=? and `project_id`=?',
+		rs, i, r;
 
-	if( r && managers.indexOf(r.role) !== -1 ){
-		return true;
+	rs = yield warp.$query(sql, [uid, project_id]);
+	
+	for( i = 0; i < rs.length; i ++ ){
+		r = rs[i];
+		if( r && managers.indexOf(r.role) !== -1 ){
+			return true;
+		}
+		if( yield $user_isProjectMaster(uid, project_id)){
+			return true;
+		}
 	}
-	if( yield $user_isProjectMaster(uid, project_id)){
-		return true;
-	}
+		
 	log.debug('User %s has no permission for project edit', context.request.user.username);
 	return false;
 }
 
 function* $user_in_project(uid, project_id){
-	var r = yield modelMember.$find({
+	var uid = context.request.user.id, 
+		sql = 'select * from project_member where `user_id`=? and `project_id`=?',
+		rs = yield warp.$query(sql, [uid, project_id]);
+	return rs.length > 0;
+	/*var r = yield modelMember.$find({
 		select: '*',
 		where: '`user_id`=? and `project_id`=?',
 		params: [uid, project_id]
@@ -925,7 +932,7 @@ function* $user_in_project(uid, project_id){
 	if( r && r.hasOwnProperty('role')){
 		return true;
 	}
-	return false;
+	return false;*/
 }
 
 

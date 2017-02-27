@@ -181,7 +181,7 @@ function pb_formatter_manager(value,row,index){
 	if( u ){
 		return u.name;
 	}
-	return gpb_userMap[value].name;
+	return "";
 }
 function pb_formatter_plan_duration(value, row){
 	return pb_is_empty_task(row)?'--':value;
@@ -277,7 +277,7 @@ function pb_tg_onSelect(row){
 			$('#project_btn_new_subtask').linkbutton( row.milestone ?'disable': 'enable');//里程碑任务必须是叶结点
 			$('#project_btn_new_brother_task').linkbutton( row.milestone ?'disable': 'enable');
 			
-			if( row.manager_id === ENV.user.id){
+			if( row.manager_id === ENV.user.id || gpb_project.master_id === ENV.user.id){
 				$('#pb_btn_edit_task').linkbutton( (row.status === 'completed' || row.status === 'cancel')?'disable':'enable');
 			}else{
 				$('#pb_btn_edit_task').linkbutton( 'disable');
