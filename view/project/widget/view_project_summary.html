@@ -57,11 +57,20 @@ function wvps_maketree(po){
 		var g = groups[i];
 		data.push({id:g.id, name:g.name, role:'', responsibility:'', type:'group'});
 	}
+	data.push({id:'other', name:'其他', role:'', responsibility:'', type:'group'});
+
 	//解析成员
 	gpsm_members_id = [];
 	for( i = 0; i < members.length; i++){
 		var m = members[i];
-		if( m.group_id != 'manager'){
+		if( m.user_id === po.master_id && m.role !== 'master' ){
+			continue;
+		}
+		if( m.group_id === 'manager'){
+			data.push({id:m.id, name:m.name,role:'项目负责人', responsibility:'项目管理', type:'user', _parentId:'other'});
+		}else if( m.group_id === 'other'){
+			data.push({id:m.id, name:m.name, role:gp_roleOptions[m.role], responsibility:m.responsibility, type:'user', _parentId:'other'});
+		}else{
 			data.push({id:m.id, name:m.name,role:gp_roleOptions[m.role], responsibility:m.responsibility, type:'user', _parentId:m.group_id});
 		}
 	}

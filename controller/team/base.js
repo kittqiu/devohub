@@ -173,7 +173,7 @@ function* $_department_list_scope_limit( userId ){
 
 /***** member*******/
 function* $member_getFree(){
-	var sql = "select u.id,u.name,u.email from users as u LEFT JOIN team_member as m on u.id=m.user_id where u.actived=1 and u.verified=1 and m.department is null or m.department =''";
+	var sql = "select u.id,u.name,u.email from users as u LEFT JOIN team_member as m on u.id=m.user_id where u.actived=1 and u.verified=1 and ( m.department is null or m.department ='')";
 	var rs = yield warp.$query(sql);
 	rs.sort(helper.sort_email);
 	return rs;

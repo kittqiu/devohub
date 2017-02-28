@@ -133,6 +133,29 @@ function gpb_set_project_id(id){
 	gpb_project_id = id;
 }
 
+function pb_uniform_user(members){
+	var ms = [], msids = [],
+		i;
+
+	//先找出master
+	for(i = 0; i < members.length; i++ ){
+		var m = members[i];
+		if( m.role === 'master' ){
+			ms.push( m );
+			msids.push( m.user_id );
+		}
+	}
+
+	for(i = 0; i < members.length; i++ ){
+		var m = members[i];
+		if( msids.indexOf(m.user_id) == -1 ){
+			ms.push( m );
+			msids.push( m.user_id );
+		}
+	}
+	return ms;
+}
+
 function gpb_page_init(){
 	gpb_has_perm_edit = false;
 	pb_init_data();
@@ -140,6 +163,7 @@ function gpb_page_init(){
 		if(!err){
 			$('#project_btn_new_task_root').linkbutton('disable');
 			$('#pb_btn_set_member').linkbutton( 'disable');
+			data.members = pb_uniform_user( data.members );
 			
 			gpb_project = data;
 			var ms = data.members;

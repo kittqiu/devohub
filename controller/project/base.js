@@ -383,13 +383,44 @@ function* $project_listTaskRelies(id){
 	})
 }
 
+function* $_project_have_user_not_master( project_id, uid ){
+	var rs = yield modelMember.$findAll({
+		select: '*',
+		where: '`project_id`=? and `user_id`=? and `role`<>?',
+		params: [project_id, uid, 'master' ]
+	});
+	return rs.length > 0;
+}
+
 function* $project_changeMaster(project_id, new_uid){
 	var m = yield modelMember.$find({
 		select: '*',
-		where: '`project_id`=? and `group_id`=?',
-		params: [project_id, MASTER_GROUP]
+		where: '`project_id`=? and `group_id`=? and `role`=?',
+		params: [project_id, MASTER_GROUP, 'master' ]
 	});
-	if( m ){
+
+	if( m && m.user_id !== new_uid ){
+		if( !(yield $_project_have_user_not_master(project_id, m.user_id)) ){
+			var user = {
+				project_id: project_id,
+				user_id: m.user_id,
+				group_id: 'other',
+				responsibility: '',
+				role: 'manager'
+			};
+			yield modelMember.$create(user);
+		}//else 不处理
+
+		//如果之前新负责人在ohter组中已有记录，则删除
+		var rs = yield modelMember.$findAll({
+			select: '*',
+			where: '`project_id`=? and `group_id`=? and `user_id`=?',
+			params: [project_id, 'other', new_uid ]
+		});
+		for( var i = 0; i < rs.length; i++ ){
+			yield rs[i].$destroy();
+		}
+
 		m.user_id = new_uid;
 		yield m.$update(['user_id']);
 	}

@@ -203,7 +203,7 @@ module.exports = {
 			data = this.request.body || {}, 
 			members = data.members;
 		
-		if( r === null ){
+		if( id !== 'other' && r === null ){
 			throw api.notFound('group', this.translate('Record not found'));
 		}
 		if( !!data.name ){

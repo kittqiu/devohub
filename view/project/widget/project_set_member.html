@@ -127,14 +127,23 @@ function gpsm_loadData(){
 				data.push({id:g.id, name:g.name, role:'', responsibility:'', type:'group'});
 				gpsm_group_map[g.id] = g;
 			}
+			data.push({id:'other', name:'其他', role:'', responsibility:'', type:'group'});
+
 			//解析成员
 			gpsm_members_id = [];
 			for( i = 0; i < members.length; i++){
 				var m = members[i];
-				if( m.group_id != 'manager'){
+				if( m.user_id === gpsm_project_details.master_id && m.role !== 'master' ){
+					continue;
+				}
+
+				if( m.group_id === 'manager'){
+					data.push({id:m.id, name:m.name,role:'project_manager', responsibility:'项目管理', type:'user', _parentId:'other'});
+				}else if( m.group_id === 'other'){
+					data.push({id:m.id, name:m.name, role:m.role, responsibility:m.responsibility, type:'user', _parentId:'other'});
+				}
+				else{
 					data.push({id:m.id, name:m.name,role:m.role, responsibility:m.responsibility, type:'user', _parentId:m.group_id});
-				}else{
-					data.push({id:m.id, name:m.name,role:'project_manager', responsibility:'项目管理', type:'user'})
 				}
 				gpsm_members_id.push( m.user_id );
 				gpsm_member_map[m.id] = m;
@@ -170,9 +179,14 @@ function edit_project_member(p){
 
 function gpsm_tg_onSelect(row){
 	gpsm_select_node = row;
-	if( row.type == 'group'){
-		$('#wpsm_btn_edit_group').linkbutton('enable');
-		$('#wpsm_btn_add_member').linkbutton('enable');
+	if( row.type === 'group'){
+		if( row.id !== 'other'){
+			$('#wpsm_btn_edit_group').linkbutton('enable');
+			$('#wpsm_btn_add_member').linkbutton('enable');
+		}else{
+			$('#wpsm_btn_edit_group').linkbutton('disable');
+			$('#wpsm_btn_add_member').linkbutton('disable');
+		}
 		$('#wpsm_btn_edit_member').linkbutton('disable');
 		$('#wpsm_btn_remove_member').linkbutton('disable');
 	}else if( row.role == 'project_manager'){
