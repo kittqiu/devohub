@@ -28,6 +28,7 @@
 				onSelect:pb_tg_onSelect,
 				onLoadSuccess: pb_tg_onLoadSuccess,
 				onDrop:pb_tg_onDrop,
+				onBeforeDrop: pb_tg_onBeforeDrop,
 				onDragOver:pb_tg_onDragOver,
 				onDblClickRow:pb_tg_onDblClick
 			">
@@ -338,6 +339,10 @@ function pb_onToggleMilestone(){
 			showErrorInfo( "任务修改失败", err.message );
 		}
 	});
+}
+
+function pb_tg_onBeforeDrop(targetRow,sourceRow,point){
+	return point === "append";
 }
 
 function pb_tg_onDrop(targetRow,sourceRow,point){
