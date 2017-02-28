@@ -1,0 +1,93 @@
+<div id="win_delete_project" style="display:none;padding:20px">
+	<div style="margin-bottom:20px">
+		<input class="" id="wdp_project" name="wdp_project" style="width:95%" data-options="label:'选择项目:',valueField:'id',textField:'name',onChange:wdp_onChangeProject">
+	</div>
+	<div style="margin-bottom:20px">
+		<input class="" id="wdp_detail" name="wdp_detail" style="width:95%;height:120px" data-options="label:'项目信息:',multiline:true, disabled:true">
+	</div>
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" id="wdp_btn_submit" class="" onclick="wdp_submit()" style="width:120px">删除</a>
+	</div>
+</div>
+<script type="text/javascript">
+var wdp_project_id;
+var wdp_project_map = {};
+
+function wdp_loadData( ){
+	getJSON( '/api/project/p/all', function(err, ps ){
+		if(!err){
+			for( var i = 0; i < ps.length ; i++ ){
+				var p = ps[i];
+				wdp_project_map[p.id] = p;
+			}
+
+			var pid = '';
+			if( ps.length >  0 ){
+				pid = ps[0].id;
+			}
+			$('#wdp_project').combobox('loadData', ps);
+			$('#wdp_project').combobox('select', pid);
+
+			
+		}
+	});
+}
+
+var wdp_init = false;
+function wdp_initView(){
+	if( !wdp_init ){
+		wdp_init = true;
+		$('#wdp_detail').textbox({});
+		$('#wdp_project').combobox({});
+		$('#wdp_btn_submit').linkbutton({});
+	}
+}
+
+function wdp_open_win(){
+	wdp_initView();
+	$('#win_delete_project').window({
+		title: "删除项目",
+		width:400,
+		height:300,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	wdp_loadData();
+}
+
+var wdp_project_statuses = {
+	"ready": '准备就绪',
+	"running": '正在执行',
+	"end":'已结束'
+};
+
+function wdp_onChangeProject(newValue,oldValue){
+	wdp_project_id = newValue;
+	var p = wdp_project_map[newValue];
+	var txt = '负责人：' +　p.master_name + '\n' 
+			+ '状态：' + wdp_project_statuses[p.status] + '\n'
+			+ '开始时间：' + formatDate(p.start_time) + '\n'
+			+ '结束时间：' + formatDate(p.end_time) + '\n'
+			+ '说明：' + p.details;
+	$('#wdp_detail').textbox('setValue', txt );
+}
+
+function wdp_submit(){
+	$.messager.confirm('注意', '真的要删除该项目吗?', function(r){
+		if (r){
+			postJSON( '/api/project/p/'+wdp_project_id+'/delete', function(err, result){
+				if( !err ){
+					showInfo( '删除项目成功。');
+					wdp_loadData();
+				}else{
+					showErrorInfo( "删除项目失败", err.message );
+				}
+			});
+		}
+	});	
+}
+</script>

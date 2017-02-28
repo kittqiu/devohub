@@ -5,6 +5,7 @@ var
 	api = require( __base + 'lib/api'),
 	Page = require( __base + 'lib/page'),
 	home = require( __base + 'controller/home'), 
+	constants = require(__base +'lib/constants'),
 	json_schema = require( __base + 'lib/json_schema'),
 	base = require('./base');
 
@@ -102,6 +103,14 @@ module.exports = {
 				roleOptions: base.project.roleOptions()
 			};
 		yield $_render( this, model, 'p/project_view.html');
+	},
+
+	'GET /api/project/p/all': function*(){
+		if( this.request.user.role !== constants.role.ADMIN ){
+			throw api.notAllowed('user', "Only administrators can change user' status");
+		}
+
+		this.body = yield base.project.$listAll();
 	},
 
 	/*'GET /api/project/p/all': function*(){

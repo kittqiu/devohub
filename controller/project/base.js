@@ -88,6 +88,12 @@ function* $project_list(offset, limit){
 	return yield warp.$query(sql, [limit, offset]);
 }
 
+function* $project_list_all(){
+	var sql = 'select p.id, p.creator_id, p.master_id, u.name as master_name, p.name, p.start_time, p.end_time, p.status,p.details from project as p, ' 
+		+ 'users as u where u.id = p.master_id order by p.created_at desc';
+	return yield warp.$query(sql);
+}
+
 function* $_project_forUser(uid, status ){
 	var sql = 'select p.*, u.name as master_name from project as p left join users as u on u.id=p.master_id '
 		+ ' where p.status=? and p.master_id=? order by p.created_at desc ';
@@ -993,6 +999,7 @@ module.exports = {
 
 	project: {
 		$list: $project_list,
+		$listAll: $project_list_all,
 		$count: $project_count,
 		$destroy:$project_delete,
 		$listAllOnRun: $project_listAllOnRun,
