@@ -1,0 +1,130 @@
+<div id="win_manage_edit_project" style="display:none;padding:20px">
+	<div style="margin-bottom:20px">
+		<input class="" id="mwep_project" name="mwep_project" style="width:90%" data-options="label:'选择项目:',valueField:'id',textField:'name',onChange:mwep_onChangeProject">
+	</div>
+	<div style="margin-bottom:20px">
+		<input class="" id="mwep_master" name="mwep_master" style="width:90%" data-options="label:'负责人:',valueField:'id',textField:'name'">
+	</div>
+	<div style="margin-bottom:20px">
+		<input class="" id="mwep_detail" name="mwep_detail" style="width:90%;height:120px" data-options="label:'项目信息:',multiline:true, disabled:true">
+	</div>
+	<div class="uk-text-center">
+		<a href="javascript:void(0)" id="mwep_btn_submit" class="" onclick="mwep_submit()" style="width:120px">保存</a>
+	</div>
+</div>
+<script type="text/javascript">
+var mwep_project_id;
+var mwep_project_map = {};
+
+function mwep_loadMembers(){
+	var url = '/api/team/department/users';
+	getJSON( url, function(err, data) {
+		if( !err ){
+			var fd = [];
+			for(var i = 0; i < data.length; i++){
+				var d = data[i];
+				if( d.name !== 'Admin' ){
+					fd.push( d );
+				}
+			}
+			fd.sort(sort_email);
+
+			$('#mwep_master').combobox('loadData', fd );
+			if( !!mwep_project_id ){
+				$('#mwep_master').combobox('select', mwep_project_map[mwep_project_id].master_id );
+			}
+		}
+	});
+}
+
+function mwep_loadData( ){
+	getJSON( '/api/project/p/all', function(err, ps ){
+		if(!err){
+			for( var i = 0; i < ps.length ; i++ ){
+				var p = ps[i];
+				mwep_project_map[p.id] = p;
+			}
+
+			var pid = '';
+			if( ps.length >  0 ){
+				pid = ps[0].id;
+			}
+			mwep_project_id = pid;
+			$('#mwep_project').combobox('loadData', ps);
+			$('#mwep_project').combobox('select', pid);
+
+			mwep_loadMembers();
+		}
+	});
+}
+
+var mwep_init = false;
+function mwep_initView(){
+	if( !mwep_init ){
+		mwep_init = true;
+		$('#mwep_detail').textbox({});
+		$('#mwep_project').combobox({});
+		$('#mwep_btn_submit').linkbutton({});
+		$('#mwep_master').combobox({});
+	}
+}
+
+function mwep_open_win(){
+	mwep_initView();
+	$('#win_manage_edit_project').window({
+		title: "修改项目",
+		width:500,
+		height:360,
+		modal:true,
+		minimizable:false,
+		maximizable:false,
+		collapsible:false,
+		draggable: false,
+		resizable: false
+	});
+	mwep_loadData();
+}
+
+var mwep_project_statuses = {
+	"ready": '准备就绪',
+	"running": '正在执行',
+	"end":'已结束'
+};
+
+function mwep_onChangeProject(newValue,oldValue){
+	mwep_project_id = newValue;
+	var p = mwep_project_map[newValue];
+	var txt = '状态：' + mwep_project_statuses[p.status] + '\n'
+			+ '开始时间：' + formatDate(p.start_time) + '\n'
+			+ '结束时间：' + formatDate(p.end_time) + '\n'
+			+ '说明：' + p.details;
+	$('#mwep_detail').textbox('setValue', txt );
+	$('#mwep_master').combobox('select', p.master_id );
+}
+
+function mwep_submit(){
+	var p = mwep_project_map[mwep_project_id];
+	var master_id =  $("#mwep_master").combobox('getValue');
+	if( master_id !== p.master_id ){
+		var data = {
+			name: p.name,
+			start_time: p.start_time,
+			end_time: p.end_time,
+			master_id: master_id,
+			details: p.details,
+			status: p.status,
+			security_level: p.security_level
+		};
+		postJSON( '/api/project/p/'+mwep_project_id, data, function(err, result){
+			if( !err ){
+				showInfo( '修改项目成功。');
+				mwep_loadData();
+			}else{
+				showErrorInfo( "修改项目失败", err.message );
+			}
+		});
+	}else{
+		showInfo( '未对项目做任何修改。');
+	}	
+}
+</script>

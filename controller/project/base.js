@@ -83,13 +83,13 @@ function* $project_list(offset, limit){
 	offset = offset < 0 ? 0: offset;
 	limit = limit < 0 ? 10 : limit;
 
-	var sql = 'select p.id, p.creator_id, p.master_id, u.name as master_name, p.name, p.start_time, p.end_time, p.status,p.details from project as p, ' 
+	var sql = 'select p.id, p.creator_id, p.master_id, u.name as master_name, p.name, p.start_time, p.end_time, p.status,p.details, p.security_level from project as p, ' 
 		+ 'users as u where u.id = p.master_id order by p.created_at desc limit ? offset ? ';
 	return yield warp.$query(sql, [limit, offset]);
 }
 
 function* $project_list_all(){
-	var sql = 'select p.id, p.creator_id, p.master_id, u.name as master_name, p.name, p.start_time, p.end_time, p.status,p.details from project as p, ' 
+	var sql = 'select p.id, p.creator_id, p.master_id, u.name as master_name, p.name, p.start_time, p.end_time, p.status,p.details, p.security_level from project as p, ' 
 		+ 'users as u where u.id = p.master_id order by p.created_at desc';
 	return yield warp.$query(sql);
 }

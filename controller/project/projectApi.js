@@ -361,12 +361,17 @@ module.exports = {
 
 	'POST /api/project/p/:id': function* (id){
 		var r, cols = [],
-			data = this.request.body;
+			data = this.request.body,
+			user = this.request.user;
 		json_schema.validate('project', data);
 
 		r = yield base.modelProject.$find( id );
 		if( r === null ){
 			throw api.notFound('project', this.translate('Record not found'));
+		}
+
+		if( r.master_id !== user.id && !(yield base.user.$isAdmin(user.id)) ){
+			throw api.notAllowed('你没有权限修改该项目. ');
 		}
 
 		if( r.master_id !== data.master_id ){
