@@ -5,7 +5,8 @@ var
 	config = require( __base + 'lib/config'),
 	team_base = require( __base + 'controller/team/base'),
 	swig = require('swig'),
-	smtp = require( __base + 'controller/system/email');
+	smtp = require( __base + 'controller/system/email'),
+	sys_conf = require( __base + 'controller/system/config');
 
 
 var 
@@ -84,6 +85,10 @@ function* $_check_all_user_tasks(){
 	var users = yield team_base.member.$getUsers( false ),
 		now = new Date(),
 		i, u, ts, m, renderHtml;
+
+	if( !(yield sys_conf.date.$isWorkDate( now.getFullYear(), now.getMonth(), now.getDate()))){
+		return;
+	}
 		
 	for( i = 0; i < users.length; i++ ){
 		u = users[i];

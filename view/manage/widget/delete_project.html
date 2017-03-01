@@ -1,9 +1,9 @@
 <div id="win_delete_project" style="display:none;padding:20px">
 	<div style="margin-bottom:20px">
-		<input class="" id="wdp_project" name="wdp_project" style="width:95%" data-options="label:'选择项目:',valueField:'id',textField:'name',onChange:wdp_onChangeProject">
+		<input class="" id="wdp_project" name="wdp_project" style="width:90%" data-options="label:'选择项目:',valueField:'id',textField:'name',onChange:wdp_onChangeProject">
 	</div>
 	<div style="margin-bottom:20px">
-		<input class="" id="wdp_detail" name="wdp_detail" style="width:95%;height:120px" data-options="label:'项目信息:',multiline:true, disabled:true">
+		<input class="" id="wdp_detail" name="wdp_detail" style="width:90%;height:120px" data-options="label:'项目信息:',multiline:true, disabled:true">
 	</div>
 	<div class="uk-text-center">
 		<a href="javascript:void(0)" id="wdp_btn_submit" class="" onclick="wdp_submit()" style="width:120px">删除</a>
@@ -47,7 +47,7 @@ function wdp_open_win(){
 	wdp_initView();
 	$('#win_delete_project').window({
 		title: "删除项目",
-		width:400,
+		width:500,
 		height:300,
 		modal:true,
 		minimizable:false,

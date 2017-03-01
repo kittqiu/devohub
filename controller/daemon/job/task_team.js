@@ -29,7 +29,7 @@ function* $remindWorkEvaluation(){
 			u = users[i];
 			var isManager = yield team_base.member.$isManager(u.id);
 			if( isManager ){
-				smtp.sendHtml(null, u.email, "记得填写月工作自我评价", "如题。如果已完成或本月不需要，忽略此邮件。" );
+				smtp.sendHtml(null, u.email, "记得填写成员的月工作评价", "如题。如果已完成或本月不需要，忽略此邮件。" );
 			}
 		}
 	}
