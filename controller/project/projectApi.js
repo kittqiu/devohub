@@ -107,7 +107,7 @@ module.exports = {
 
 	'GET /api/project/p/all': function*(){
 		if( this.request.user.role !== constants.role.ADMIN ){
-			throw api.notAllowed('user', "Only administrators can change user' status");
+			throw api.notAllowed("Only administrators can change user' status");
 		}
 
 		this.body = yield base.project.$listAll();

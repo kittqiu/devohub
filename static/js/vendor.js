@@ -80,11 +80,22 @@ function getJSON(url, data, callback){
 	_httpJSON( 'GET', url, data, callback );
 }
 
+var last_action_time = 0;
+var last_post_url = '';
 function postJSON(url, data, callback){
 	if( arguments.length === 2){
 		callback = data;
 		data = {};
 	}
+
+	var now = Date.now();
+	if( last_post_url === url && now - last_action_time < 350){
+		last_action_time = now;
+		return;
+	}
+	last_action_time = now;
+	last_post_url = url;
+
 	_httpJSON( 'POST', url, data, callback );
 }
 

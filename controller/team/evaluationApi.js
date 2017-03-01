@@ -3,7 +3,8 @@
 var 
 	base = require('./base'),
 	home = require( __base + 'controller/home'),
-	db = require( __base + 'lib/db');
+	db = require( __base + 'lib/db'),
+	api = require( __base + 'lib/api');
 
 var modelEvaluation = db.team_evaluation;
 
@@ -47,9 +48,14 @@ module.exports = {
 				goodjob: data.goodjob|| "",
 				badjob: data.badjob || "",
 				other: data.other || ""
-			};
+			},
+			uid = this.request.user.id,
+			old_data = yield base.evaluation.$get( uid, date.getFullYear(), date.getMonth() );
+		if( !!old_data && old_data.hasOwnProperty('corework') ){
+			throw api.notAllowed( "已有月工作评价，不能再次创建！");
+		}
 		
-		yield base.evaluation.$create( this.request.user.id, date, evaluation );
+		yield base.evaluation.$create( uid, date, evaluation );
 		this.body = { result: 'ok' }
 	},
 
