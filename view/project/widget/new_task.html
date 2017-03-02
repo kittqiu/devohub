@@ -179,7 +179,7 @@ function wntsk_createMutliTasks(data, users, index ){
 	var executor = gpb_userMap[uid];
 	data.name = name + '-'+ executor.name;
 	data.executor = uid;
-	postJSON( '/api/project/p/'+gpb_project_id+'/task', data, function(err, result){
+	postJSON_direct( '/api/project/p/'+gpb_project_id+'/task', data, function(err, result){
 		if( !err ){
 			gpb_appendTask(result.id);
 			if( index === users.length - 1){

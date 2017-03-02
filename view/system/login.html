@@ -9,15 +9,13 @@
 
 {% block main %}
 <div id="login_win" style="display:none" >
-	<div class="easyui-panel" data-options="fit:true">		
-	   <form id="ff" method="post" style="padding:30px 40px;" >
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="username" name="username" style="width:95%" data-options="label:'用户名:',required:true" autofocus>
-			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-passwordbox" id="password" name="password" style="width:95%" data-options="label:'密码:',required:true">
-			</div>			
-		</form>
+	<div class="easyui-panel" data-options="fit:true" style="padding:30px 40px">	  
+		<div style="margin-bottom:20px">
+			<input class="easyui-textbox" id="username" name="username" style="width:95%" data-options="label:'用户名:',required:true" autofocus>
+		</div>
+		<div style="margin-bottom:20px">
+			<input class="easyui-passwordbox" id="password" name="password" style="width:95%" data-options="label:'密码:',required:true">
+		</div>
 		<div class="uk-text-center" style="margin-bottom:10px">
 			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:120px">登录</a>
 		</div>
@@ -48,31 +46,27 @@ $(function(){
 });
 
 function submitForm(){
-$('#ff').form('submit',{
-	onSubmit: function(){
-		var data = {
-			username: $("#username").textbox('getValue'),
-			password: $("#password").textbox('getValue')
-		};
-		var properties = {username:'用户名',password:'密码'};
-		var vr = validateJsonObj('login', data, properties);
-		if( vr === true ){
-			
-			//salt password
-			data.password = CryptoJS.SHA1( data.password + "{{__salt__}}" + data.username ).toString();
-			postJSON( '/api/authenticate', data, function(err, result){
-					if( !err ){
-						jumpToURL( result.redirect, 0);					
-					}else{
-						showErrorInfo( "登录失败", err.message );
-					}
-			});
-		}else{
-			showErrorInfo( '填写错误', vr );
-		}
-		return false;
+	var data = {
+		username: $("#username").textbox('getValue'),
+		password: $("#password").textbox('getValue')
+	};
+	var properties = {username:'用户名',password:'密码'};
+	var vr = validateJsonObj('login', data, properties);
+	if( vr === true ){
+		
+		//salt password
+		data.password = CryptoJS.SHA1( data.password + "{{__salt__}}" + data.username ).toString();
+		postJSON( '/api/authenticate', data, function(err, result){
+				if( !err ){
+					jumpToURL( result.redirect, 0);					
+				}else{
+					showErrorInfo( "登录失败", err.message );
+				}
+		});
+	}else{
+		showErrorInfo( '填写错误', vr );
 	}
-});
+	return false;
 }
 
 $(function(){

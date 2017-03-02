@@ -449,7 +449,7 @@ function gpb_resetTaskTime(task){
 		}
 		if( start_time != task.plan_start_time || end_time != task.plan_end_time ){
 			var updatedata = [{id:task.id,plan_start_time:start_time, plan_end_time:end_time}];
-			postJSON( '/api/project/tasklist/updateplan', updatedata, function(err, result){
+			postJSON_direct( '/api/project/tasklist/updateplan', updatedata, function(err, result){
 			if( err ){
 				showErrorInfo( "自动更新父任务时间失败", err.message );
 			}
@@ -505,7 +505,7 @@ function gpb_resetParentTaskTime(task){
 	}
 
 	if( updatedata.length > 0 ){
-		postJSON( '/api/project/tasklist/updateplan', updatedata, function(err, result){
+		postJSON_direct( '/api/project/tasklist/updateplan', updatedata, function(err, result){
 			if( !err ){
 				//showInfo( '更新任务成功。');
 			}else{
@@ -630,7 +630,7 @@ function gpb_resetReliedTaskTime(tid){
 	var uddmap = {};
 	_gpb_resetReliedTaskTime( tid, updatedata, uddmap );
 	if( updatedata.length > 0 ){
-		postJSON( '/api/project/tasklist/updateplan', updatedata, function(err, result){
+		postJSON_direct( '/api/project/tasklist/updateplan', updatedata, function(err, result){
 			if( err ){
 				showErrorInfo( "自动更新父任务时间失败", err.message );
 			}else{

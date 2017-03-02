@@ -99,6 +99,16 @@ function postJSON(url, data, callback){
 	_httpJSON( 'POST', url, data, callback );
 }
 
+//不进行重复操作的判断
+function postJSON_direct(url, data, callback){
+	if( arguments.length === 2){
+		callback = data;
+		data = {};
+	}
+
+	_httpJSON( 'POST', url, data, callback );
+}
+
 function jumpToURL(url, timeout){
 	if(timeout === undefined){
 		timeout = 5000;
