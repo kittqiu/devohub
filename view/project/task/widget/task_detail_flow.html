@@ -69,7 +69,7 @@
 			</table>
 			<div class="" id="pt_wvtsk_panel_add_flow" style="width:750px;height:150px;padding:10px">
 				<div style="margin-bottom:5px">
-					<input class="" id="pt_wvtsk_action" name="pt_wvtsk_action" style="width:200px" data-options="label:'选择操作:',required:true,valueField:'action',textField:'action_name'">
+					<input class="" id="pt_wvtsk_action" name="pt_wvtsk_action" style="width:200px" data-options="label:'选择操作:',required:true,valueField:'action',textField:'action_name', onChange:pt_wvtsk_onChange">
 				</div>
 				<div style="margin-bottom:10px">
 					<input class="" id="pt_wvtsk_reply" name="pt_wvtsk_reply" style="width:700px;height:60px" data-options="label:'备注说明:',multiline:true">
@@ -140,6 +140,7 @@ function pt_wvtsk_initFlowCombo(){
 
 	$('#pt_wvtsk_action').combobox('loadData', data );
 	$('#pt_wvtsk_action').combobox('select', actions[0] );
+	$("#pt_wvtsk_reply").textbox('setValue', TASKACTION_DEF_REPLY[actions[0]]);
 }
 
 function pt_task_init_view(task){
@@ -227,6 +228,19 @@ function pt_wvtsk_reload_view(){
 			pt_task_init_view(task);
 		}
 	});
+}
+
+function pt_wvtsk_onChange(newValue,oldValue){
+	var reply = $("#pt_wvtsk_reply").textbox('getValue');
+	if( oldValue && TASKACTION_DEF_REPLY.hasOwnProperty(oldValue)){
+		if( reply === '' || reply === TASKACTION_DEF_REPLY[oldValue]){
+			$("#pt_wvtsk_reply").textbox('setValue', TASKACTION_DEF_REPLY[newValue]);
+		}
+	}else{
+		if( reply === '' ){
+			$("#pt_wvtsk_reply").textbox('setValue', TASKACTION_DEF_REPLY[newValue]);
+		}
+	}
 }
 
 function pt_wvtsk_submit(){	
