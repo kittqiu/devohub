@@ -14,6 +14,7 @@
 			<a href="#" id="btn_add_sub_dep" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addDepartment(g_depMap[g_selectedNodeId])">新增下级部门</a>
 			<a href="#" id="btn_add_member" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-add'" onclick="addMember(g_depMap[g_selectedNodeId])">新增成员</a>
 			<a href="#" id="btn_move_up" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-edit'" onclick="moveDepartment('up')">上移</a>
+			<a href="#" id="btn_copy_users_email" class="easyui-linkbutton" data-options="disabled:true,plain:true,iconCls:'icon-search'" onclick="copyEmails()">复制成员邮箱</a>
 		</div>
 		
 	</div>
@@ -30,6 +31,7 @@
 {% endblock %}
 
 {% block readyscript %}
+<script src="/static/js/clipboard.min.js"></script>
 <script type="text/javascript">
 /***** Tree UI *****/
 var g_departments, g_users, g_treedata;
@@ -76,6 +78,7 @@ function resetButtonState(){
 	$('#btn_edit_dep').linkbutton('disable');
 	$('#btn_delete').linkbutton('disable');
 	$('#btn_set_top_dep').linkbutton('disable');
+	$('#btn_copy_users_email').linkbutton('disable');
 	if( !canEdit ){
 		$('#btn_add_root_dep').linkbutton('disable');
 	}
@@ -219,6 +222,7 @@ function team_tree_onSelect(node){
 	if( !canEdit ){
 		return;
 	}
+	$('#btn_copy_users_email').linkbutton('enable');
 	if( isDepartment(node.id)){
 		$('#btn_add_sub_dep').linkbutton('enable');
 		$('#btn_add_member').linkbutton('enable');
@@ -316,6 +320,27 @@ function setRootDepartment(id){
 			showErrorInfo( "修改部门失败", err.message );
 		}
 	});
+}
+
+function copyEmails(){
+	var txt = '';
+	var u;
+	var nid = g_selectedNodeId;
+	if( isDepartment(nid)){
+		var selected = $('#structure_tree').tree('getSelected');
+		var children = $('#structure_tree').tree('getChildren', selected.target);
+		for( var i = 0; i < children.length; i++ ){
+			nid = children[i].id;
+			if( !isDepartment(nid)){
+				u =  g_userMap[nid];
+				txt += u.name + '<' + u.email + '>;';
+			}
+		}
+	}else{
+		u =  g_userMap[nid];
+		txt = u.name + '<' + u.email + '>;';
+	}
+	clipboard.copy(txt);
 }
 {% endif %}
 </script>

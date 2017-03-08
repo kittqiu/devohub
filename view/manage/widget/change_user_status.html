@@ -15,7 +15,7 @@ function wcus_loadUser(uid){
 	getJSON( '/api/user/'+uid, function(err, rs ){
 			if(!err){
 				wcus_user = rs;
-				$('#wcus_actived').attr("checked", rs.actived );
+				$('#wcus_actived').prop("checked", rs.actived );
 			}
 		}
 	);

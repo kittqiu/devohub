@@ -134,7 +134,7 @@ function* $_getCodepartments(depId){
 
 function* $_getUserInDeps(uid){
 	var u = user_map.get(uid);
-	return u.in_deps;
+	return u ? u.in_deps:[];
 }
 
 function* $_getUsersOfDep(depId){

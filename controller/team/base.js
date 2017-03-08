@@ -219,7 +219,7 @@ function* $member_getDepsCanAccess(uid){
 }
 
 function* $department_listUsers(){
-	var sql = "select u.id, u.name, m.department from users as u,team_member as m where u.id=m.user_id and m.department <>''";
+	var sql = "select u.id, u.name, m.department, u.email from users as u,team_member as m where u.id=m.user_id and m.department <>''";
 	return yield warp.$query(sql);
 }
 
