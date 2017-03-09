@@ -1,0 +1,148 @@
+<div class="easyui-layout" data-options="fit:true,border:false" >
+	<div data-options="region:'north',border:false" style="padding:10px">
+		<div class="easyui-panel" style="padding:5px;height:40px;">
+			<div style="float:right">		
+			</div>
+			<div>
+				<a href="#" id="prjt_btn_view_summary" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search',disabled:true" onclick="prjt_onViewSummary()">查看概况</a>
+				<a href="#" id="prjt_btn_view_daily" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search',disabled:true" onclick="prjt_onViewDaily()">查看进展日志</a>
+			</div>
+		</div>
+	</div>
+	<div data-options="region:'center',border:false" style="padding:0px 10px">
+		<div class="easyui-layout" data-options="fit:true,border:false">
+			<table id="prjt_tg" class="easyui-treegrid" 
+				data-options="
+					rownumbers: false,
+					fitColumns:true,
+					idField: 'id',
+					treeField: 'name',
+					fit:true,
+					onSelect:prjt_tg_onSelect,
+					onDblClickRow:prjt_tg_onDblClick
+				">
+				<thead>
+					<tr>
+						<th data-options="field:'name',width:160">项目名称</th>
+						<th data-options="field:'master_name',width:100">负责人</th>
+						<th data-options="field:'start_time',width:80,formatter:formatter_prjt_time">开始时间</th>
+						<th data-options="field:'end_time',width:80,formatter:formatter_prjt_time">结束时间</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+
+var prjt_departments;
+var prjt_userMap = {};
+var prjt_projectMap = {};
+var prjt_projects = [];
+var prjt_MAX_ROWS = 256;
+
+function prjt_loadData(){
+	var i, r;
+	var data = [];
+
+	//加载项目。注意：需要先加载项目，再加载部门，对于同级的行，总是让项目先显示出来
+	for( i = 0; i < prjt_projects.length; i++ ){
+		var p = prjt_projects[i];
+		var u = prjt_userMap[p.master_id];
+		var depId = u ? u.department : '';
+		r = { id:p.id, name:p.name, master_name:p.master_name, start_time:p.start_time, end_time:p.end_time, type:'project', '_parentId':depId, iconCls:'icon-ok' };
+		data.push(r);
+		prjt_projectMap[p.id]=p;
+	}
+
+	//加载部门
+	for( i = 0; i < prjt_departments.length; i++ ){
+		var d = prjt_departments[i];
+		r = {id:d.id, name:d.name, master_name:'--', start_time:0, end_time:0, type:'department'};
+		if( d.parent != 'root'){
+			r['_parentId'] = d.parent;
+		}		
+		data.push(r);
+	}
+
+	$('#prjt_tg').treegrid('loadData', {"total":data.length,"rows":data});
+	$('#prjt_tg').treegrid('loaded');
+}
+
+function prjt_loadProjects(page_index){
+	if( page_index === undefined ){
+		page_index = 1;
+	}
+	getJSON( '/api/project/p/allDoing', {page:page_index, rows:prjt_MAX_ROWS}, function(err, result) {
+		if( !err ){
+			var old_size = prjt_projects.length;
+			prjt_projects = prjt_projects.concat(result.rows);
+			if( result.total > prjt_projects.length && old_size + prjt_MAX_ROWS < result.total ){
+				prjt_loadProjects( page_index + 1 );
+			}else{
+				prjt_loadData();
+			}
+		}			
+	})
+}
+
+function prjt_loadUsers(){
+	getJSON( '/api/team/department/users', {scopelimit:true}, function(err, result) {
+		if( !err ){
+			prjt_loadProjects(1);
+			for( var i = 0; i < result.length; i++ ){
+				var u = result[i];
+				prjt_userMap[ u.id ] = u;
+			}
+		}
+	});
+}
+
+function prjt_loadDeparments(){
+	getJSON( '/api/team/department/list', {scopelimit:true}, function(err, result) {
+		if( !err ){
+			$('#prjt_tg').treegrid('loading');
+			prjt_loadUsers();			
+			prjt_departments = result;
+		}			
+	});
+}
+
+$(function(){
+	prjt_loadDeparments();
+});
+
+function formatter_prjt_time(value,row,index){
+	if( value === 0 ){
+		return '--';
+	}else{
+		return formatter_second_dg( value, row, index );
+	}
+}
+
+function prjt_tg_onSelect(row){
+	if( row.type === 'project'){
+		$('#prjt_btn_view_summary').linkbutton('enable');
+		$('#prjt_btn_view_daily').linkbutton('enable');
+	}else{
+		$('#prjt_btn_view_summary').linkbutton('disable');
+		$('#prjt_btn_view_daily').linkbutton('disable');
+	}
+}
+
+function prjt_onViewSummary(){
+	var node = $('#prjt_tg').treegrid('getSelected');
+	view_project_summary(node.id);
+}
+
+function prjt_onViewDaily(){
+	var node = $('#prjt_tg').treegrid('getSelected');
+	view_project_daily(prjt_projectMap[node.id]);
+}
+
+function prjt_tg_onDblClick(row){
+	view_project(prjt_projectMap[row.id]);
+}
+
+</script>

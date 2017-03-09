@@ -116,9 +116,9 @@ function _project_combine(rs1, rs2){
 function* $__project_filter_scope( projects, uid ){
 	var ws = yield team_base.member.$getCoworkers( uid );
 	var rs = [];
+
 	for( var i = 0; i < projects.length; i++ ){
 		var r = projects[i];
-
 		if( r.security_level <= OPEN_SECURITY_LEVEL && ws.indexOf( r.master_id) !== -1 ){
 			rs.push( r );
 		}
@@ -175,14 +175,14 @@ function* $project_countAllOnRun(uid){
 		return yield  warp.$query( sql );*/
 		return yield modelProject.$findNumber( {
 			select: 'count(*)',
-			where: "(`status`=? or `status`=?) and `master_id` in ('"+ ws.join("','") + "')",
-			params: ['running', 'ready']
+			where: "(`status`=? or `status`=?) and `security_level`<=? and `master_id` in ('"+ ws.join("','") + "')",
+			params: ['running', 'ready', OPEN_SECURITY_LEVEL ]
 		});
 	}else{
 		return yield modelProject.$findNumber( {
 			select: 'count(*)',
-			where: '`status`=? or `status`=?',
-			params: ['running', 'ready']
+			where: '`status`=? or `status`=? and `security_level`<=?',
+			params: ['running', 'ready', OPEN_SECURITY_LEVEL]
 		});
 	}	
 }

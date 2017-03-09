@@ -19,6 +19,7 @@ function* $_render( context, model, view ){
 /******
 GET METHOD:
 /project
+/project/p/tree
 /project/p/:id/build
 /project/p/:id/daily
 /project/p/:id/edit
@@ -62,6 +63,10 @@ module.exports = {
 	'GET /project': function*(){
 		yield $_render( this, {}, 'project.html');
 		base.setHistoryUrl(this);
+	},
+
+	'GET /project/p/tree': function*(){
+		yield $_render( this, {}, 'view_projects_by_tree.html');
 	},
 
 	'GET /project/p': function* (){

@@ -57,6 +57,22 @@ function view_project(p){
 	});
 }
 
+var projects_tree_tab_is_opened = false;
+function view_project_by_tree(){
+	var title = '部门的项目';
+	if( projects_tree_tab_is_opened ){
+		$('#tt').tabs('select', title );
+	}else{		
+		projects_tree_tab_is_opened = true;
+		$('#tt').tabs('add',{
+			title: title,
+			href: '/project/p/tree',
+			closable: false,
+			collapsible:true
+		});
+	}
+}
+
 /*
 var project_tabs = [
 	{loaded:false, url:'/project/p'},

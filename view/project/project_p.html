@@ -7,6 +7,7 @@
 		<a href="#" id="project_btn_set_member" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit',disabled:true" onclick="onSetProjectMember()">设置团队</a>
 		<a href="#" id="project_btn_view_summary" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search',disabled:true" onclick="project_onViewSummary()">查看概况</a>
 		<a href="#" id="project_btn_view_daily" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search',disabled:true" onclick="project_onViewDaily()">查看进展日志</a>
+		<a href="#" id="project_btn_view_by_tree" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search',disabled:false" onclick="project_onViewByTree()">按部门查看</a>
 	</div>
 	<div>
 		<span>过滤器：</span>
@@ -22,10 +23,10 @@
 {% block inline_main %}
 <div class="easyui-panel" data-options="fit:true,border:false">
 	<table id="project-dg" class="easyui-datagrid" title="我正参与的项目" 
-			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',pageSize:20,onSelect:project_dg_onSelect,onDblClickRow:project_dg_onDblClick, onLoadSuccess:project_dg_onLoadSuccess">
+			data-options="fit:true,singleSelect:true,fitColumns:true,pagination:true,url:'/api/project/p/myDoing',method:'get',pageSize:20,onSelect:project_dg_onSelect,onDblClickRow:project_dg_onDblClick, onLoadSuccess:project_dg_onLoadSuccess,remoteSort:false">
 		<thead>
 			<tr>
-				<th data-options="field:'name',width:160">名称</th>
+				<th data-options="field:'name',width:160,sortable:true, sorter:project_p_sort">名称</th>
 				<th data-options="field:'master_name',width:100">负责人</th>
 				<th data-options="field:'start_time',width:80,formatter:formatter_second_dg">开始时间</th>
 				<th data-options="field:'end_time',width:80,formatter:formatter_second_dg">结束时间</th>
@@ -73,6 +74,10 @@ function project_onFilterChange(newValue,oldValue){
 	project_onResetUI();
 }
 
+function project_p_sort(a, b){
+	return (a>b)? 1 : -1;
+}
+
 function onEditProject(){
 	var row = $('#project-dg').datagrid('getSelected');
 	edit_project(row);
@@ -86,6 +91,10 @@ function project_onViewSummary(){
 }
 function project_onViewDaily(){
 	view_project_daily(gp_row_selected);
+}
+
+function project_onViewByTree(){
+	view_project_by_tree();
 }
 function project_onResetUI(){
 	$('#project_btn_edit_project').linkbutton('disable');
