@@ -261,14 +261,16 @@ module.exports = {
 				if( uid !== task.executor_id ){
 					recipients.push( task.executor_id );
 				}
-				if( uid !== task.manager_id ){
+				if( uid !== task.manager_id && recipients.indexOf(task.manager_id) == -1){
 					recipients.push( task.manager_id );
 				}
-				if( uid === task.executor_id && task.executor_id === task.manager_id ){
+				if( uid === task.executor_id && task.executor_id === task.manager_id && recipients.indexOf(task.executor_id) == -1){
 					recipients.push( task.executor_id );
 				}
 			}
-			yield base.task.$sendNoticeEmail( id, notice.title, recipients, '回复的内容:\n' + data.reply );
+			if( recipients.length != 1 || uid !== recipients[0] ){
+				yield base.task.$sendNoticeEmail( id, notice.title, recipients, '回复的内容:\n' + data.reply );
+			}			
 		}
 		this.body = { result: 'ok'};		
 	}

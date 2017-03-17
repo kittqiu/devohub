@@ -130,9 +130,9 @@ function wvtsk_initFlowCombo(){
 		data.push({action:a, action_name:TASKACTIONMAP[a]})
 	}
 
-	$('#wvtsk_action').combobox('loadData', data );
-	$('#wvtsk_action').combobox('select', actions[0] );
+	$('#wvtsk_action').combobox('loadData', data );	
 	$("#wvtsk_reply").textbox('setValue', TASKACTION_DEF_REPLY[actions[0]]);
+	$('#wvtsk_action').combobox('select', actions[0] );
 }
 
 
@@ -210,12 +210,11 @@ function wvtsk_reload_view(taskId){
 	$('#wvtsk_start_time').text(task.start_time!==0?formatDate(task.start_time):'无');
 	$('#wvtsk_end_time').text(task.end_time!==0?formatDate(task.end_time):'无');
 	wvtsk_initFlowCombo();
-	$("#wvtsk_reply").textbox('setValue',"");
-	$("#wvtsk_reply").textbox('setText',"");
 }
 
 function wvtsk_onChange(newValue,oldValue){
 	var reply = $("#wvtsk_reply").textbox('getValue');
+
 	if( oldValue && TASKACTION_DEF_REPLY.hasOwnProperty(oldValue)){
 		if( reply === '' || reply === TASKACTION_DEF_REPLY[oldValue]){
 			$("#wvtsk_reply").textbox('setValue', TASKACTION_DEF_REPLY[newValue]);

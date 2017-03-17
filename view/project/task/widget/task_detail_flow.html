@@ -139,8 +139,8 @@ function pt_wvtsk_initFlowCombo(){
 	}
 
 	$('#pt_wvtsk_action').combobox('loadData', data );
-	$('#pt_wvtsk_action').combobox('select', actions[0] );
 	$("#pt_wvtsk_reply").textbox('setValue', TASKACTION_DEF_REPLY[actions[0]]);
+	$('#pt_wvtsk_action').combobox('select', actions[0] );	
 }
 
 function pt_task_init_view(task){
