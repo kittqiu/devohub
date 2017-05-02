@@ -51,7 +51,8 @@ module.exports = {
 			},
 			uid = this.request.user.id,
 			old_data = yield base.evaluation.$get( uid, date.getFullYear(), date.getMonth() );
-		if( !!old_data && old_data.hasOwnProperty('corework') ){
+
+		if( !!old_data && old_data.hasOwnProperty('evaluation') ){
 			throw api.notAllowed( "已有月工作评价，不能再次创建！");
 		}
 		
