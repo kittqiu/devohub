@@ -3,7 +3,8 @@
 var 
 	co = require('co'), 
 	schedule = require('node-schedule'),
-	log = require(__base+'lib/logger');
+	log = require(__base+'lib/logger'),
+	team_cache = require( __base + 'controller/team/team_cache');
 
 var tasks_at_8 = [
 	'./job/task_team',
@@ -31,11 +32,20 @@ function* runjobAt8(){
 	yield runJobs( tasks_at_8 );
 }
 
+function* runjobEveryMinute(){
+	yield team_cache.$tryReload()
+}
+
 function MODULE_Main(){
 	
 	var j8 = schedule.scheduleJob( "runjobAt8", {hour:8, minute:1}, function(){
 		log.debug("runjobAt8 is running...");
 		co( runjobAt8 ).catch(onerror);
+	});
+
+	var jm = schedule.scheduleJob( "* * * * *", function(){
+		log.debug("runjobEveryMinute is running...");
+		co( runjobEveryMinute ).catch(onerror);
 	});
 }
 

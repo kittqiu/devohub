@@ -114,6 +114,13 @@ function* $_MODULE_init(){
 	yield $_buildTeamMap();
 }
 
+function* $_MODULE_tryReload(){
+	if( dep_map.size == 0 )
+	{
+		yield $_buildTeamMap();
+	}	
+}
+
 function* $_getCoworkers(uid){
 	var u = user_map.get(uid);
 	var us = [];
@@ -154,5 +161,6 @@ module.exports = {
 	$getCodepartments: $_getCodepartments,
 	$getUserInDeps: $_getUserInDeps,
 	$getUsersOfDep: $_getUsersOfDep,
-	$getCodepartmentObj: $_getCodepartmentObj
+	$getCodepartmentObj: $_getCodepartmentObj,
+	$tryReload: $_MODULE_tryReload
 }
